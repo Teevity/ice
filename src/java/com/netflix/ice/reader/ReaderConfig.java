@@ -23,6 +23,7 @@ import com.netflix.ice.common.*;
 import com.netflix.ice.tag.Product;
 import com.netflix.ice.tag.TagType;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,12 +113,12 @@ public class ReaderConfig extends Config {
         Collection<Product> products = managers.getProucts();
         for (Product product: products) {
             TagGroupManager tagGroupManager = managers.getTagGroupManager(product);
-            Interval interval = tagGroupManager.getOverlapInterval(new Interval(new DateTime().minusMonths(monthlyCacheSize), new DateTime()));
+            Interval interval = tagGroupManager.getOverlapInterval(new Interval(new DateTime(DateTimeZone.UTC).minusMonths(monthlyCacheSize), new DateTime(DateTimeZone.UTC)));
             if (interval == null)
                 continue;
             for (ConsolidateType consolidateType: ConsolidateType.values()) {
-                readData(managers.getCostManager(product, consolidateType), interval, consolidateType);
-                readData(managers.getUsageManager(product, consolidateType), interval, consolidateType);
+                readData(product, managers.getCostManager(product, consolidateType), interval, consolidateType);
+                readData(product, managers.getUsageManager(product, consolidateType), interval, consolidateType);
             }
         }
 
@@ -133,11 +134,12 @@ public class ReaderConfig extends Config {
             instance.costEmailService.shutdown();
     }
 
-    private void readData(DataManager dataManager, Interval interval, ConsolidateType consolidateType) {
+    private void readData(Product product, DataManager dataManager, Interval interval, ConsolidateType consolidateType) {
         if (consolidateType == ConsolidateType.hourly) {
             DateTime start = interval.getStart().withDayOfMonth(1).withMillisOfDay(0);
             do {
-                dataManager.getDataLength(start);
+                int hours = dataManager.getDataLength(start);
+                logger.info("found " + hours + " hours data for " + product + " "  + interval);
                 start = start.plusMonths(1);
             }
             while (start.isBefore(interval.getEnd()));

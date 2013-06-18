@@ -514,9 +514,9 @@ class DashboardController {
                     hours = interval.getStart().plusMonths(it).dayOfMonth().getMaximumValue() * 24;
 
                 if (it == result.time.size() - 1) {
-                    DateTime period = new DateTime(result.time.get(result.time.size() - 1));
+                    DateTime period = new DateTime(result.time.get(result.time.size() - 1), DateTimeZone.UTC);
                     DateTime periodEnd = consolidateType == ConsolidateType.daily ? period.plusDays(1) : (consolidateType == ConsolidateType.weekly ? period.plusWeeks(1) : period.plusMonths(1));
-                    DateTime month = periodEnd.withMillisOfDay(0).withDayOfMonth(1);
+                    DateTime month = period.withMillisOfDay(0).withDayOfMonth(1);
                     int dataHours = getManagers().getCostManager(null, ConsolidateType.hourly).getDataLength(month);
                     DateTime dataEnd = month.plusHours(dataHours);
 
