@@ -160,7 +160,7 @@ ice.factory('highchart', function() {
     hc_options.yAxis = [yAxis];
 
     if (showsps) {
-      hc_options.yAxis.push({title:{text:'SPS'}, height: 100, min: 0, lineWidth: 2, offset: 0});
+      hc_options.yAxis.push({title:{text:metricname}, height: 100, min: 0, lineWidth: 2, offset: 0});
       hc_options.yAxis[0].top = 150;
       hc_options.yAxis[0].height = 350;
     }
