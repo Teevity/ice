@@ -42,7 +42,7 @@ When representing the cost profile for individual resources Ice will factor the 
   
 
 ##Basic setup: 
-Using basic setup, you don't need extra code change and you will use the provided bootstrap.groovy.
+Using basic setup, you don't need extra code change and you will use the provided bootstrap.groovy. You will need to construct your own ice.properties file and have it in your classpath. You can use sample.properties file as the template.
 
 1. Find the s3 billing bucket name and billing file prefix and specify them in ice.properties. For example:
   
