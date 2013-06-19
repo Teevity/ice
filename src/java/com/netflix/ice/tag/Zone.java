@@ -1,0 +1,108 @@
+/*
+ *
+ *  Copyright 2013 Netflix, Inc.
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ *
+ */
+package com.netflix.ice.tag;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+
+public class Zone extends Tag {
+
+    public final Region region;
+
+    private Zone (Region region, String name) {
+        super(name);
+        this.region = region;
+        region.addZone(this);
+    }
+
+    public static final Zone US_EAST_1A = new Zone(Region.US_EAST_1, "us-east-1a");
+    public static final Zone US_EAST_1B = new Zone(Region.US_EAST_1, "us-east-1b");
+    public static final Zone US_EAST_1C = new Zone(Region.US_EAST_1, "us-east-1c");
+    public static final Zone US_EAST_1D = new Zone(Region.US_EAST_1, "us-east-1d");
+    public static final Zone US_EAST_1E = new Zone(Region.US_EAST_1, "us-east-1e");
+    public static final Zone US_WEST_1A = new Zone(Region.US_WEST_1, "us-west-1a");
+    public static final Zone US_WEST_1B = new Zone(Region.US_WEST_1, "us-west-1b");
+    public static final Zone US_WEST_1C = new Zone(Region.US_WEST_1, "us-west-1c");
+    public static final Zone US_WEST_2A = new Zone(Region.US_WEST_2, "us-west-2a");
+    public static final Zone US_WEST_2B = new Zone(Region.US_WEST_2, "us-west-2b");
+    public static final Zone US_WEST_2C = new Zone(Region.US_WEST_2, "us-west-2c");
+    public static final Zone EU_WEST_1A = new Zone(Region.EU_WEST_1, "eu-west-1a");
+    public static final Zone EU_WEST_1B = new Zone(Region.EU_WEST_1, "eu-west-1b");
+    public static final Zone EU_WEST_1C = new Zone(Region.EU_WEST_1, "eu-west-1c");
+    public static final Zone SA_EAST_1A = new Zone(Region.SA_EAST_1, "sa-east-1a");
+    public static final Zone SA_EAST_1B = new Zone(Region.SA_EAST_1, "sa-east-1b");
+
+    private static ConcurrentMap<String, Zone> zonesByName = Maps.newConcurrentMap();
+
+    static {
+        zonesByName.put(US_EAST_1A.name, US_EAST_1A);
+        zonesByName.put(US_EAST_1B.name, US_EAST_1B);
+        zonesByName.put(US_EAST_1C.name, US_EAST_1C);
+        zonesByName.put(US_EAST_1D.name, US_EAST_1D);
+        zonesByName.put(US_EAST_1E.name, US_EAST_1E);
+        zonesByName.put(US_WEST_1A.name, US_WEST_1A);
+        zonesByName.put(US_WEST_1B.name, US_WEST_1B);
+        zonesByName.put(US_WEST_1C.name, US_WEST_1C);
+        zonesByName.put(US_WEST_2A.name, US_WEST_2A);
+        zonesByName.put(US_WEST_2B.name, US_WEST_2B);
+        zonesByName.put(US_WEST_2C.name, US_WEST_2C);
+        zonesByName.put(EU_WEST_1A.name, EU_WEST_1A);
+        zonesByName.put(EU_WEST_1B.name, EU_WEST_1B);
+        zonesByName.put(EU_WEST_1C.name, EU_WEST_1C);
+        zonesByName.put(SA_EAST_1A.name, SA_EAST_1A);
+        zonesByName.put(SA_EAST_1B.name, SA_EAST_1B);
+    }
+
+    public static void addZone(Zone zone) {
+        Zone existedZone = zonesByName.putIfAbsent(zone.name, zone);
+        if (existedZone != null) {
+            throw new RuntimeException("Zone with shortname already exists " + existedZone);
+        }
+    }
+
+    public static Zone getZone(String name, Region region) {
+        if (name.isEmpty() || name.equals(region.name))
+            return null;
+        Zone zone = zonesByName.get(name);
+        if (zone == null) {
+            zonesByName.putIfAbsent(name, new Zone(region, name));
+            zone = zonesByName.get(name);
+        }
+        return zone;
+    }
+
+    public static Zone getZone(String name) {
+        return zonesByName.get(name);
+    }
+
+    public static Collection<Zone> getZones() {
+        return zonesByName.values();
+    }
+
+    public static List<Zone> getZones(List<String> names) {
+        List<Zone> result = Lists.newArrayList();
+        for (String name: names)
+            result.add(zonesByName.get(name));
+        return result;
+    }
+}
+

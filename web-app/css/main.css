@@ -1,0 +1,354 @@
+html * { margin: 0; }
+
+/* GENERAL */
+a, input     { outline: none; }
+p            { padding: 10px 0; }
+img          { border: none; }
+.titlebar a:link, .titlebar a:visited, .titlebar a:hover { color: #FFF !important; }
+.titlebar                 { background-color: #000; color: #FFF; padding: 0 0 0 5px; height: 58px; clear: both; min-width: 885px; }
+.prod .titlebar,
+.prod .titlebar .cmc,
+.prod .titlebar .region   { background-color: #E9231B; }
+.titlebar span            { text-shadow: #E9231B 3px 3px 2px; font-size: 24px; font-family: helvetica, verdana, arial, sans-serif; }
+.prod .titlebar span      { text-shadow: #000 4px 4px 2px; }
+.titlebar span.mainHeader { padding: 10px 16px 10px 10px; }
+.titlebar img.console     { margin-right: 6px; height: 58px; }
+.titlebar .header         { float: left; height: 58px; }
+.titlebar .region         { float: left; margin: 0 7px 0 0; }
+.titlebar .region form    { float: left; display: inline-block; vertical-align: top; padding: 5px 5px 0 0; }
+.titlebar .region img     { float: left; display: inline-block; }
+.titlebar .region select  { width: 100px; }
+
+.titlebar .region,
+.titlebar .cmc            { background-color: #000; border-radius: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; }
+.titlebar .cmc            { float: right; padding: 3px 7px 10px 8px; }
+.cmc input[name=cmc]      { width: 80px; }
+.spinner       { padding: 5px; position: absolute; right: 0; }
+.diagnostics p { padding: 0; }
+body           { background: #FFF; color: #333; font: 11px verdana, arial, helvetica, sans-serif; }
+ul             { padding-left: 15px; }
+input.hidden   { visibility: hidden; }
+select         { padding: 2px 2px 2px 0; }
+input          { padding: 2px 2px 2px 0; }
+input:focus,  select:focus, textarea:focus { border: 1px solid #006DBA; }
+a:link, a:visited, a:hover       { font-weight: bold; text-decoration: none; }
+span.fakeLink, a:link, a:visited { color: #006DBA; }
+span.fakeLink:hover, a:hover     { color: #00263F; }
+span.fakeLink                    { cursor: pointer; font-weight: bold; }
+
+input, select, textarea, button div { background-color: #FCFCFC; border: 1px solid #CCC; font: 11px verdana, arial, helvetica, sans-serif; margin: 2px 0; padding: 2px 4px; }
+
+.numbers                         { white-space: nowrap; }
+.numbers select                  {              margin-right: 10px; }
+.numbers input[type=text]        { width: 30px; margin-right: 10px; }
+.numbersInline input[type=text]  { width: 30px;  }
+.numbers input:last-child        {              margin-right:    0; }
+input.number                     { width: 36px;  }
+.numbers input.string[type=text] { width: auto;  }
+.sdbValue                        { width: 500px; }
+
+/* NAVIGATION MENU */
+.nav      { border-color: #AAA; padding: 0;          border-style: solid; border-width: 1px 0; float: left; width: 100%; min-width: 880px; }
+.nav li   { border-color: #AAA; padding: 0 0 10px 0; border-style: solid; border-width: 0 1px 0 0; font-size: 10px; margin: 0; white-space: nowrap; display: block; float: left; height: 25px; position: relative; z-index: 2; }
+.nav li a { padding: 10px 12px 11px 12px; background-position: 11px 5px; background-repeat: no-repeat; display: block; line-height: 14px; color: #333; }
+.dropdown { background:       url("../images/downarrowdark.gif") no-repeat scroll 98% 92%; }
+.nav, th  { color: #333; }
+.nav, th  { background-image: -moz-linear-gradient(center bottom, #DDD 0%, white 50%); }
+.nav, th  { background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #DDD), color-stop(0.5, white)); }
+
+.nav li ul          { background-color: #EAEAEA; padding: 0; display: none; position: absolute; margin-left: -1px; }
+.nav li:hover       { background-color: #D8E6FF; }
+.nav li:hover ul          { display: block; }
+.nav li ul li       { border-color: #AAA; border-width: 0 1px 1px 1px; border-style: solid; float: none; }
+.nav li ul li:first-child { border-top-width: 1px; }
+
+/* NAV ICONS */
+.nav .home           { background-image: url(../images/tango/24/actions/go-home.png); }
+.nav .applications   { background-image: url(../images/tango/24/mimetypes/package-x-generic.png); }
+.nav .sdbProperties  { background-image: url(../images/tango/24/categories/preferences-desktop.png); }
+.nav .images         { background-image: url(../images/tango/24/mimetypes/image-x-generic.png); }
+.nav .securityGroups { background-image: url(../images/tango/24/status/network-security.png); }
+.nav .launchConfigs  { background-image: url(../images/tango/24/actions/launch.png); }
+.nav .cluster        { background-image: url(../images/tango/24/status/network-cluster.png); }
+.nav .autoScaling    { background-image: url(../images/tango/24/status/network-disconnect.png); }
+.nav .loadBalancers  { background-image: url(../images/tango/24/emblems/emblem-balance.png); }
+.nav .instances      { background-image: url(../images/tango/24/devices/video-display.png); }
+.nav .reservations   { background-image: url(../images/tango/24/mimetypes/x-office-calendar.png); }
+.nav .tasks          { background-image: url(../images/tango/24/actions/edit-paste.png); }
+.nav .volumes        { background-image: url(../images/tango/24/apps/system-file-manager.png); }
+.nav .volumeSnapshot { background-image: url(../images/tango/24/apps/system-file-manager-snapshot.png); }
+.nav .rdsInstances   { background-image: url(../images/tango/24/devices/database.png); }
+.nav .dbSecurity     { background-image: url(../images/tango/24/devices/database-lock.png); }
+.nav .dbSnapshot     { background-image: url(../images/tango/24/devices/database-snapshot.png); }
+
+/* General page body */
+.body       { float: left; margin: 0 15px 10px; }
+.emphasized { font-weight: bold; }
+div.clear   { clear: both; }
+.initial    { color: #204a87; font-weight: bold; }
+.notation   { color: red; font-size: 10px; }
+
+/* Actions */
+.actions { border: 0; margin-top: 5px; padding: 7px 12px; }
+
+/* MESSAGES AND ERRORS */
+.message         { background: #F3F8FC url(../images/skin/information.png) 8px 50% no-repeat; border: 1px solid #B2D1FF; color: #006DBA; margin: 10px 0 5px 0; padding: 5px 5px 5px 30px; }
+div.subtitle     { background: #F3F8FC url(../images/skin/information.png) 8px 50% no-repeat; border: 1px solid #B2D1FF; color: #006DBA; margin: 10px 0 5px 0; padding: 5px 5px 5px 30px; }
+div.errors       { background: #FFF3F3; border: 1px solid red; color: #CC0000; margin: 10px 0 5px 0; padding: 5px 0 5px 0; }
+div.errors ul    { list-style: none; padding: 0; }
+div.errors li    { background: url(../images/skin/exclamation.png) 8px 0 no-repeat; line-height: 16px; padding-left: 30px; padding-right: 7px; }
+td.errors select { border: 1px solid red; }
+td.errors input  { border: 1px solid red; }
+label.error      { padding-left: .5em; }
+input.error      { background-color: #ffc; }
+.alarm           { color: red; font-weight: bold; font-size: 12px; }
+.error           { color: red; }
+.warning         { color: #D2691E; }
+p.warning        { margin: 5px 0; }
+td.zoneA         { color: #4e9a06; }
+td.zoneB         { color: #204a87; }
+td.zoneC         { color: #ce5c00; }
+td.zoneD         { color: #5c3566; }
+td.zoneE         { color: #a40000; }
+td.inService     { color: blue; }
+td.outOfService  { color: red; }
+td.health a            { display: none; height: 100%; width: 100%; }
+td.pass a, td.fail a   { display: block; }
+td.pass                { background: transparent url(../images/tango/16/status/weather-clear.png) 5px 50% no-repeat; }
+td.fail                { background: transparent url(../images/tango/16/status/weather-storm.png) 5px 50% no-repeat; }
+td.lazy img            { display: none; }
+tr.waiting td.lazy img { display: inline; }
+
+/* TABLES */
+table, fieldset             { border: 1px solid #DDD; }
+fieldset table              { border: none; }
+table                       { width: 100%; }
+tr.prop table, table.narrow { width: auto; }
+tr                    { border: 0; }
+td, th                { font-size: 11px; font-family: verdana, arial, helvetica, sans-serif; line-height: 11px; padding: 5px 6px; text-align: left; vertical-align: top; }
+td.date               { white-space: nowrap; }
+table.sortable th     { cursor: pointer; }
+th                    { font-size: 11px; font-weight: bold; line-height: 17px; padding: 2px 6px; white-space: nowrap; }
+th a:link, th a:visited, th a:hover { color: #333; display: block; font-size: 10px; text-decoration: none; width: 100%; }
+th.asc a, th.desc a   { background-position: right; background-repeat: no-repeat; }
+th.asc a              { background-image: url(../images/skin/sorted_asc.gif);  }
+th.desc a             { background-image: url(../images/skin/sorted_desc.gif); }
+.list tr.odd          { background: #F5F5F5; }
+.list tr.even         { background: white; }
+.list td.truncate     { max-width: 200px; overflow: hidden; }
+.list td.app          { max-width: 122px; word-wrap: break-word; }
+.list td.variables    { max-width: 100px; word-wrap: break-word; }
+.list td.autoScaling  { max-width: 130px; word-wrap: break-word; }
+.list td.launchConfig { max-width: 100px; word-wrap: break-word; }
+.list td.loadBalancer { max-width: 100px; word-wrap: break-word; }
+.list td.ami          { max-width: 200px; word-wrap: break-word; }
+.list .sdb .var       { max-width:  60px; word-wrap: break-word; white-space: normal; }
+.list .sdb .updatedBy { max-width:  80px; word-wrap: break-word; }
+.list .sdb .serverId  { max-width:  80px; word-wrap: break-word; }
+.list .sdb .propKey   { max-width: 400px; word-wrap: break-word; }
+.list .sdb .propValue { max-width: 200px; word-wrap: break-word; }
+
+/* HEADINGS */
+caption { font-size: 16px; text-align: left; }
+h1      { font-size: 16px; }
+h2      { font-size: 14px; }
+h3      { font-size: 13px; }
+h1, h2, h3, caption { color: #3C617C; font-weight: normal; margin: .8em 0 .8em 0; line-height: normal; }
+
+/* LIST */
+.list table                    { border-collapse: collapse;                                            }
+.list th, .list td             { border-left: 1px solid #DDD; max-width: 800px; word-wrap: break-word; }
+.list th:hover, .list tr:hover { background: #D8EFFF; }
+
+/* PAGINATION */
+.paginateButtons      { border: 1px solid #DDD; border-top: 0; color: #666; font-size: 10px; overflow: hidden; padding: 10px 3px; }
+.paginateButtons      { background-image: -moz-linear-gradient(center bottom, #DDD 0%, white 80%); }
+.paginateButtons      { background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #DDD), color-stop(0.8, white)); }
+.paginateButtons a    { background: #FFF; border-width: 1px; border-style: solid; border-color: #DDD #AAA #AAA #CCC; color: #666; margin: 0 3px; padding: 2px 6px; }
+.paginateButtons span { padding: 2px 3px; }
+
+/* DIALOG */
+.dialog table { padding: 5px 0; }
+.dialog table td { vertical-align: top; }
+tr.headers    td { vertical-align: bottom; }
+.prop { padding: 5px; }
+.prop .name  { text-align: left; width:  1%; white-space: nowrap; }
+.prop .value { text-align: left; width: 99%; }
+.task { text-align: right; }
+form .compoundName table        { width: auto; }
+form .compoundName .guide       { float: left; }
+form .compoundName .preview     { float: left; margin: .8em; }
+form .compoundName .envVars     { float: right; clear: right; display: none; margin-top: 20px; }
+form .compoundName .envVars pre { border: 1px solid #CCC; padding: 8px; }
+form .compoundName .preview .nameText { background-color: #EEF8FF; color: #092448; border: 1px solid #CCC; padding: 4px 8px; font-size: 24px; }
+
+form .compoundName select           { max-width: 110px; }
+form .compoundName input[type=text] { width: 60px; }
+form .compoundName input.short      { width: 30px; }
+form .compoundName div.filter       { display: block; }
+form .compoundName ul { margin: auto; margin: 10px 0 13px; }
+form .compoundName li { margin: auto; margin-left: 15px; }
+form .compoundName td input + div   { color: #333; white-space: nowrap; }
+form .compoundName td input + div span { color: #999; }
+
+/* STANDARD ACTION BUTTONS */
+.buttons { color: #444; background: #FFF; border: 1px solid #DDD; font-size: 10px; overflow: hidden; padding: 0 3px;; clear: both; }
+.buttons { background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E4E4E4), color-stop(0.4, white)); }
+.buttons { background-image: -moz-linear-gradient(center bottom, #E4E4E4 0%, white 40%); }
+.buttons button div, .buttons a  {
+    color: #333; cursor: pointer; font-size: 10px; font-weight: bold; margin: 1px; overflow: visible; display: inline-block;
+    line-height: 14px; border-style: solid; border-color: #DDD #BBB #BBB #DDD; border-width: 1px 2px 2px 1px;
+    background: none no-repeat scroll 5px 50% #FFF; white-space: nowrap; padding: 6px 6px 6px 32px;
+    border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px;
+}
+
+.buttons button:hover  div, .buttons a:hover  { background-color: #D8E6FF !important; border-color: #C2D2EF #A7BBDF #A7BBDF #C2D2EF; color: #00263F; }
+.buttons button:active div, .buttons a:active { background-color: #6299C5 !important; border-color: #6299C5 #8BBBDF #8BBBDF #6299C5; color: #FFF;    }
+
+.buttons button:disabled div, .buttons a:disabled { filter: alpha(opacity=50); opacity: 0.5; -moz-opacity: 0.50; background-color: inherit !important; border-color: inherit; color: inherit; cursor: default; }
+.buttons button                               { padding: 0; margin: 0; border: 0; cursor: pointer; background: none; }
+.buttons h3                                   { display: inline; font-size: 11px; padding: 0 3px 0 10px; }
+.buttons button.initListFilter                { float: right; }
+.buttons button.initListFilter div            { background-image: url(../images/tango/24/actions/system-search.png);                             }
+.buttons button.create div, .buttons a.create { background-image: url(../images/tango/24/actions/list-add.png);                                  }
+.buttons button.delete div                    { background-image: url(../images/tango/24/places/user-trash.png);                                 }
+.buttons button.stop div, a.stop              { background-image: url(../images/tango/24/actions/process-stop.png);                              }
+.buttons a.edit                               { background-image: url(../images/tango/24/categories/preferences-system.png); padding-left: 34px; }
+.buttons a.clone                              { background-image: url(../images/tango/24/tools/draw-clone.png);                                  }
+.buttons button.push div, .buttons a.push     { background-image: url(../images/tango/24/actions/go-next.png);                                   }
+button.pushRolling div, a.pushRolling         { background-image: url(../images/tango/24/actions/push-rolling.png);          padding-left: 35px; }
+button.pushReplace div, a.pushReplace         { background-image: url(../images/tango/24/status/network-cluster.png);        padding-left: 35px; }
+button.resize div, a.resize                   { background-image: url(../images/tango/24/actions/view-fullscreen.png);                           }
+.buttons button.promote div                   { background-image: url(../images/tango/24/apps/internet-web-browser.png);                         }
+.buttons a.newLaunch                          { background-image: url(../images/tango/24/actions/launch-new.png);                                }
+.buttons button.trafficEnable div             { background-image: url(../images/tango/24/status/traffic-enable.png);                             }
+.buttons button.trafficDisable div            { background-image: url(../images/tango/24/status/traffic-disable.png);                            }
+.buttons button.removeBalance div             { background-image: url(../images/tango/24/emblems/emblem-balance-remove.png);                     }
+.buttons button.instanceBalance div           { background-image: url(../images/tango/24/emblems/emblem-balance-screen.png);                     }
+.buttons a.attachElastic                      { background-image: url(../images/tango/24/actions/lasso-screen.png);                              }
+.buttons .security                            { background-image: url(../images/tango/24/status/secure.png);                                     }
+.buttons button.securityEdit div              { background-image: url(../images/tango/24/status/secure-preferences.png);     padding-left: 33px; }
+.buttons a.cli                                { background-image: url(../images/tango/24/apps/utilities-terminal.png);       padding-left: 35px; }
+.buttons a.userData                           { background-image: url(../images/tango/24/actions/document-properties.png);                       }
+.buttons button.takeSnapshot div              { background-image: url(../images/tango/24/devices/camera-photo.png);                              }
+.buttons button.shutdown div                  { background-image: url(../images/tango/24/actions/system-shutdown.png);                           }
+.buttons button.restore div                   { background-image: url(../images/tango/24/actions/edit-undo.png);                                 }
+.buttons button.elastic div                   { background-image: url(../images/tango/24/tools/select-lasso.png);                                }
+.buttons button.save div                      { background-image: url(../images/tango/24/actions/document-save.png);                             }
+.buttons button.blueOut div                   { background-image: url(../images/tango/24/tools/draw-ink.png);                padding-right: 0;   }
+.buttons button.unblue div                    { background-image: url(../images/tango/24/tools/draw-ink-remove.png);                             }
+.buttons button.outOfService div              { background-image: url(../images/tango/24/status/weather-clear-night.png);                        }
+.buttons button.inService div                 { background-image: url(../images/tango/24/status/weather-clear.png);                              }
+.buttons input[type=text]                     { border: 1px solid #CCC; cursor: auto; }
+
+/* SMALL ACTION BUTTONS */
+.subitems .buttons .count                     { padding: 0 15px; }
+.subitems .buttons button div, .subitems .buttons a { line-height: 8px; padding: 5px 5px 5px 26px; background: transparent no-repeat 5px 50%; }
+.subitems .buttons button.unblue div          { background-image:  url(../images/tango/16/tools/draw-ink-remove.png);         }
+.subitems .buttons button.blueOut div         { background-image:  url(../images/tango/16/tools/draw-ink.png);                }
+.subitems .buttons button.removeBalance div   { background-image:  url(../images/tango/16/emblems/emblem-balance-remove.png); }
+.subitems .buttons button.instanceBalance div { background-image:  url(../images/tango/16/emblems/emblem-balance-screen.png); }
+.subitems .buttons button.outOfService div    { background-image:  url(../images/tango/16/status/weather-clear-night.png);    }
+.subitems .buttons button.inService div       { background-image:  url(../images/tango/16/status/weather-clear.png);          }
+.subitems .buttons a.monitor                  { background-image:  url(../images/tango/16/apps/utilities-system-monitor.png); }
+
+/* ICONS FOR TEXT LINKS */
+a.application  { padding:  2px 2px  2px 26px; background: url(../images/tango/16/mimetypes/package-x-generic.png)    transparent no-repeat 5px 1px; line-height: 16px; }
+a.autoScaling  { padding:  2px 2px  2px 26px; background: url(../images/tango/16/status/network-idle.png)            transparent no-repeat 5px 1px; line-height: 16px; }
+a.cluster      { padding:  2px 2px  2px 26px; background: url(../images/tango/16/status/network-cluster.png)         transparent no-repeat 5px 1px; line-height: 16px; }
+a.instance     { padding:  2px 2px  2px 26px; background: url(../images/tango/16/devices/video-display.png )         transparent no-repeat 5px 1px; line-height: 16px; }
+a.loadBalancer { padding:  2px 2px  2px 26px; background: url(../images/tango/16/emblems/emblem-balance.png)         transparent no-repeat 5px 1px; line-height: 16px; }
+a.image        { padding:  2px 2px  2px 26px; background: url(../images/tango/16/mimetypes/image-x-generic.png)      transparent no-repeat 5px 1px; line-height: 16px; }
+a.security     { padding:  2px 2px  2px 26px; background: url(../images/tango/16/actions/system-lock-screen.png)     transparent no-repeat 5px 1px; line-height: 16px; }
+a.volume       { padding:  2px 2px  2px 26px; background: url(../images/tango/16/apps/system-file-manager.png)       transparent no-repeat 5px 1px; line-height: 16px; }
+a.task         { padding:  2px 2px  2px 24px; background: url(../images/tango/16/actions/edit-paste.png)             transparent no-repeat 3px 1px; line-height: 17px; }
+a.builds       { padding:  2px 2px  2px 22px; background: url(../images/builds.png)                                  transparent no-repeat 5px 1px; line-height: 16px; }
+a.mail         { padding:  2px 2px  2px 22px; background: url(../images/tango/16/actions/mail-message-new.png )      transparent no-repeat 0   1px; line-height: 16px; }
+      a.jira   { padding:  2px 2px  2px 22px; background: url(../images/jira.png)                                    transparent no-repeat 0   1px; line-height: 16px; }
+a.docs         { padding:  2px 2px  2px 22px; background: url(../images/tango/16/apps/help-browser.png)              transparent no-repeat 0   1px; line-height: 16px; }
+a.more         { padding:    0 2px    0 17px; background: url(../images/tango/16/actions/list-add.png)               transparent no-repeat 0   50%; line-height: 16px; }
+a.fewer        { padding:    0 2px    0 22px; background: url(../images/tango/16/actions/list-remove.png)            transparent no-repeat 0   50%; line-height: 16px; }
+th.tiny              { max-width: 13px; padding: 2px 3px; }
+.tiny, .tiny td      { font-size: 9px; }
+.tiny a.instance     { padding: 2px 2px 2px 18px; background-position: 0 50%; }
+.tiny a.loadBalancer { padding: 2px 2px 2px 18px; background-position: 0 50%; }
+.tiny a.builds       { padding: 3px 2px 2px 18px; background-position: 0 50%; }
+.tiny th, .tiny td   { padding: 4px 2px; }
+
+.homeWrapper                    { margin: 0 20px; }
+.homeWrapper .section           { margin: 20px 0; }
+.homeWrapper .widget            { margin-right: 70px; vertical-align: top; float: left; }
+.homeWrapper .widget:last-child { margin-right: 0; }
+.homeWrapper ul                 { padding-left: 0; }
+.homeWrapper li                 { list-style: none; padding: 5px 0; }
+.buttons div.filter             { float: right; margin-right: 10px; padding: 5px 0 0 6px; }
+div.filter                      { display: inline-block; vertical-align: top; padding-left: 6px; }
+div.filter input:focus          { border-color: #8BBBDF; }
+div.filter input                { border: 1px solid #CCC; background-color: #EEF8FF; color: #092448; width: 60px; margin-right: 8px; }
+.instanceJump input[type=text]  { border: 1px solid #CCC; width: 80px; margin: 0 4px; }
+
+/* ICON REFERENCE */
+.icons { width: 700px; padding: 5px 0; }
+.icon  { padding: 3px; }
+
+/* OTHER */
+.inconsistent .appVersion, .inconsistent .appVersion a { color: red; }
+.count            { padding-right: 15px; }
+.tagKey           { color: #999; }
+#instanceTable td { height: 27px; vertical-align: middle; }
+label.choice      { padding-right: 15px; }
+a.nactest { padding: 4px 5px 5px 5px; background-color: black;   color: white !important; text-shadow: 2px 2px 1px #E9231B; display: block; width: 133px; border-radius: 6px; -moz-border-radius: 6px; -webkit-border-radius: 6px; border: 1px solid #666; }
+a.nacprod { padding: 4px 5px 5px 5px; background-color: #E9231B; color: white !important; text-shadow: 2px 2px 1px black;   display: block; width: 133px; border-radius: 6px; -moz-border-radius: 6px; -webkit-border-radius: 6px; border: 1px solid #666; }
+
+/* GROUP REPLACING PUSH */
+.cluster h3            {                  margin-bottom: 8px; }
+.cluster ul.tasks      { padding-left: 0; margin-bottom: 10px; list-style-type: none; }
+.groupReplacingPush    { padding: 0;      margin: 0; }
+.groupReplacingPush li { padding: 10px;   margin-right: 14px; margin-bottom: 14px; display: inline-block; float: left; max-width: 340px; border-style: solid; border-color: #CCC #999 #999 #CCC; border-width: 1px 2px 2px 1px; }
+.groupReplacingPush .batchResizeContainer { display: none; padding: 0 8px; }
+.groupReplacingPush                       .launchDisabledMessage { display: none; }
+.groupReplacingPush li.launchingSuspended .launchDisabledMessage { display: block; }
+.groupReplacingPush li.launchingSuspended,
+.groupReplacingPush li.launchingSuspended th,
+.groupReplacingPush li.launchingSuspended div.buttons { background-color: #EBEBEB; background-image: none; }
+.groupReplacingPush li.create                  { max-width: 380px; }
+.groupReplacingPush li.create table            { width: auto;      }
+.groupReplacingPush li h2                      { margin-top: 0;    }
+.groupReplacingPush li.create h2:first-of-type { float: left;      }
+.groupReplacingPush li.create span.toggle      { float: right;     }
+.groupReplacingPush select                     { max-width: 240px; }
+.groupReplacingPush .filter                    { width: 60px;      }
+.groupReplacingPush .name                      { white-space: normal; min-width: 86px; }
+.groupReplacingPush                      span.toggle    { background: url(../images/tango/16/actions/list-remove.png) transparent no-repeat 0 50%; padding: 0 2px 0 17px; line-height: 16px; }
+.groupReplacingPush .hideAdvancedOptions span.toggle    { background-image: url(../images/tango/16/actions/list-add.png); }
+.groupReplacingPush .hideAdvancedOptions tr.advanced td { display: none; }
+
+div.grippie { background: #EEEEEE url(../images/grippie.png) no-repeat scroll center 2px; border: 1px solid #DDDDDD; border-top-width: 0; cursor: s-resize; height: 9px; overflow: hidden; }
+.resizable-textarea textarea { display: block; margin-bottom: 0; width: 95%; height: 20%; }
+
+.messageForIeUsers              { padding: 10px; color: blue; font-size: 13px; font-weight: bold; background-color: white; }
+.chromeFrameInstallDefaultStyle { width: 96%; height: 90%; border: 5px solid blue; z-index: 1000; left: 410px; top: 360px; }
+
+.metaAccounts {width: 115px}
+.metaRegions {width: 115px}
+.metaProducts {width: 110px}
+.metaOperations {width: 230px}
+.metaUsageTypes {width: 230px}
+.metaResourceGroups {width: 450px}
+.metaSelect {height:80px;}
+.metaInput {}
+.metaFilter {border: 1px solid #CCC; background-color: #EEF8FF; color: #092448; width: 60px; margin-right: 8px;}
+a.legendControls {text-decoration: underline; cursor: pointer; color: #08c; font-weight: bold;}
+div.legendIcon {float: left; margin-right: 3px; width: 16px; height: 12px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;}
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; }
+.ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }

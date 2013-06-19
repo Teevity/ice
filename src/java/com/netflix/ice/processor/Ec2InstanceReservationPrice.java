@@ -1,0 +1,175 @@
+/*
+ *
+ *  Copyright 2013 Netflix, Inc.
+ *
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ *
+ */
+package com.netflix.ice.processor;
+
+import com.google.common.collect.Maps;
+import com.netflix.ice.tag.Region;
+import com.netflix.ice.tag.UsageType;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Hours;
+
+import java.util.Map;
+import java.util.TreeMap;
+
+public class Ec2InstanceReservationPrice {
+
+    public final VersionedPrice upfrontPrice;
+    public final VersionedPrice hourlyPrice;
+
+    public Ec2InstanceReservationPrice() {
+        upfrontPrice = new VersionedPrice();
+        hourlyPrice = new VersionedPrice();
+    }
+
+    public static class VersionedPrice {
+        private TreeMap<Long, Price> prices = Maps.newTreeMap();
+
+        public Price getCreatePrice(Long millis) {
+            Price price = prices.get(millis);
+            if (price == null) {
+                price = new Price();
+                prices.put(millis, price);
+            }
+            return price;
+        }
+
+        public Price getPrice(Long millis) {
+            if (millis == null)
+                return prices.lastEntry().getValue();
+
+            for (Map.Entry<Long, Price> entry : prices.entrySet()) {
+                if (entry.getKey() > millis) {
+                    return entry.getValue();
+                }
+            }
+            return prices.lastEntry().getValue();
+            //throw new RuntimeException("Cannot find list price");
+        }
+
+        public double getListPrice(long millis) {
+            for (Map.Entry<Long, Price> entry : prices.entrySet()) {
+                if (entry.getKey() > millis) {
+                    return entry.getValue().listPrice;
+                }
+            }
+            throw new RuntimeException("Cannot find list price");
+        }
+    }
+
+    public static class Price {
+        private Double listPrice = null;
+        private TreeMap<Long, Double> tierPrice = Maps.newTreeMap();
+
+        public void setListPrice(double listPrice) {
+            this.listPrice = listPrice;
+        }
+
+        public void setPrice(Long tier, Double price) {
+            tierPrice.put(tier, price);
+        }
+
+        public double getPrice(double tier) {
+            for (Map.Entry<Long, Double> entry : tierPrice.descendingMap().entrySet()) {
+                if (tier > entry.getKey()) {
+                    return entry.getValue();
+                }
+            }
+            return listPrice;
+        }
+
+        public double getUpfrontAmortized(long startMillis, ReservationPeriod reservationPeriod, double tier) {
+            double price = -1;
+            for (Map.Entry<Long, Double> entry : tierPrice.descendingMap().entrySet()) {
+                if (tier > entry.getKey()) {
+                    price = entry.getValue();
+                    break;
+                }
+            }
+            if (price < 0)
+                price = listPrice;
+
+            DateTime start = new DateTime(startMillis, DateTimeZone.UTC);
+            DateTime end = start.plusYears(reservationPeriod.years);
+            int hours = Hours.hoursBetween(start, end).getHours();
+            return price / hours;
+        }
+    }
+
+    public static class Key implements Comparable<Key> {
+        public final Region region;
+        public final UsageType usageType;
+
+        public Key(Region region, UsageType usageType) {
+            this.region = region;
+            this.usageType = usageType;
+        }
+
+        public int compareTo(Key t) {
+            int result = this.region.compareTo(t.region);
+            if (result != 0)
+                return result;
+            result = this.usageType.compareTo(t.usageType);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder(region.toString()).append("|").append(usageType);
+            return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null)
+                return false;
+            Key other = (Key)o;
+            return
+                this.region == other.region &&
+                this.usageType == other.usageType;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.region.hashCode();
+            result = prime * result + this.usageType.hashCode();
+            return result;
+        }
+    }
+
+    public static enum ReservationPeriod {
+        oneyear(1),
+        threeyear(3);
+
+        public final int years;
+
+        private ReservationPeriod(int years) {
+            this.years = years;
+        }
+
+    }
+
+    public static enum ReservationUtilization {
+        LIGHT,
+        MEDIUM,
+        HEAVY;
+    }
+}
+
