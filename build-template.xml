@@ -1,0 +1,59 @@
+<!--
+  ~ $Header$
+  ~ Copyright 2013 Netflix, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<project name="ice" default="build">
+
+    <property environment="env"/>
+
+    <!-- Grails specific properties. -->
+    <property name="grails.home" value="${env.GRAILS_HOME}"/>
+    <condition property="grails" value="${grails.home}/bin/grails.bat">
+        <os family="windows"/>
+    </condition>
+    <property name="grails" value="${grails.home}/bin/grails"/>
+    <property name="grails.env" value="test"/>
+    <!-- dev,test,prod -->
+    <property name="work.dir" value="${basedir}/work"/>
+    <property name="grails.opts" value="-Dgrails.work.dir=${workspace}/.grails "/>
+
+    <target name="clean"
+            description="--> Cleans a Grails application">
+        <exec executable="${grails}" failonerror="true">
+            <arg value="clean"/>
+        </exec>
+        <delete dir="lib" quiet="true" includeemptydirs="true"/>
+        <delete dir="${work.dir}" quiet="true" includeemptydirs="true"/>
+    </target>
+
+    <echo>${grails}</echo>
+    <target name="war" description="--> Creates a WAR of a Grails application">
+        <mkdir dir="${dist.dir}"/>
+        <exec executable="${grails}" failonerror="true">
+            <env key="GRAILS_OPTS" value="${grails.opts}"/>
+            <arg value="${grails.env}"/>
+            <arg value="war"/>
+            <arg value="${dist.dir}/ice.war"/>
+        </exec>
+    </target>
+
+    <target name="build" depends="war" description="Copy libraries and build war.">
+        <mkdir dir="${stage.dir}"/>
+        <copy file="${dist.dir}/ice.war" todir="${stage.dir}"/>
+    </target>
+
+</project>
