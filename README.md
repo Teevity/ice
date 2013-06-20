@@ -35,7 +35,7 @@ When representing the cost profile for individual resources, Ice will factor the
 ##Prerequisite:
 
 1. First sign up for Amazon's programmatic billing access [here](http://docs.aws.amazon.com/awsaccountbilling/latest/about/programaccess.html) to receive detailed billing(hourly) reports. Verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`. If you signed up the beta version of detailed billing file with resources and tag, verify you receive monthly billing file in the this format: `<accountid>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`.
-2. Install Grails 2.2.1
+2. Install Grails 2.2.1 and set GRAILS_HOME and JAVA_HOME
 3. Ice uses [highstock](http://www.highcharts.com/) to generate interactive graphs. Please make sure you acquire the proper license before using it.
   
 
@@ -73,7 +73,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
       
           ice.startmillis=1364774400000
 
-  2.6 Specify account id and account name mappings in ice.properties, For example:
+  2.6 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. You must do this otherwise all line items in the billing file will get ignored. For example:
       
           ice.account.account1=123456789011
           ice.account.account2=123456789012
@@ -102,7 +102,9 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
 4. Running Ice
 
-  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. Here are the steps of getting ice running:
+  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. First run processor. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
+  
+  Here are the steps of getting ice running locally:
 
   4.1 Pull the project
   
