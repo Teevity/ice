@@ -26,8 +26,8 @@ import java.util.Map;
 
 public class BasicAccountService implements AccountService {
 
-    private Map<String, Account> accountsById = Maps.newHashMap();
-    private Map<String, Account> accountsByName = Maps.newHashMap();
+    private Map<String, Account> accountsById = Maps.newConcurrentMap();
+    private Map<String, Account> accountsByName = Maps.newConcurrentMap();
     private Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
 
     public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts) {
@@ -40,11 +40,22 @@ public class BasicAccountService implements AccountService {
 
     public Account getAccountById(String accountId) {
         Account account = accountsById.get(accountId);
+        if (account == null) {
+            account = new Account(accountId, accountId);
+            accountsByName.put(account.name, account);
+            accountsById.put(account.id, account);
+        }
         return account;
     }
 
     public Account getAccountByName(String accountName) {
-        return accountsByName.get(accountName);
+        Account account = accountsByName.get(accountName);
+        if (account == null) {
+            account = new Account(accountName, accountName);
+            accountsByName.put(account.name, account);
+            accountsById.put(account.id, account);
+        }
+        return account;
     }
 
     public List<Account> getAccounts(List<String> accountNames) {

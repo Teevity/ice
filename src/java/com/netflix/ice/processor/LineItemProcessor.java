@@ -31,7 +31,7 @@ public interface LineItemProcessor {
     public static final DateTimeFormatter amazonBillingDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
     public static final DateTimeFormatter amazonBillingDateFormat2 = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").withZone(DateTimeZone.UTC);
 
-    void initIndexes(boolean withTags);
+    void initIndexes(boolean withTags, String[] header);
     long getEndMillis(String[] items);
     Result process(long startMilli, boolean processAll, ProcessorConfig config, String[] items, Map<Product, ReadWriteData> usageDataByProduct, Map<Product, ReadWriteData> costDataByProduct, Map<String, Double> ondemandRate);
 

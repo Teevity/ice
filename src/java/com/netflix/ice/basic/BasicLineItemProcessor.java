@@ -43,7 +43,14 @@ public class BasicLineItemProcessor implements LineItemProcessor {
     private int costIndex;
     private int resourceIndex;
 
-    public void initIndexes(boolean withTags) {
+    public void initIndexes(boolean withTags, String[] header) {
+        boolean hasBlendedCost = false;
+        for (String column: header) {
+            if (column.equalsIgnoreCase("UnBlendedCost")) {
+                hasBlendedCost = true;
+                break;
+            }
+        }
         accountIdIndex = 2;
         productIndex = 5 + (withTags ? 0 : -1);
         zoneIndex = 11 + (withTags ? 0 : -1);
@@ -54,9 +61,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         usageQuantityIndex = 16 + (withTags ? 0 : -1);
         startTimeIndex = 14 + (withTags ? 0 : -1);
         endTimeIndex = 15 + (withTags ? 0 : -1);
-        rateIndex = 19 + (withTags ? 0 : -1);
-        costIndex = 20 + (withTags ? 0 : -1);
-        resourceIndex = 21 + (withTags ? 0 : -1);
+        rateIndex = 19 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
+        costIndex = 20 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
+        resourceIndex = 21 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
     }
 
     public long getEndMillis(String[] items) {

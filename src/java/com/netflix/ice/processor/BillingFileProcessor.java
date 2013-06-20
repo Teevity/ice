@@ -124,8 +124,7 @@ public class BillingFileProcessor extends Poller {
             logger.info("processing " + fileKey + "...");
             boolean withTags = fileKey.contains("with-resources-and-tags");
             processingMonitor = false;
-            config.lineItemProcessor.initIndexes(withTags);
-            processBillingZipFile(file);
+            processBillingZipFile(file, withTags);
             logger.info("done processing " + fileKey);
 
             S3ObjectSummary monitorObjectSummary = monitorFilesToProcess.get(dataTime);
@@ -141,7 +140,7 @@ public class BillingFileProcessor extends Poller {
                     logger.warn(monitorFile + "already downloaded...");
                 FileInputStream in = new FileInputStream(monitorFile);
                 try {
-                    processBillingFile(monitorFile.getName(), in);
+                    processBillingFile(monitorFile.getName(), in, withTags);
                 }
                 catch (Exception e) {
                     logger.error("Error processing " + monitorFile, e);
@@ -378,7 +377,7 @@ public class BillingFileProcessor extends Poller {
                         costMap.put(tagGroup, value * reservation.reservationHourlyCost);
                     }
                 }
-                else {
+                else if (reservationBorrowers.get(tagGroup.account) != null) {
                     Double value = usageMap.remove(tagGroup);
                     if (value != null) {
                         Zone mappedZone = config.accountService.getAccountMappedZone(reservationBorrowers.get(tagGroup.account), tagGroup.account, tagGroup.zone);
@@ -592,7 +591,7 @@ public class BillingFileProcessor extends Poller {
         costDataByProduct.put(null, new ReadWriteData());
     }
 
-    private void processBillingZipFile(File file) throws IOException {
+    private void processBillingZipFile(File file, boolean withTags) throws IOException {
 
         InputStream input = new FileInputStream(file);
         ZipInputStream zipInput;
@@ -605,11 +604,14 @@ public class BillingFileProcessor extends Poller {
                 if (entry.isDirectory())
                     continue;
 
-                processBillingFile(entry.getName(), zipInput);
+                processBillingFile(entry.getName(), zipInput, withTags);
             }
         }
         catch (IOException e) {
-            logger.error("Error processing " + file, e);
+            if (e.getMessage().equals("Stream closed"))
+                logger.info("reached end of file.");
+            else
+                logger.error("Error processing " + file, e);
         }
         finally {
             try {
@@ -626,7 +628,7 @@ public class BillingFileProcessor extends Poller {
         }
     }
 
-    private void processBillingFile(String fileName, InputStream tempIn) {
+    private void processBillingFile(String fileName, InputStream tempIn, boolean withTags) {
 
         CsvReader reader = new CsvReader(new InputStreamReader(tempIn), ',');
 
@@ -635,6 +637,8 @@ public class BillingFileProcessor extends Poller {
         try {
             reader.readRecord();
             String[] headers = reader.getValues();
+
+            config.lineItemProcessor.initIndexes(withTags, headers);
 
             while (reader.readRecord()) {
                 String[] items = reader.getValues();
