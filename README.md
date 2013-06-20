@@ -102,7 +102,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
 4. Running Ice
 
-  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. First run processor. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
+  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. For the first time, you should first run processor. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
   
   Here are the steps of getting ice running locally:
 
@@ -114,6 +114,18 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
   4.4 From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`.
 
+  Tip: Sometimes you want to re-start from a clean slate. To do that:
+  
+  a) Get the latest code
+  
+  b) Delete all files from your working s3 bucket
+
+  c) Delete all files from your local ice directory (for processor and reader)
+  
+  d) Start Ice in processor mode. Make sure it runs correctly.
+  
+  e) Then start Ice in reader mode.
+  
 ##Advanced options:
 Options with * require writing your own code.
 
