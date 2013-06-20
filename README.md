@@ -73,7 +73,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
       
           ice.startmillis=1364774400000
 
-  2.6 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. You must do this otherwise all line items in the billing file will get ignored. For example:
+  2.6 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. For example:
       
           ice.account.account1=123456789011
           ice.account.account2=123456789012
@@ -159,9 +159,9 @@ Options with * require writing your own code.
 
   If reserved instances are shared among accounts, please specify them in ice.properties. For example:
   
-          ice.owneraccount.account1=
-          ice.owneraccount.account2=account3,account4
-          ice.owneraccount.account5=account6
+          ice.owneraccount.account1_name=
+          ice.owneraccount.account2_name=account3_name,account4_name
+          ice.owneraccount.account5_name=account6_name
   
   If different accounts have different AZ mappings, you will also need to subclass BasicAccountService and override method getAccountMappedZone.
    
