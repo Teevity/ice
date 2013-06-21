@@ -118,7 +118,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
   
   a) Get the latest code
   
-  b) Delete all files from your working s3 bucket
+  b) Delete all files from your working s3 bucket under the working prefix
 
   c) Delete all files from your local ice directory (for processor and reader)
   

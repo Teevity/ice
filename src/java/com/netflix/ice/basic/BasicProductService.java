@@ -78,7 +78,13 @@ public class BasicProductService implements ProductService {
     }
 
     public Product getProductByName(String name) {
-        return productsByName.get(name);
+        Product product = productsByName.get(name);
+        if (product == null) {
+            product = new Product(name);
+            productsByAwsName.put(name, product);
+            productsByName.put(name, product);
+        }
+        return product;
     }
 
     public List<Product> getProducts(List<String> names) {
