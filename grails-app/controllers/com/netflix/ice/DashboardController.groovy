@@ -65,7 +65,7 @@ class DashboardController {
     }
 
     def index = {
-        redirect(action: summary)
+        redirect(action: "summary")
     }
 
     def getAccounts = {

@@ -46,12 +46,19 @@ class BootStrap {
             return;
         }
 
+        InputStream is = null;
         try {
 
             logger.info('Starting ice...');
 
             Properties prop = new Properties();
-            prop.load(getClass().getClassLoader().getResourceAsStream(System.getProperty("ice.propertiesfile", "ice.properties")));
+            is = getClass().getClassLoader().getResourceAsStream(System.getProperty("ice.propertiesfile", "ice.properties"));
+            if (is == null) {
+                if (System.getenv().get("ICE_HOME") == null)
+                    throw new IllegalArgumentException("ICE_HOME is not set.");
+                is = new FileInputStream(new File(System.getenv().get("ICE_HOME"), System.getProperty("ice.propertiesfile", "ice.properties")));
+            }
+            prop.load(is);
 
             AWSCredentialsProvider credentialsProvider = new AWSCredentialsProvider() {
                 com.amazonaws.auth.AWSCredentials getCredentials() {
@@ -165,6 +172,10 @@ class BootStrap {
             e.printStackTrace();
             logger.error("Startup failed", e);
             System.exit(0);
+        }
+        finally {
+            if (is != null)
+                is.close();
         }
     }
 
