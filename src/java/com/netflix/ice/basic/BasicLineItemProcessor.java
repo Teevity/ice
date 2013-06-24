@@ -66,6 +66,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         resourceIndex = 21 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
     }
 
+    public int getUserTagStartIndex() {
+        return resourceIndex + 1;
+    }
+
     public long getEndMillis(String[] items) {
         return amazonBillingDateFormat.parseMillis(items[endTimeIndex]);
     }
@@ -186,7 +190,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice);
             }
 
-            String resourceGroupStr = config.resourceService.getResource(account, reformedMetaData.region, product, config.productService, items[resourceIndex], items, millisStart);
+            String resourceGroupStr = config.resourceService.getResource(account, reformedMetaData.region, product, items[resourceIndex], items, millisStart);
             if (!StringUtils.isEmpty(resourceGroupStr)) {
                 ResourceGroup resourceGroup = ResourceGroup.getResourceGroup(resourceGroupStr);
                 resourceTagGroup = TagGroup.getTagGroup(account, reformedMetaData.region, zone, product, operation, usageType, resourceGroup);

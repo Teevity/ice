@@ -40,7 +40,7 @@ When representing the cost profile for individual resources, Ice will factor the
   
 
 ##Basic setup: 
-Using basic setup, you don't need any extra code change and you will use the provided bootstrap.groovy. You will need to construct your own ice.properties file and have it in your classpath (I put it at src/java). You can use sample.properties file as the template.
+Using basic setup, you don't need any extra code change and you will use the provided bootstrap.groovy. You will need to construct your own ice.properties file and have it in your classpath (I put it at src/java). You can use sample.properties (located at src/java) file as the template.
 
 1. Find the s3 billing bucket name and billing file prefix and specify them in ice.properties. For example:
   
@@ -183,7 +183,7 @@ Options with * require writing your own code.
 
 6. Resource service (*)
 
-  If you sign up with Amazon's beta detailed billing file with resources tags, you can use the breakdown feature and application group feature. You will need to implement interface ResourceService and have your own bootstrap.groovy create ProcessorConfig and ReaderConfig.
+  If you sign up with Amazon's beta detailed billing file with resources tags, you can use the breakdown feature and application group feature. You will need to subclass abstract class ResourceService and have your own bootstrap.groovy create ProcessorConfig and ReaderConfig. See SampleMapDbResourceService for a sample of subclass.
 
 7. Weekly cost email per application group (*)
 
