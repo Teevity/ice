@@ -35,11 +35,13 @@ When representing the cost profile for individual resources, Ice will factor the
 ##Prerequisite:
 
 First sign up for a few AWS services under programmatic billing access [here](https://portal.aws.amazon.com/gp/aws/developer/account/index.html?ie=UTF8&ie=UTF8&action=billing-preferences) and [documentation](http://docs.aws.amazon.com/awsaccountbilling/latest/about/programaccess.html).
+
 1. Programmatic Access.  The S3 Bucket Name you enter here will be used later. 
 
 2. Detailed Billing Report, or Detailed Billing Report (with resources and tags). After signing up for either of these, verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`. If you signed up the beta version of detailed billing file with resources and tag, verify you receive monthly billing file in the this format: `<accountid>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`.
 
 3. Install Grails 2.2.1 and set GRAILS_HOME and JAVA_HOME
+
 Note: Ice uses [highstock](http://www.highcharts.com/) to generate interactive graphs. Please make sure you acquire the proper license before using it.
 
   
