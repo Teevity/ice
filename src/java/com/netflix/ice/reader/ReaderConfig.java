@@ -110,7 +110,7 @@ public class ReaderConfig extends Config {
     public void start() {
 
         Managers managers = ReaderConfig.getInstance().managers;
-        Collection<Product> products = managers.getProucts();
+        Collection<Product> products = managers.getProducts();
         for (Product product: products) {
             TagGroupManager tagGroupManager = managers.getTagGroupManager(product);
             Interval interval = tagGroupManager.getOverlapInterval(new Interval(new DateTime(DateTimeZone.UTC).minusMonths(monthlyCacheSize), new DateTime(DateTimeZone.UTC)));

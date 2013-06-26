@@ -134,7 +134,7 @@ class DashboardController {
         Collection<Product> data;
         if (showResourceGroups) {
             data = Sets.newTreeSet();
-            for (Product product: getManagers().getProucts()) {
+            for (Product product: getManagers().getProducts()) {
                 if (product == null)
                     continue;
 
@@ -201,7 +201,7 @@ class DashboardController {
         if (showResourceGroups) {
             data = Sets.newTreeSet();
             if (products.size() == 0) {
-                products = Lists.newArrayList(getManagers().getProucts());
+                products = Lists.newArrayList(getManagers().getProducts());
             }
             for (Product product: products) {
                 if (product == null)
@@ -240,7 +240,7 @@ class DashboardController {
         if (showResourceGroups) {
             data = Sets.newTreeSet();
             if (products.size() == 0) {
-                products = Lists.newArrayList(getManagers().getProucts());
+                products = Lists.newArrayList(getManagers().getProducts());
             }
             for (Product product: products) {
                 if (product == null)
@@ -402,7 +402,7 @@ class DashboardController {
         if (groupBy == TagType.ApplicationGroup) {
             data = Maps.newTreeMap();
             if (products.size() == 0) {
-                products = Lists.newArrayList(getManagers().getProucts());
+                products = Lists.newArrayList(getManagers().getProducts());
             }
 
             Map<String, ApplicationGroup> appgroups = getConfig().applicationGroupService.getApplicationGroups();
@@ -451,10 +451,10 @@ class DashboardController {
         else if (resourceGroups.size() > 0 || groupBy == TagType.ResourceGroup || appgroup != null) {
             data = Maps.newTreeMap();
             if ((groupBy == TagType.ResourceGroup || appgroup != null) && products.size() == 0) {
-                products = Lists.newArrayList(getManagers().getProucts());
+                products = Lists.newArrayList(getManagers().getProducts());
             }
             else if (resourceGroups.size() > 0 && products.size() == 0) {
-                products = Lists.newArrayList(getManagers().getProucts());
+                products = Lists.newArrayList(getManagers().getProducts());
             }
             for (Product product: products) {
                 if (product == null)
