@@ -180,8 +180,7 @@ public class AwsUtils {
         boolean download = !file.exists() || metadata.getLastModified().getTime() > milles;
 
         if (download) {
-            S3Object s3Object = s3Client.getObject(bucketName, bucketFilePrefix + file.getName());
-            return download(s3Object, file);
+            return download(bucketName, bucketFilePrefix + file.getName(), file);
         }
         else
             return download;
@@ -193,8 +192,7 @@ public class AwsUtils {
         logger.info("downloadFileIfChanged " + file + " " + metadata.getLastModified().getTime() + " " + (file.lastModified() + milles));
 
         if (download) {
-            S3Object s3Object = s3Client.getObject(bucketName, bucketFilePrefix + file.getName());
-            return download(s3Object, file);
+            return download(bucketName, bucketFilePrefix + file.getName(), file);
         }
         else
             return false;
@@ -204,8 +202,7 @@ public class AwsUtils {
         boolean download = !file.exists();
         if (download) {
             try {
-                S3Object s3Object = s3Client.getObject(bucketName, bucketFilePrefix + file.getName());
-                return download(s3Object, file);
+                return download(bucketName, bucketFilePrefix + file.getName(), file);
             }
             catch (AmazonS3Exception e) {
                 if (e.getStatusCode() != 404)
@@ -216,25 +213,44 @@ public class AwsUtils {
         return false;
     }
 
-    private static boolean download(S3Object s3Object, File file) {
-        InputStream input = s3Object.getObjectContent();
-        FileOutputStream output = null;
+    private static boolean download(String bucketName, String fileKey, File file) {
+        do {
+            S3Object s3Object = s3Client.getObject(bucketName, fileKey);
+            InputStream input = s3Object.getObjectContent();
+            long targetSize = s3Object.getObjectMetadata().getContentLength();
+            FileOutputStream output = null;
 
-        try {
-            output = new FileOutputStream(file);
-            byte buf[]=new byte[1024000];
-            int len;
-            while ((len=input.read(buf)) > 0)
-                output.write(buf, 0, len);
-            return true;
+            boolean downloaded = false;
+            long size = 0;
+            try {
+                output = new FileOutputStream(file);
+                byte buf[]=new byte[1024000];
+                int len;
+                while ((len=input.read(buf)) > 0) {
+                    output.write(buf, 0, len);
+                    size += len;
+                }
+                downloaded = true;
+            }
+            catch (IOException e) {
+                logger.error("error in downloading " + file, e);
+            }
+            finally {
+                if (input != null) try {input.close();} catch (IOException e){}
+                if (output != null) try {output.close();} catch (IOException e){}
+            }
+
+            if (downloaded) {
+                long contentLenth = s3Client.getObjectMetadata(bucketName, fileKey).getContentLength();
+                if (contentLenth != size) {
+                    logger.warn("size does not match contentLenth=" + contentLenth +
+                            " downloadSize=" + size + "targetSize=" + targetSize + " ... re-downlaoding " + fileKey);
+                }
+                else
+                    return true;
+            }
+            try {Thread.sleep(2000L);}catch (Exception e){}
         }
-        catch (IOException e) {
-            logger.error("error in downloading " + file, e);
-            return false;
-        }
-        finally {
-            if (input != null) try {input.close();} catch (IOException e){}
-            if (output != null) try {output.close();} catch (IOException e){}
-        }
+        while (true);
     }
 }
