@@ -7,22 +7,33 @@ GRAILS_VERSION=2.2.1
 # Install prerequisites
 sudo yum -y install git java-1.6.0-openjdk-devel.x86_64
 
+cd
+
 # Prep grails in such a way that we only download it once
-mkdir -p .grails/wrapper/
-cd .grails/wrapper/
-# (Fetch)
-wget http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/grails-${GRAILS_VERSION}.zip -O grails-${GRAILS_VERSION}-download.zip
-mkdir ${GRAILS_VERSION}
-cd ${GRAILS_VERSION}
-# ("Install")
-unzip ../grails-${GRAILS_VERSION}-download.zip
-GRAILS_HOME=/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
-PATH=$PATH:/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
+if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
+  mkdir -p .grails/wrapper/
+  cd .grails/wrapper/
+  # (Fetch)
+  wget http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/grails-${GRAILS_VERSION}.zip -O grails-${GRAILS_VERSION}-download.zip
+  mkdir ${GRAILS_VERSION}
+  cd ${GRAILS_VERSION}
+  # ("Install")
+  unzip ../grails-${GRAILS_VERSION}-download.zip
+  GRAILS_HOME=/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
+  PATH=$PATH:/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
+fi
 
 # Get ice
 cd
-git clone https://github.com/Netflix/ice.git
-cd ice
+if [ -x 'ice/.git' ]; then
+  # We already have it; update to latest git
+  cd ice
+  git pull
+else
+  # We don't have it at all yet; clone the repo
+  git clone https://github.com/Netflix/ice.git
+  cd ice
+fi
 
 # Initialize Ice with Grails
 grails wrapper
@@ -46,7 +57,7 @@ done
 echo Please enter the name of the bucket Ice will write processed billing information to:
 while [ "$PROCBUCKET" == "" ]
 do
-  echo -n "->"
+  echo -n "-> "
   read -r PROCBUCKET
 done
 sed -rie 's/=billing_s3bucketprefix\//=/; s/\/mnt\//\/home\/ec2-user\//; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
