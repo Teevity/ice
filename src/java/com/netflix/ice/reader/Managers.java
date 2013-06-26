@@ -33,7 +33,7 @@ public interface Managers {
      *
      * @return collection of products
      */
-    Collection<Product> getProucts();
+    Collection<Product> getProducts();
 
     /**
      *

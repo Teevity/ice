@@ -60,7 +60,7 @@ public class BasicManagers extends Poller implements Managers {
         start(300);
     }
 
-    public Collection<Product> getProucts() {
+    public Collection<Product> getProducts() {
         return products;
     }
 
