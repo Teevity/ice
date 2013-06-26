@@ -40,8 +40,13 @@ public class ResourceGroup extends Tag {
 
     public static List<ResourceGroup> getResourceGroups(List<String> names) {
         List<ResourceGroup> result = Lists.newArrayList();
-        for (String name: names)
-            result.add(resourceGroups.get(name));
+        if (names != null) {
+            for (String name: names) {
+                ResourceGroup resourceGroup = resourceGroups.get(name);
+                if (resourceGroup != null)
+                    result.add(resourceGroup);
+            }
+        }
         return result;
     }
 }
