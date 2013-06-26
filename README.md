@@ -64,12 +64,16 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.work_s3bucketname=work_s3bucketname
           ice.work_s3bucketprefix=work_s3bucketprefix/
 
-  2.4 Set the following system properties at runtime to access the s3 buckets
+  2.4 Set up access permission to the s3 buckets. 
+  
+  If running locally, set the following system properties at runtime:
      
           ice.s3AccessKeyId=<s3AccessKeyId>
           ice.s3SecretKey=<s3SecretKey>
+  
+  If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above two properties unset.
 
-  2.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013:
+  2.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013. If this property is not set, Ice will set startmillis to be the beginning of current month.
       
           ice.startmillis=1364774400000
 
@@ -146,10 +150,14 @@ Options with * require writing your own code.
   
     2.1 Set ice.reservationCapacityPoller=true in ice.properties
     
-    2.2 Set the following system properties to make describeReservedInstances API call:
-    
+    2.2 Set up access to make describeReservedInstances API call. 
+  
+      If running locally, set the following system properties at runtime:
+     
           ice.reservationAccessKeyId
           ice.reservationSecretKey
+  
+      If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above two properties unset.
       
     2.3 If you IAM account to make the describeReservedInstances API call, also set the following system properties:
 
