@@ -50,7 +50,7 @@ public class BasicDataManager extends Poller implements DataManager {
        .maximumSize(config.monthlyCacheSize)
        .removalListener(new RemovalListener<DateTime, ReadOnlyData>() {
            public void onRemoval(RemovalNotification<DateTime, ReadOnlyData> objectRemovalNotification) {
-               logger.info("removing from file cache " + objectRemovalNotification.getKey());
+               logger.info(dbName + " removing from file cache " + objectRemovalNotification.getKey());
                fileCache.remove(objectRemovalNotification.getKey());
            }
        })
@@ -66,7 +66,7 @@ public class BasicDataManager extends Poller implements DataManager {
         this.consolidateType = consolidateType;
         this.dbName = (isCost ? "cost_" : "usage_") + consolidateType + "_" + (product == null ? "all" : product.name);
 
-        start();
+        start(300);
     }
 
     /**
@@ -75,6 +75,7 @@ public class BasicDataManager extends Poller implements DataManager {
      */
     @Override
     protected void poll() throws Exception {
+        logger.info(dbName + " start polling...");
         for (DateTime key: fileCache.keySet()) {
             File file = fileCache.get(key);
             try {
@@ -98,7 +99,7 @@ public class BasicDataManager extends Poller implements DataManager {
 
     private ReadOnlyData loadData(DateTime monthDate) throws InterruptedException {
         while (true) {
-            File file = getFile(monthDate);
+            File file = getDownloadFile(monthDate);
             try {
                 ReadOnlyData result = loadDataFromFile(file);
                 fileCache.put(monthDate, file);
@@ -120,14 +121,19 @@ public class BasicDataManager extends Poller implements DataManager {
         }
     }
 
-    private synchronized File getFile(DateTime monthDate) {
+    private synchronized File getDownloadFile(DateTime monthDate) {
+        File file = getFile(monthDate);
+        downloadFile(file);
+        return file;
+    }
+
+    private File getFile(DateTime monthDate) {
         File file = new File(config.localDir, this.dbName);
         if (consolidateType == ConsolidateType.hourly)
             file = new File(config.localDir, this.dbName + "_" + AwsUtils.monthDateFormat.print(monthDate));
         else if (consolidateType == ConsolidateType.daily)
             file = new File(config.localDir, this.dbName + "_" + monthDate.getYear());
 
-        downloadFile(file);
         return file;
     }
 
@@ -152,6 +158,17 @@ public class BasicDataManager extends Poller implements DataManager {
         finally {
             in.close();
         }
+    }
+
+    private ReadOnlyData getReadOnlyData(DateTime key) throws ExecutionException {
+
+        ReadOnlyData result = this.data.get(key);
+
+        if (fileCache.get(key) == null) {
+            logger.warn(dbName + " cannot find file in fileCache " + key);
+            fileCache.put(key, getFile(key));
+        }
+        return result;
     }
 
     private double[] getData(Interval interval, TagLists tagLists) throws ExecutionException {
@@ -192,7 +209,7 @@ public class BasicDataManager extends Poller implements DataManager {
         double[] result = new double[num];
 
         do {
-            ReadOnlyData data = this.data.get(start);
+            ReadOnlyData data = getReadOnlyData(start);
 
             int resultIndex = 0;
             int fromIndex = 0;
@@ -294,7 +311,7 @@ public class BasicDataManager extends Poller implements DataManager {
 
     public int getDataLength(DateTime start) {
         try {
-            ReadOnlyData data = this.data.get(start);
+            ReadOnlyData data = getReadOnlyData(start);
             return data.getNum();
         }
         catch (ExecutionException e) {

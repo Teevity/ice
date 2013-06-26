@@ -105,6 +105,8 @@ class DashboardController {
             def resourceGroups = Sets.newTreeSet();
             for (Product product: productList) {
                 TagGroupManager tagGroupManager = getManagers().getTagGroupManager(product);
+                if (tagGroupManager == null)
+                    continue;
                 def temp = tagGroupManager.getResourceGroups(new TagLists(null, null, null, Lists.newArrayList(product), null, null, null));
                 resourceGroups.addAll(temp);
             }
@@ -407,6 +409,8 @@ class DashboardController {
             List<List<Product>> productsWithResources = getConfig().resourceService.getProductsWithResources();
             for (String name: appgroups.keySet()) {
                 appgroup = appgroups.get(name);
+                if (appgroup.data == null)
+                    continue;
                 for (Product product: products) {
                     if (product == null)
                         continue;
@@ -426,6 +430,8 @@ class DashboardController {
                         continue;
 
                     DataManager dataManager = isCost ? getManagers().getCostManager(product, consolidateType) : getManagers().getUsageManager(product, consolidateType);
+                    if (dataManager == null)
+                        continue;
                     Map<Tag, double[]> dataOfProduct = dataManager.getData(
                         interval,
                         new TagLists(accounts, regions, zones, Lists.newArrayList(product), operations, usageTypes, resourceGroupsOfProduct),
