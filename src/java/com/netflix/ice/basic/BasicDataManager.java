@@ -20,6 +20,7 @@ package com.netflix.ice.basic;
 import com.google.common.cache.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.netflix.ice.common.*;
 import com.netflix.ice.reader.*;
 import com.netflix.ice.tag.Product;
@@ -76,7 +77,7 @@ public class BasicDataManager extends Poller implements DataManager {
     @Override
     protected void poll() throws Exception {
         logger.info(dbName + " start polling...");
-        for (DateTime key: fileCache.keySet()) {
+        for (DateTime key: Sets.newHashSet(fileCache.keySet())) {
             File file = fileCache.get(key);
             try {
                 logger.info("trying to download " + file);
@@ -84,6 +85,7 @@ public class BasicDataManager extends Poller implements DataManager {
                 if (downloaded) {
                     ReadOnlyData newData = loadDataFromFile(file);
                     data.put(key, newData);
+                    fileCache.put(key, file);
                 }
             }
             catch (Exception e) {
