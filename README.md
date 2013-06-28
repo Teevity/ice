@@ -45,7 +45,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
 1. Find the s3 billing bucket name and billing file prefix and specify them in ice.properties. For example:
   
           ice.billing_s3bucketname=billing.bucket
-          ice.billing_s3bucketprefix=ice/billing/
+          ice.billing_s3bucketprefix=
   
   Tip: If Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" may not be able to read those billing files because the AWS Billing user wrote those billing files. In this case, you can either use cross-account roles or create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
 
