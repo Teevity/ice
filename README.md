@@ -132,9 +132,9 @@ Using basic setup, you don't need any extra code change and you will use the pro
   
   e) Then start Ice in reader mode.
 
-##Community Ice Cookbook to deploy via Chef: 
+##Ice Cookbook: 
 
-1. https://github.com/mdsol/ice_cookbook
+1. A community cookbook is available to for deploying Ice via Chef here https://github.com/mdsol/ice_cookbook.
 
   
 ##Advanced options:
