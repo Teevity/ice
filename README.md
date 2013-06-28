@@ -131,6 +131,11 @@ Using basic setup, you don't need any extra code change and you will use the pro
   d) Start Ice in processor mode. Make sure it runs correctly.
   
   e) Then start Ice in reader mode.
+
+##Community Ice Cookbook to deploy via Chef: 
+
+1. https://github.com/mdsol/ice_cookbook
+
   
 ##Advanced options:
 Options with * require writing your own code.
