@@ -22,7 +22,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.netflix.ice.common.IceOptions
 import com.netflix.ice.processor.ReservationCapacityPoller
-import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.InstanceProfileCredentialsProvider
 import com.netflix.ice.basic.BasicAccountService
@@ -137,21 +136,27 @@ class BootStrap {
 
                 ReservationCapacityPoller reservationCapacityPoller = null;
                 if ("true".equals(prop.getProperty("ice.reservationCapacityPoller"))) {
-                    AWSCredentials awsCredentials;
-                    if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey"))) {
-                        awsCredentials = new InstanceProfileCredentialsProvider().getCredentials();
+                    AWSCredentialsProvider reservationCredentialProvider;
+                    if (StringUtils.isEmpty(System.getProperty("ice.reservationAccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.reservationSecretKey"))) {
+                        reservationCredentialProvider = new InstanceProfileCredentialsProvider();
                     }
                     else {
-                        awsCredentials = new AWSCredentials() {
-                            String getAWSAccessKeyId() {
-                                return System.getProperty("ice.reservationAccessKeyId");
+                        reservationCredentialProvider = new AWSCredentialsProvider() {
+                            com.amazonaws.auth.AWSCredentials getCredentials() {
+                                return new com.amazonaws.auth.AWSCredentials() {
+                                    String getAWSAccessKeyId() {
+                                        return System.getProperty("ice.reservationAccessKeyId");
+                                    }
+                                    String getAWSSecretKey() {
+                                        return System.getProperty("ice.reservationSecretKey");
+                                    }
+                                }
                             }
-                            String getAWSSecretKey() {
-                                return System.getProperty("ice.reservationSecretKey");
-                            }
-                        }
+
+                            void refresh() {}
+                        };
                     }
-                    reservationCapacityPoller = new ReservationCapacityPoller(awsCredentials,
+                    reservationCapacityPoller = new ReservationCapacityPoller(reservationCredentialProvider,
                         System.getProperty("ice.reservationRoleResourceName"), System.getProperty("ice.reservationRoleSessionName"));
                 }
 

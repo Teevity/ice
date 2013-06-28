@@ -17,7 +17,7 @@
  */
 package com.netflix.ice.processor;
 
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeReservedInstancesResult;
@@ -42,20 +42,20 @@ import java.util.Map;
  */
 public class ReservationCapacityPoller extends Poller {
     private boolean updatedConfig = false;
-    private AWSCredentials awsCredentials;
+    private AWSCredentialsProvider awsCredentialsProvider;
     private String roleResourceName;
     private String roleSessionName;
 
     /**
-     * If only awsCredentials is specifiled, AmazonEcClient will be created using the awsCredentials.
+     * If only awsCredentialsProvider is specifiled, AmazonEcClient will be created using awsCredentialsProvider.getCredentials().
      * If roleResourceName and roleSessionName are also specified, temporary security credentials will be used
      * to create AmazonEcClient.
-     * @param awsCredentials
+     * @param awsCredentialsProvider
      * @param roleResourceName
      * @param roleSessionName
      */
-    public ReservationCapacityPoller(AWSCredentials awsCredentials, String roleResourceName, String roleSessionName) {
-        this.awsCredentials = awsCredentials;
+    public ReservationCapacityPoller(AWSCredentialsProvider awsCredentialsProvider, String roleResourceName, String roleSessionName) {
+        this.awsCredentialsProvider = awsCredentialsProvider;
         this.roleResourceName = roleResourceName;
         this.roleSessionName = roleSessionName;
     }
@@ -130,7 +130,7 @@ public class ReservationCapacityPoller extends Poller {
                 AmazonEC2Client ec2Client;
                 if (roleSessionName != null) {
                     AssumeRoleRequest request = new AssumeRoleRequest().withRoleArn("arn:aws:iam::" + account.id + ":role/" + roleResourceName).withRoleSessionName(roleSessionName);
-                    AWSSecurityTokenServiceClient securityClient = new AWSSecurityTokenServiceClient(awsCredentials);
+                    AWSSecurityTokenServiceClient securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider.getCredentials());
                     AssumeRoleResult roleResult = securityClient.assumeRole(request);
 
                     final Credentials credentials = roleResult.getCredentials();
@@ -150,7 +150,7 @@ public class ReservationCapacityPoller extends Poller {
                     });
                 }
                 else
-                    ec2Client = new AmazonEC2Client(awsCredentials);
+                    ec2Client = new AmazonEC2Client(awsCredentialsProvider.getCredentials());
 
                 for (Region region: Region.getAllRegions()) {
 
