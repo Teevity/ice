@@ -73,6 +73,7 @@ public class BillingFileProcessor extends Poller {
 
         // list the tar.gz file in billing file folder
         List<S3ObjectSummary> objectSummaries = AwsUtils.listAllObjects(config.billingS3BucketName, config.billingS3BucketPrefix);
+        logger.info("found " + objectSummaries.size() + " in billing bucket...");
         TreeMap<DateTime, S3ObjectSummary> filesToProcess = Maps.newTreeMap();
         Map<DateTime, S3ObjectSummary> monitorFilesToProcess = Maps.newTreeMap();
 
@@ -88,6 +89,9 @@ public class BillingFileProcessor extends Poller {
 
             if (dataTime != null && !dataTime.isBefore(config.startDate)) {
                 filesToProcess.put(dataTime, objectSummary);
+            }
+            else {
+                logger.info("ignoring file " + objectSummary.getKey());
             }
         }
 
