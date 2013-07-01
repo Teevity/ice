@@ -176,10 +176,10 @@ class BootStrap {
                 properties.setProperty(IceOptions.LOCAL_DIR, prop.getProperty("ice.reader.localDir"));
                 if (prop.getProperty(IceOptions.MONTHLY_CACHE_SIZE) != null)
                     properties.setProperty(IceOptions.MONTHLY_CACHE_SIZE, prop.getProperty(IceOptions.MONTHLY_CACHE_SIZE));
-                if (prop.getProperty(IceOptions.CONCURRENCY_RATE) != null)
-                    properties.setProperty(IceOptions.CONCURRENCY_RATE, prop.getProperty(IceOptions.CONCURRENCY_RATE));
-                if (prop.getProperty(IceOptions.CONCURRENCY_SIGN) != null)
-                    properties.setProperty(IceOptions.CONCURRENCY_SIGN, prop.getProperty(IceOptions.CONCURRENCY_SIGN));
+                if (prop.getProperty(IceOptions.CURRENCY_RATE) != null)
+                    properties.setProperty(IceOptions.CURRENCY_RATE, prop.getProperty(IceOptions.CURRENCY_RATE));
+                if (prop.getProperty(IceOptions.CURRENCY_SIGN) != null)
+                    properties.setProperty(IceOptions.CURRENCY_SIGN, prop.getProperty(IceOptions.CURRENCY_SIGN));
 
                 readerConfig = new ReaderConfig(
                         properties,

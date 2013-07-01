@@ -39,8 +39,8 @@ public class ReaderConfig extends Config {
     private static final Logger logger = LoggerFactory.getLogger(ReaderConfig.class);
 
     public final String companyName;
-    public final String concurrencySign;
-    public final double concurrencyRate;
+    public final String currencySign;
+    public final double currencyRate;
     public final ApplicationGroupService applicationGroupService;
     public final ThroughputMetricService throughputMetricService;
     public final BasicWeeklyCostEmailService costEmailService;
@@ -73,8 +73,8 @@ public class ReaderConfig extends Config {
         if (companyName == null)
             throw new IllegalArgumentException("IceOptions.COMPANY_NAME must be specified");
 
-        concurrencySign = properties.getProperty(IceOptions.CONCURRENCY_SIGN, "$");
-        concurrencyRate = Double.parseDouble(properties.getProperty(IceOptions.CONCURRENCY_RATE, "1"));
+        currencySign = properties.getProperty(IceOptions.CURRENCY_SIGN, "$");
+        currencyRate = Double.parseDouble(properties.getProperty(IceOptions.CURRENCY_RATE, "1"));
 
         this.managers = managers;
         this.applicationGroupService = applicationGroupService;

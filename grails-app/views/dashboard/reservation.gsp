@@ -130,9 +130,9 @@
             <tbody>
             <tr ng-repeat="legend in legends | filter:filter_legend" style="{{legend.style}}; cursor: pointer;" ng-click="clickitem(legend)" class="{{getTrClass($index)}}">
               <td style="word-wrap: break-word"><div class="legendIcon" style="{{legend.iconStyle}}"></div>{{legend.name}}</td>
-              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.total | number:legendPrecision}}</td>
-              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.max | number:legendPrecision}}</td>
-              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.average | number:legendPrecision}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{currencySign}} </span>{{legend.stats.total | number:legendPrecision}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{currencySign}} </span>{{legend.stats.max | number:legendPrecision}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{currencySign}} </span>{{legend.stats.average | number:legendPrecision}}</td>
             </tr>
             </tbody>
           </table>

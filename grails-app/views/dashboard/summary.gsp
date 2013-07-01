@@ -89,8 +89,8 @@
       <tr ng-repeat="legend in legends | filter:filter_legend" class="{{getTrClass($index)}}"  style="{{legend.style}};">
         <td><span style="cursor: pointer; font-weight: bold;" ng-click="clickitem(legend)"><div class="legendIcon" style="{{legend.iconStyle}}"></div>{{legend.name}}</span></td>
         <td ng-repeat="header in headers" ng-switch on="legend.name">
-          <a ng-switch-when="aggregated" ng-href="detail#groupBy={{legendName}}&start={{header.start}}&end={{header.end}}">{{concurrencySign}} {{data[legend.name][header.index] | number:2}}</a>
-          <a ng-switch-default ng-href="detail#{{legendName.toLowerCase()}}={{legend.name}}&groupBy={{nextGroupBy(legendName)}}&start={{header.start}}&end={{header.end}}">{{concurrencySign}} {{data[legend.name][header.index] | number:2}}</a>
+          <a ng-switch-when="aggregated" ng-href="detail#groupBy={{legendName}}&start={{header.start}}&end={{header.end}}">{{currencySign}} {{data[legend.name][header.index] | number:2}}</a>
+          <a ng-switch-default ng-href="detail#{{legendName.toLowerCase()}}={{legend.name}}&groupBy={{nextGroupBy(legendName)}}&start={{header.start}}&end={{header.end}}">{{currencySign}} {{data[legend.name][header.index] | number:2}}</a>
         </td>
       </tr>
       </tbody>

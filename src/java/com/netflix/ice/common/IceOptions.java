@@ -30,14 +30,14 @@ public class IceOptions {
     public static final String COMPANY_NAME = "ice.companyName";
 
     /**
-     * Property for concurrency sign. The default value is "$".
+     * Property for currency sign. The default value is "$".
      */
-    public static final String CONCURRENCY_SIGN = "ice.concurrencySign";
+    public static final String CURRENCY_SIGN = "ice.currencySign";
 
     /**
-     * Property for concurrency rate. The default value is "1".
+     * Property for currency rate. The default value is "1".
      */
-    public static final String CONCURRENCY_RATE = "ice.concurrencyRate";
+    public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
      * s3 bucket name where billing files are located. Only read permission is needed. It must be specified in Config.

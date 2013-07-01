@@ -104,12 +104,12 @@ Using basic setup, you don't need any extra code change and you will use the pro
   3.7 Specify your organization name in ice.properties. This will show up in the UI header.
           ice.companyName=Your Company Name
 
-  3.8 You can choose to show cost in concurreny other than "$". To enable other concurreny, specify the following properties in ice.properties:
+  3.8 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
 
-          # Specify your concurreny sign here. The default value is $.
-          ice.concurrencySign=£
-          # Specify your concurreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
-          ice.concurrencyRate=0.6666667
+          # Specify your curreny sign here. The default value is $.
+          ice.currencySign=£
+          # Specify your curreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
+          ice.currencyRate=0.6666667
 
 4. Running Ice
 

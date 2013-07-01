@@ -28,7 +28,7 @@ ice.factory('highchart', function() {
   var metricunitname = throughput_metricunitname;
   var factoredCostCurrencySign = throughput_factoredCostCurrencySign;
 
-  var hc_chart, consolidate = "hour", concurrencySign = global_concurrencySign, legends, showsps = false, factorsps = false;
+  var hc_chart, consolidate = "hour", currencySign = global_currencySign, legends, showsps = false, factorsps = false;
   var hc_options = {
     chart: {
         renderTo: 'highchart_container',
@@ -89,14 +89,14 @@ ice.factory('highchart', function() {
           }
         }
 
-        var precision = concurrencySign === "" ? 0 : (concurrencySign === "¢" ? 4 : 2);
+        var precision = currencySign === "" ? 0 : (currencySign === "¢" ? 4 : 2);
         for (var i = 0; i < this.points.length - (showsps ? 1 : 0); i++) {
           var point = this.points[i];
           if (i == 0) {
-              s += '<br/><span>aggregated : ' + concurrencySign + Highcharts.numberFormat(showsps ? total : point.total, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate);
+              s += '<br/><span>aggregated : ' + currencySign + Highcharts.numberFormat(showsps ? total : point.total, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate);
           }
           var perc = showsps ? point.y * 100 / total : point.percentage;
-          s += '<br/><span style="color: ' + point.series.color + '">' + point.series.name + '</span> : ' + concurrencySign + Highcharts.numberFormat(point.y, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate) + ' (' + Highcharts.numberFormat(perc, 1) + '%)';
+          s += '<br/><span style="color: ' + point.series.color + '">' + point.series.name + '</span> : ' + currencySign + Highcharts.numberFormat(point.y, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate) + ' (' + Highcharts.numberFormat(perc, 1) + '%)';
           if (i > 40 && point)
             break;
         }
@@ -154,7 +154,7 @@ ice.factory('highchart', function() {
     if (isCost)
       yAxis.labels = {
         formatter: function() {
-          return concurrencySign + this.value;
+          return currencySign + this.value;
         }
       }
     hc_options.yAxis = [yAxis];
@@ -183,7 +183,7 @@ ice.factory('highchart', function() {
 
     drawGraph: function(result, $scope, legendEnabled) {
       consolidate = $scope.consolidate === 'daily' ? 'day' : $scope.consolidate.substr(0, $scope.consolidate.length-2);
-      concurrencySign = $scope.usage_cost === 'cost' ? ($scope.factorsps ? factoredCostCurrencySign : global_concurrencySign) : "";
+      currencySign = $scope.usage_cost === 'cost' ? ($scope.factorsps ? factoredCostCurrencySign : global_currencySign) : "";
       hc_options.legend.enabled = legendEnabled;
 
       setupHcData(result, $scope.plotType, $scope.showsps);
@@ -715,7 +715,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
 });
 
 function mainCntl($scope, $location, $timeout, usage_db, highchart) {
-  $scope.concurrencySign = global_concurrencySign;
+  $scope.currencySign = global_currencySign;
 
   window.onhashchange = function() {
     window.location.reload();
