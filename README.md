@@ -34,7 +34,7 @@ When representing the cost profile for individual resources, Ice will factor the
 
 ##Prerequisite:
 
-1. First sign up for Amazon's programmatic billing access [here](http://docs.aws.amazon.com/awsaccountbilling/latest/about/programaccess.html) to receive detailed billing(hourly) reports. Verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`. If you signed up the beta version of detailed billing file with resources and tag, verify you receive monthly billing file in the this format: `<accountid>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`.
+1. First sign up for Amazon's programmatic billing access [here](http://docs.aws.amazon.com/awsaccountbilling/latest/about/programaccess.html) to receive detailed billing(hourly) reports. Verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`.
 2. Install Grails 2.2.1 and set GRAILS_HOME and JAVA_HOME
 3. Ice uses [highstock](http://www.highcharts.com/) to generate interactive graphs. Please make sure you acquire the proper license before using it.
   
@@ -198,7 +198,7 @@ Options with * require writing your own code.
 
 6. Resource service (*)
 
-  If you sign up with Amazon's beta detailed billing file with resources tags, you can use the breakdown feature and application group feature. You will need to subclass abstract class ResourceService and have your own bootstrap.groovy create ProcessorConfig and ReaderConfig. See SampleMapDbResourceService for a sample of subclass.
+  To use the breakdown feature and application group feature, first make sure you signed up the beta version of detailed billing file with resources and tag. Verify you receive monthly billing file in the this format: `<accountid>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`. Then you will need to subclass abstract class ResourceService and have your own bootstrap.groovy create ProcessorConfig and ReaderConfig. See SampleMapDbResourceService for a sample of subclass.
 
 7. Weekly cost email per application group (*)
 
