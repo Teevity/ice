@@ -104,6 +104,13 @@ Using basic setup, you don't need any extra code change and you will use the pro
   3.7 Specify your organization name in ice.properties. This will show up in the UI header.
           ice.companyName=Your Company Name
 
+  3.8 You can choose to show cost in concurreny other than "$". To enable other concurreny, specify the following properties in ice.properties:
+
+          # Specify your concurreny sign here. The default value is $.
+          ice.concurrencySign=£
+          # Specify your concurreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
+          ice.concurrencyRate=0.6666667
+
 4. Running Ice
 
   After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. For the first time, you should first run processor. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
