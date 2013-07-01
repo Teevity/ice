@@ -30,6 +30,16 @@ public class IceOptions {
     public static final String COMPANY_NAME = "ice.companyName";
 
     /**
+     * Property for concurrency sign. The default value is "$".
+     */
+    public static final String CONCURRENCY_SIGN = "ice.concurrencySign";
+
+    /**
+     * Property for concurrency rate. The default value is "1".
+     */
+    public static final String CONCURRENCY_RATE = "ice.concurrencyRate";
+
+    /**
      * s3 bucket name where billing files are located. Only read permission is needed. It must be specified in Config.
      */
     public static final String BILLING_S3_BUCKET_NAME = "ice.billing_s3bucketname";

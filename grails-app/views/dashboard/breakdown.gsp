@@ -111,7 +111,7 @@
           <a ng-switch-default ng-href="appgroup#appgroup={{row.name}}&start={{dataStart}}&end={{dataEnd}}&usage_cost={{usage_cost}}">{{row.name}}</a>
         </td>
         <td ng-repeat="header in headers">
-          <span ng-show="legend_usage_cost == 'cost'">$ </span>{{row[header.index] | number:2}}
+          <span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{row[header.index] | number:2}}
         </td>
       </tr>
       </tbody>

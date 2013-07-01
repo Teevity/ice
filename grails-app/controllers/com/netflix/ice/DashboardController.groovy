@@ -561,6 +561,22 @@ class DashboardController {
             }
         }
 
+        if (isCost && config.concurrencyRate != 1) {
+            for (Tag tag: result.data.keySet()) {
+                double[] values = result.data.get(tag);
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = values[i] * config.concurrencyRate;
+                }
+            }
+
+            for (Tag tag: result.stats.keySet()) {
+                Map<String, Double> stat = result.stats.get(tag);
+                for (Map.Entry<String, Double> entry: stat.entrySet()) {
+                    entry.setValue(entry.getValue() * config.concurrencyRate);
+                }
+            }
+        }
+
         return result;
     }
 

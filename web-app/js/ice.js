@@ -28,7 +28,7 @@ ice.factory('highchart', function() {
   var metricunitname = throughput_metricunitname;
   var factoredCostCurrencySign = throughput_factoredCostCurrencySign;
 
-  var hc_chart, consolidate = "hour", concurrencySign = '$', legends, showsps = false, factorsps = false;
+  var hc_chart, consolidate = "hour", concurrencySign = global_concurrencySign, legends, showsps = false, factorsps = false;
   var hc_options = {
     chart: {
         renderTo: 'highchart_container',
@@ -89,7 +89,7 @@ ice.factory('highchart', function() {
           }
         }
 
-        var precision = concurrencySign === "" ? 0 : (concurrencySign === "$" ? 2 : 4);
+        var precision = concurrencySign === "" ? 0 : (concurrencySign === "¢" ? 4 : 2);
         for (var i = 0; i < this.points.length - (showsps ? 1 : 0); i++) {
           var point = this.points[i];
           if (i == 0) {
@@ -183,7 +183,7 @@ ice.factory('highchart', function() {
 
     drawGraph: function(result, $scope, legendEnabled) {
       consolidate = $scope.consolidate === 'daily' ? 'day' : $scope.consolidate.substr(0, $scope.consolidate.length-2);
-      concurrencySign = $scope.usage_cost === 'cost' ? ($scope.factorsps ? factoredCostCurrencySign : "$") : "";
+      concurrencySign = $scope.usage_cost === 'cost' ? ($scope.factorsps ? factoredCostCurrencySign : global_concurrencySign) : "";
       hc_options.legend.enabled = legendEnabled;
 
       setupHcData(result, $scope.plotType, $scope.showsps);
@@ -715,6 +715,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
 });
 
 function mainCntl($scope, $location, $timeout, usage_db, highchart) {
+  $scope.concurrencySign = global_concurrencySign;
 
   window.onhashchange = function() {
     window.location.reload();

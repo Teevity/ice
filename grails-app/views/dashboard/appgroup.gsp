@@ -132,9 +132,9 @@
                 <div class="legendIcon" style="{{legend.iconStyle}}"></div>
                 {{legend.name}}
               </td>
-              <td><span ng-show="legend_usage_cost == 'cost'">$ </span>{{legend.stats.total | number:2}}</td>
-              <td><span ng-show="legend_usage_cost == 'cost'">$ </span>{{legend.stats.max | number:2}}</td>
-              <td><span ng-show="legend_usage_cost == 'cost'">$ </span>{{legend.stats.average | number:2}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.total | number:2}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.max | number:2}}</td>
+              <td><span ng-show="legend_usage_cost == 'cost'">{{concurrencySign}} </span>{{legend.stats.average | number:2}}</td>
             </tr>
             </tbody>
           </table>

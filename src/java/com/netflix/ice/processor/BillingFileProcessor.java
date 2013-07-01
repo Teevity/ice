@@ -691,13 +691,16 @@ public class BillingFileProcessor extends Poller {
         }
     }
 
-    private Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> getOndemandCosts() {
+    private Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> getOndemandCosts(long fromMillis) {
         Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> ondemandCostsByHour = Maps.newHashMap();
         ReadWriteData costs = costDataByProduct.get(null);
 
         Collection<TagGroup> tagGroups = costs.getTagGroups();
         for (int i = 0; i < costs.getNum(); i++) {
             Long millis = startMilli + i * AwsUtils.hourMillis;
+            if (millis <= fromMillis)
+                continue;
+
             Map<Ec2InstanceReservationPrice.Key, Double> ondemandCosts = Maps.newHashMap();
             ondemandCostsByHour.put(millis, ondemandCosts);
 
@@ -745,7 +748,7 @@ public class BillingFileProcessor extends Poller {
             new Date().getTime() < lastAlertMillis() + AwsUtils.hourMillis * 24)
             return;
 
-        Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> ondemandCosts = getOndemandCosts();
+        Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> ondemandCosts = getOndemandCosts(lastAlertMillis() + AwsUtils.hourMillis * 24);
         Long maxHour = null;
         double maxTotal = ondemandThreshold;
 
@@ -760,7 +763,7 @@ public class BillingFileProcessor extends Poller {
             }
         }
 
-        if (maxHour != null && maxHour >= lastAlertMillis() + AwsUtils.hourMillis * 24) {
+        if (maxHour != null) {
             NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.US);
             String subject = String.format("Alert: Ondemand cost per hour reached $%s at %s",
                     numberFormat.format(maxTotal), AwsUtils.dateFormatter.print(maxHour));
