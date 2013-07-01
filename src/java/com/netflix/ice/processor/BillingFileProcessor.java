@@ -757,7 +757,7 @@ public class BillingFileProcessor extends Poller {
             for (Double value: ondemandCosts.get(hour).values())
                 total += value;
 
-            if (total > ondemandThreshold) {
+            if (total > maxTotal) {
                 maxHour = hour;
                 maxTotal = total;
             }
