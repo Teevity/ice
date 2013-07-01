@@ -106,7 +106,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
   3.8 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
 
-          # Specify your curreny sign here. The default value is $.
+          # Specify your curreny sign here. The default value is $. For other currency symbols, you can use UTF-8 code, e.g. for ¥, you can use ice.currencySign=\u00A5
           ice.currencySign=£
           # Specify your curreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
           ice.currencyRate=0.6666667
