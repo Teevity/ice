@@ -150,6 +150,7 @@ public class BillingFileProcessor extends Poller {
                     logger.warn(monitorFile + "already downloaded...");
                 FileInputStream in = new FileInputStream(monitorFile);
                 try {
+                    processingMonitor = true;
                     processBillingFile(monitorFile.getName(), in, withTags);
                 }
                 catch (Exception e) {
