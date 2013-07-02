@@ -97,7 +97,7 @@ public class ProcessorConfig extends Config {
             }
         }
 
-        billingFileProcessor.start();
+        billingFileProcessor.start(300);
     }
 
     public void shutdown() {
