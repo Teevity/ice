@@ -82,13 +82,19 @@ public class BillingFileProcessor extends Poller {
         for (S3ObjectSummary objectSummary : objectSummaries) {
 
             String fileKey = objectSummary.getKey();
-            DateTime dataTime = config.resourceService == null ? null : AwsUtils.getDateTimeFromFileNameWithTags(fileKey);
+            DateTime dataTime = AwsUtils.getDateTimeFromFileNameWithTags(fileKey);
+            boolean withTags = true;
             if (dataTime == null) {
                 dataTime = AwsUtils.getDateTimeFromFileName(fileKey);
+                withTags = false;
             }
 
             if (dataTime != null && !dataTime.isBefore(config.startDate)) {
-                filesToProcess.put(dataTime, objectSummary);
+                if (!filesToProcess.containsKey(dataTime) ||
+                    withTags && config.resourceService != null || !withTags && config.resourceService == null)
+                    filesToProcess.put(dataTime, objectSummary);
+                else
+                    logger.info("ignoring file " + objectSummary.getKey());
             }
             else {
                 logger.info("ignoring file " + objectSummary.getKey());
