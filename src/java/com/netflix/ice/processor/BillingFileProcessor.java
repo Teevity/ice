@@ -169,7 +169,7 @@ public class BillingFileProcessor extends Poller {
             // now get reservation capacity to calculate upfront and un-used cost
             processReservations();
 
-            if (withTags)
+            if (withTags && config.resourceService != null)
                 config.resourceService.commit();
 
             logger.info("archiving results for " + dataTime + "...");
