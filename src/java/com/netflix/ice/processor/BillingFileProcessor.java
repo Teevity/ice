@@ -115,7 +115,7 @@ public class BillingFileProcessor extends Poller {
             startMilli = endMilli = dataTime.getMillis();
             init();
 
-            long lastProcessed = AwsUtils.getLastModified(config.workS3BucketName, config.workS3BucketPrefix + "usage_hourly_all_" + AwsUtils.monthDateFormat.print(dataTime)) - 3*3600000L;
+            long lastProcessed = AwsUtils.getLastModified(config.workS3BucketName, config.workS3BucketPrefix + "usage_hourly_all_" + AwsUtils.monthDateFormat.print(dataTime));
             if (objectSummary.getLastModified().getTime() < lastProcessed) {
                 logger.info("data has been processed. ignoring " + objectSummary.getKey() + "...");
                 continue;

@@ -69,10 +69,7 @@ public class ReaderConfig extends Config {
             BasicWeeklyCostEmailService costEmailService) {
         super(properties, credentialsProvider, accountService, productService, resourceService);
 
-        companyName = properties.getProperty(IceOptions.COMPANY_NAME);
-        if (companyName == null)
-            throw new IllegalArgumentException("IceOptions.COMPANY_NAME must be specified");
-
+        companyName = properties.getProperty(IceOptions.COMPANY_NAME, "");
         currencySign = properties.getProperty(IceOptions.CURRENCY_SIGN, "$");
         currencyRate = Double.parseDouble(properties.getProperty(IceOptions.CURRENCY_RATE, "1"));
 
