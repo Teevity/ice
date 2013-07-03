@@ -47,7 +47,7 @@ import com.netflix.ice.common.AwsUtils
 class DashboardController {
     private static ReaderConfig config = ReaderConfig.getInstance();
     private static Managers managers = config == null ? null : config.managers;
-    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HHa").withZone(DateTimeZone.UTC);
+    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd hha").withZone(DateTimeZone.UTC);
     private static DateTimeFormatter dayFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
 
     private static ReaderConfig getConfig() {
@@ -396,6 +396,13 @@ class DashboardController {
 
         Interval interval = new Interval(start, end);
         interval = tagGroupManager.getOverlapInterval(interval);
+        if (interval.getEnd().getMonthOfYear() == new DateTime(DateTimeZone.UTC).getMonthOfYear()) {
+            DateTime curMonth = new DateTime(DateTimeZone.UTC).withDayOfMonth(1).withMillisOfDay(0);
+            int hoursWithData = getManagers().getUsageManager(null, ConsolidateType.hourly).getDataLength(curMonth);
+            if (interval.getEnd().getHourOfDay() + (interval.getEnd().getDayOfMonth()-1) * 24 > hoursWithData) {
+                interval = new Interval(interval.getStart(), curMonth.plusHours(hoursWithData));
+            }
+        }
         interval = roundInterval(interval, consolidateType);
 
         Map<Tag, double[]> data;
