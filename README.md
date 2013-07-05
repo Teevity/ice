@@ -91,7 +91,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
       
   3.2 In ice.properties, set up the local directory where the reader will copy files to. For example:
       
-          ice.processor.localDir=/mnt/ice_reader
+          ice.reader.localDir=/mnt/ice_reader
     
     Make sure the local directory is different if you run processor and reader on the same instance.
 
