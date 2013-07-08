@@ -72,6 +72,6 @@ public class Operation extends Tag {
             return result == 0 ? this.name.compareTo(t.name) : result;
         }
         else
-            return this.name.compareTo(t.name);
+            return super.compareTo(t);
     }
 }

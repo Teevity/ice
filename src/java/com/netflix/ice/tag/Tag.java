@@ -20,7 +20,8 @@ package com.netflix.ice.tag;
 import java.io.Serializable;
 
 public abstract class Tag implements Comparable<Tag>, Serializable {
-    public static final Tag aggregated = new Tag("aggregated"){
+    public static final Tag aggregated = new Tag("aggregated") {
+        @Override
         public int compareTo(Tag t) {
             return this == t ? 0 : -1;
         }
@@ -50,6 +51,8 @@ public abstract class Tag implements Comparable<Tag>, Serializable {
     }
 
     public int compareTo(Tag t) {
+        if (t == aggregated)
+            return -t.compareTo(this);
         int result = ("a" + this.name).compareTo("a" + t.name);
         return result;
     }

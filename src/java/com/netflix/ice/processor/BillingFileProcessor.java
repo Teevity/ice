@@ -705,7 +705,7 @@ public class BillingFileProcessor extends Poller {
         Collection<TagGroup> tagGroups = costs.getTagGroups();
         for (int i = 0; i < costs.getNum(); i++) {
             Long millis = startMilli + i * AwsUtils.hourMillis;
-            if (millis <= fromMillis)
+            if (millis < fromMillis)
                 continue;
 
             Map<Ec2InstanceReservationPrice.Key, Double> ondemandCosts = Maps.newHashMap();
@@ -752,10 +752,10 @@ public class BillingFileProcessor extends Poller {
     private void sendOndemandCostAlert() {
 
         if (ondemandThreshold == null || StringUtils.isEmpty(fromEmail) || StringUtils.isEmpty(alertEmails) ||
-            new Date().getTime() < lastAlertMillis() + AwsUtils.hourMillis * 24)
+            endMilli < lastAlertMillis() + AwsUtils.hourMillis * 24)
             return;
 
-        Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> ondemandCosts = getOndemandCosts(lastAlertMillis() + AwsUtils.hourMillis * 24);
+        Map<Long, Map<Ec2InstanceReservationPrice.Key, Double>> ondemandCosts = getOndemandCosts(lastAlertMillis() + AwsUtils.hourMillis);
         Long maxHour = null;
         double maxTotal = ondemandThreshold;
 
@@ -767,7 +767,10 @@ public class BillingFileProcessor extends Poller {
             if (total > maxTotal) {
                 maxHour = hour;
                 maxTotal = total;
+                logger.info("found max ondemand cost: " + AwsUtils.dateFormatter.print(hour) + ": $" + NumberFormat.getNumberInstance(Locale.US).format(total));
             }
+            else
+                logger.info("ignoring ondemand cost: " + AwsUtils.dateFormatter.print(hour) + ": $" + NumberFormat.getNumberInstance(Locale.US).format(total));
         }
 
         if (maxHour != null) {
@@ -795,8 +798,8 @@ public class BillingFileProcessor extends Poller {
             AmazonSimpleEmailServiceClient emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
             try {
                 emailService.sendEmail(request);
-                updateLastAlertMillis(maxHour);
-                logger.info("updateLastAlertMillis " + maxHour);
+                updateLastAlertMillis(endMilli);
+                logger.info("updateLastAlertMillis " + endMilli);
             }
             catch (Exception e) {
                 logger.error("Error in sending alert emails", e);
