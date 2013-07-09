@@ -23,7 +23,7 @@
   <title>Aws Usage Detail</title>
 </head>
 <body>
-<div class="" style="margin: auto; width: 1652px; padding: 20px 30px"  ng-controller="detailCtrl">
+<div class="" style="margin: auto; {{getBodyWidth('width: 1652px;')}} padding: 20px 30px"  ng-controller="detailCtrl">
   <table ng-show="!graphOnly()">
     <tr>
       <td>Start</td>

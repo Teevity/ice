@@ -819,6 +819,10 @@ function mainCntl($scope, $location, $timeout, usage_db, highchart) {
   $scope.graphOnly = function() {
     return usage_db.graphOnly();
   }
+
+  $scope.getBodyWidth = function(defaultWidth) {
+    return usage_db.graphOnly() ? "" : defaultWidth;
+  }
 }
 
 function reservationCtrl($scope, $location, usage_db, highchart) {
