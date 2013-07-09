@@ -341,6 +341,33 @@ class DashboardController {
         render result as JSON
     }
 
+    def getTimeSpan = {
+        int spans = Integer.parseInt(params.spans);
+        DateTime end = dateFormatter.parseDateTime(params.end);
+        ConsolidateType consolidateType = ConsolidateType.valueOf(params.consolidate);
+
+        DateTime start;
+        if (consolidateType == ConsolidateType.daily) {
+            end = end.plusDays(1).withMillisOfDay(0);
+            start = end.minusDays(spans);
+        }
+        else if (consolidateType == ConsolidateType.hourly) {
+            start = end.minusHours(spans);
+        }
+        else if (consolidateType == ConsolidateType.weekly) {
+            end = end.plusDays(1).withMillisOfDay(0);
+            end = end.plusDays( (8-end.dayOfWeek) % 7 );
+            start = end.minusWeeks(spans);
+        }
+        else if (consolidateType == ConsolidateType.monthly) {
+            end = end.plusDays(1).withMillisOfDay(0).plusMonths(1).withDayOfMonth(1);
+            start = end.minusMonths(spans);
+        }
+
+        def result = [status: 200, start: dateFormatter.print(start), end: dateFormatter.print(end)];
+        render result as JSON
+    }
+
     def summary = {}
 
     def detail = {}
@@ -553,11 +580,11 @@ class DashboardController {
         }
 
         if (showsps || factorsps) {
-            result.sps = config.throughputMetricService.getData(interval, ConsolidateType.hourly);
+            result.sps = config.throughputMetricService.getData(interval, consolidateType);
         }
 
         if (factorsps) {
-            double[] consolidatedSps = consolidateType == ConsolidateType.hourly ? result.sps : config.throughputMetricService.getData(interval, consolidateType);
+            double[] consolidatedSps = result.sps;
             double multiply = config.throughputMetricService.getFactoredCostMultiply();
             for (Tag tag: result.data.keySet()) {
                 double[] values = result.data.get(tag);

@@ -24,7 +24,7 @@
 </head>
 <body>
 <div class="" style="margin: auto; width: 1652px; padding: 20px 30px"  ng-controller="detailCtrl">
-  <table>
+  <table ng-show="!graphOnly()">
     <tr>
       <td>Start</td>
       <td>Show</td>
@@ -97,7 +97,7 @@
     </tr>
   </table>
 
-  <div class="buttons">
+  <div class="buttons" ng-show="!graphOnly()">
     <img src="${resource(dir: '/')}images/spinner.gif" ng-show="loading">
     <a href="javascript:void(0)" class="monitor" style="background-image: url(${resource(dir: '/')}images/tango/16/apps/utilities-system-monitor.png)"
        ng-click="updateUrl(); getData()" ng-show="!loading"
@@ -109,7 +109,7 @@
 
   <table style="width: 100%; margin-top: 20px">
     <tr>
-      <td>
+      <td ng-show="!graphOnly()">
 
         <div class="list">
           <div>

@@ -29,7 +29,7 @@
   <g:layoutHead/>
 </head>
 <body class="nactest" ng-controller="mainCntl">
-  <div class="titlebar" ng-show="!no_navbar">
+  <div class="titlebar" ng-show="!graphOnly()">
     <div class="header" style="padding-top:15px; height:43px">
       <a href="${resource(dir: '/')}">
         <span class="mainHeader">
@@ -38,7 +38,7 @@
       </a>
     </div>
   </div>
-  <ul class="nav">
+  <ul class="nav" ng-show="!graphOnly()">
     <li class="menuButton">
         <a class="" href="${resource(dir: 'dashboard', file: 'summary')}" ng-click="reload()">AWS Summary</a>
     </li>

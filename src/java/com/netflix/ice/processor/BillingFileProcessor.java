@@ -767,10 +767,7 @@ public class BillingFileProcessor extends Poller {
             if (total > maxTotal) {
                 maxHour = hour;
                 maxTotal = total;
-                logger.info("found max ondemand cost: " + AwsUtils.dateFormatter.print(hour) + ": $" + NumberFormat.getNumberInstance(Locale.US).format(total));
             }
-            else
-                logger.info("ignoring ondemand cost: " + AwsUtils.dateFormatter.print(hour) + ": $" + NumberFormat.getNumberInstance(Locale.US).format(total));
         }
 
         if (maxHour != null) {

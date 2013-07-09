@@ -140,9 +140,9 @@ ice.factory('highchart', function() {
           name: metricname,
           data: result.sps,
           pointStart: result.start,
-          pointInterval: 3600000,
+          pointInterval: result.interval,
           //step: true,
-          type: "area",
+          type: plotType,
           yAxis: 1
       };
       hc_options.series.push(serie);
@@ -268,6 +268,8 @@ ice.factory('highchart', function() {
 
 ice.factory('usage_db', function($window, $http, $filter) {
 
+  var graphonly = false;
+
   var retrieveNamesIfNotAll = function(array, selected, preselected, filter) {
     if (!selected && !preselected)
       return;
@@ -317,6 +319,9 @@ ice.factory('usage_db', function($window, $http, $filter) {
   var timeParams = "";
 
   return {
+    graphOnly: function() {
+      return graphonly;
+    },
     addParams: function(params, name, array, selected, preselected, filter) {
       var selected = retrieveNamesIfNotAll(array, selected, preselected, filter);
       if (selected)
@@ -368,7 +373,13 @@ ice.factory('usage_db', function($window, $http, $filter) {
         var i, j, time = "";
         for (i = 0; i < params.length; i++) {
 
-          if (params[i].indexOf("showResourceGroups=") === 0) {
+          if (params[i].indexOf("spans=") === 0) {
+            $scope.spans = parseInt(params[i].substr(6));
+          }
+          else if (params[i].indexOf("graphOnly=true") === 0) {
+            graphonly = true;
+          }
+          else if (params[i].indexOf("showResourceGroups=") === 0) {
             $scope.showResourceGroups = "true" === params[i].substr(19);
           }
           else if (params[i].indexOf("appgroup=") === 0) {
@@ -804,6 +815,10 @@ function mainCntl($scope, $location, $timeout, usage_db, highchart) {
     }
     data.sort(compare);
   }
+
+  $scope.graphOnly = function() {
+    return usage_db.graphOnly();
+  }
 }
 
 function reservationCtrl($scope, $location, usage_db, highchart) {
@@ -946,7 +961,7 @@ function reservationCtrl($scope, $location, usage_db, highchart) {
   jQuery('#start').datetimepicker().val($scope.start);
 }
 
-function detailCtrl($scope, $location, usage_db, highchart) {
+function detailCtrl($scope, $location, $http, usage_db, highchart) {
 
   $scope.showsps = false;
   $scope.factorsps = false;
@@ -1084,21 +1099,37 @@ function detailCtrl($scope, $location, usage_db, highchart) {
 
   usage_db.getParams($location.hash(), $scope);
 
-  usage_db.getAccounts($scope, function(data){
-    $scope.updateRegions();
-  });
+  var fn = function() {
+    usage_db.getAccounts($scope, function(data){
+      $scope.updateRegions();
+    });
 
-  $scope.getData();
+    $scope.getData();
 
-  jQuery("#start, #end" ).datetimepicker({
-        showTime: false,
-        showMinute: false,
-        ampm: true,
-        timeFormat: 'hhTT',
-        dateFormat: 'yy-mm-dd'
-      });
-  jQuery('#end').datetimepicker().val($scope.end);
-  jQuery('#start').datetimepicker().val($scope.start);
+    jQuery("#start, #end" ).datetimepicker({
+          showTime: false,
+          showMinute: false,
+          ampm: true,
+          timeFormat: 'hhTT',
+          dateFormat: 'yy-mm-dd'
+        });
+    jQuery('#end').datetimepicker().val($scope.end);
+    jQuery('#start').datetimepicker().val($scope.start);
+  }
+
+  if ($scope.spans) {
+    $http({
+      method: "GET",
+      url: "getTimeSpan",
+      params: {spans: $scope.spans, end: $scope.end, consolidate: $scope.consolidate}
+    }).success(function(result) {
+      $scope.end = result.end;
+      $scope.start = result.start;
+      fn();
+    });
+  }
+  else
+    fn();
 }
 
 function appgroupCtrl($scope, $location, $http, usage_db, highchart) {
