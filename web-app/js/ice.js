@@ -683,6 +683,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
       this.addParams(params, "operation", $scope.operations, $scope.selected_operations, $scope.selected__operations, $scope.filter_operations);
       this.addParams(params, "usageType", $scope.usageTypes, $scope.selected_usageTypes, $scope.selected__usageTypes, $scope.filter_usageTypes);
       if ($scope.showResourceGroups && !params.breakdown) {
+        params.showResourceGroups = true;
         this.addParams(params, "resourceGroup", $scope.resourceGroups, $scope.selected_resourceGroups, $scope.selected__resourceGroups, $scope.filter_resourceGroups);
       }
       if ($scope.appgroup) {

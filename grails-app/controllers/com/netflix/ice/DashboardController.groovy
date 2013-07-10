@@ -404,6 +404,7 @@ class DashboardController {
         ApplicationGroup appgroup = query.has("appgroup") ? new ApplicationGroup(query.getString("appgroup")) : null;
         boolean forReservation = query.has("forReservation") ? query.getBoolean("forReservation") : false;
         boolean showZones = query.has("showZones") ? query.getBoolean("showZones") : false;
+        boolean showResourceGroups = query.has("showResourceGroups") ? query.getBoolean("showResourceGroups") : false;
         if (showZones && (zones == null || zones.size() == 0)) {
             zones = Lists.newArrayList(tagGroupManager.getZones(new TagLists(accounts)));
         }
@@ -482,13 +483,24 @@ class DashboardController {
                 }
             }
         }
-        else if (resourceGroups.size() > 0 || groupBy == TagType.ResourceGroup || appgroup != null) {
+        else if (resourceGroups.size() > 0 || groupBy == TagType.ResourceGroup || appgroup != null || showResourceGroups) {
             data = Maps.newTreeMap();
             if ((groupBy == TagType.ResourceGroup || appgroup != null) && products.size() == 0) {
                 products = Lists.newArrayList(getManagers().getProducts());
             }
             else if (resourceGroups.size() > 0 && products.size() == 0) {
                 products = Lists.newArrayList(getManagers().getProducts());
+            }
+            else if (showResourceGroups && products.size() == 0) {
+                Set productSet = Sets.newTreeSet();
+                for (Product product: getManagers().getProducts()) {
+                    if (product == null)
+                        continue;
+
+                    Collection<Product> tmp = getManagers().getTagGroupManager(product).getProducts(new TagLists(accounts, regions, zones));
+                    productSet.addAll(tmp);
+                }
+                products = Lists.newArrayList(productSet);
             }
             for (Product product: products) {
                 if (product == null)
