@@ -74,7 +74,7 @@ public class BasicWeeklyCostEmailService extends Poller {
     private ReaderConfig config;
 
     protected final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd").withZoneUTC();
-    protected final DateTimeFormatter linkDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HHa").withZone(DateTimeZone.UTC);
+    protected final DateTimeFormatter linkDateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd hha").withZone(DateTimeZone.UTC);
     protected final NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
     protected final NumberFormat percentageFormat = NumberFormat.getPercentInstance();
     protected final NumberFormat costFormatter;
@@ -155,6 +155,17 @@ public class BasicWeeklyCostEmailService extends Poller {
         return "";
     }
 
+    protected String getResourceGroupsDisplayName(String product) {
+        if (product.equals(Product.ec2.name))
+            return "Applications";
+        else if (product.equals(Product.s3.name))
+            return "S3 buckets";
+        else if (product.equals(Product.rds.name))
+            return "RDS DBs";
+        else
+            return product + " resource groups";
+    }
+
     @Override
     protected void poll() throws Exception {
          trigger(inTest());
@@ -231,11 +242,21 @@ public class BasicWeeklyCostEmailService extends Poller {
             }
         }
 
+        boolean hasData = false;
+        for (Map.Entry<String, Double> entry: costs.entrySet()) {
+            if (!entry.getKey().contains("monitor") && entry.getValue() != null && entry.getValue() >= 0.1) {
+                hasData = true;
+                break;
+            }
+        }
+        if (!hasData)
+            return null;
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         for (Product product: products) {
-            for (int week = numWeeks - 1; week >= 0; week--) {
-                String weekStr = String.format("%s - %s week", formatter.print(end.minusWeeks(week+1)).substring(5), formatter.print(end.minusWeeks(week)).substring(5));
+            for (int week = 0; week < numWeeks; week++) {
+                String weekStr = String.format("%s - %s week", formatter.print(end.minusWeeks(numWeeks-week)).substring(5), formatter.print(end.minusWeeks(numWeeks-week-1)).substring(5));
                 dataset.addValue(costs.get(product + "|" + week), product.name, weekStr);
             }
         }
@@ -303,6 +324,9 @@ public class BasicWeeklyCostEmailService extends Poller {
 
         File file = createImage(appGroup);
 
+        if (file == null)
+            return null;
+
         DateTime end = new DateTime(DateTimeZone.UTC).withDayOfWeek(1).withMillisOfDay(0);
         String link = getLink("area", ConsolidateType.hourly, appGroup, accounts, regions, end.minusWeeks(numWeeks), end);
         body.append(String.format("<b><h4><a href='%s'>%s</a> Weekly Costs:</h4></b>", link, appGroup.getDisplayName()));
@@ -353,12 +377,12 @@ public class BasicWeeklyCostEmailService extends Poller {
 
         boolean firstLine = true;
         DateTime currentWeekEnd = end;
-        for (int week = 0; week < numWeeks; week++) {
+        for (int week = numWeeks-1; week >= 0; week--) {
             String weekStr;
-            if (week == 0)
+            if (week == numWeeks-1)
                 weekStr = "Last week";
             else
-                weekStr = week + " weeks ago";
+                weekStr = (numWeeks-week-1) + " weeks ago";
             String background = week % 2 == 1 ? "background: whiteSmoke;" : "";
             body.append(String.format("<tr style=\"%s\"><td nowrap style=\"border-left: 1px solid #DDD;padding: 4px\">%s (%s - %s)</td>", background, weekStr, formatter.print(currentWeekEnd.minusWeeks(1)).substring(5), formatter.print(currentWeekEnd).substring(5)));
             for (int i = 0; i < accounts.size(); i++) {
@@ -367,13 +391,13 @@ public class BasicWeeklyCostEmailService extends Poller {
                     Region region = regions.get(j);
                     String key = account + "|" + region + "|" + week;
                     double cost = costs.get(key) == null ? 0 : costs.get(key);
-                    Double lastCost = week == numWeeks - 1 ? null : costs.get(account + "|" + region + "|" + (week + 1));
+                    Double lastCost = week == 0 ? null : costs.get(account + "|" + region + "|" + (week - 1));
                     link = getLink("column", ConsolidateType.daily, appGroup, Lists.newArrayList(account), Lists.newArrayList(region), currentWeekEnd.minusWeeks(1), currentWeekEnd);
                     body.append(getValueCell(cost, lastCost, link, firstLine));
                 }
             }
             link = getLink("column", ConsolidateType.daily, appGroup, accounts, regions, currentWeekEnd.minusWeeks(1), currentWeekEnd);
-            body.append(getValueCell(total[week], week == numWeeks - 1 ? null : total[week + 1], link, firstLine));
+            body.append(getValueCell(total[week], week == 0 ? null : total[week - 1], link, firstLine));
             body.append("</tr>");
             firstLine = false;
             currentWeekEnd = currentWeekEnd.minusWeeks(1);
@@ -393,7 +417,7 @@ public class BasicWeeklyCostEmailService extends Poller {
             if (selected == null || selected.size() == 0)
                 continue;
             link = getLink("area", ConsolidateType.hourly, appGroup, accounts, regions, end.minusWeeks(numWeeks), end);
-            body.append(String.format("<b><h4>%s resource groups in <a href='%s'>%s</a>:</h4></b>", product, link, appGroup.getDisplayName()));
+            body.append(String.format("<b><h4>%s in <a href='%s'>%s</a>:</h4></b>", getResourceGroupsDisplayName(product), link, appGroup.getDisplayName()));
             for (String name : selected)
                 body.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;").append(name).append("<br>");
         }
@@ -507,7 +531,7 @@ public class BasicWeeklyCostEmailService extends Poller {
                 "&consolidate=" + consolidateType +
                 "&start=" + linkDateFormatter.print(start) +
                 "&end=" + linkDateFormatter.print(end) +
-                "&groupBy=Product";
+                "&groupBy=ResourceGroup";
         if (accounts.size() > 0)
             link += "&account=" + StringUtils.join(accounts, ",");
         if (regions.size() > 0)
