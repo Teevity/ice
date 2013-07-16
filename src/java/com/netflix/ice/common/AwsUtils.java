@@ -17,13 +17,21 @@
  */
 package com.netflix.ice.common;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
+import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
+import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -53,7 +61,23 @@ public class AwsUtils {
     private static AmazonS3Client s3Client;
     private static AmazonSimpleEmailServiceClient emailServiceClient;
     private static AmazonSimpleDBClient simpleDBClient;
-    private static AWSCredentialsProvider awsCredentialsProvider;
+    private static AWSSecurityTokenServiceClient securityClient;
+    public static AWSCredentialsProvider awsCredentialsProvider;
+
+    /**
+     * Get assumes IAM credentials.
+     * @param accountId
+     * @param role
+     * @param assumeRole
+     * @return assumes IAM credentials
+     */
+    public static Credentials getAssumedCredentials(String accountId, String role, String assumeRole) {
+        AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
+                .withRoleArn("arn:aws:iam::" + accountId + ":role/" + role)
+                .withRoleSessionName(assumeRole);
+        AssumeRoleResult roleResult = securityClient.assumeRole(assumeRoleRequest);
+        return roleResult.getCredentials();
+    }
 
     /**
      * This method must be called before all methods can be used.
@@ -62,6 +86,7 @@ public class AwsUtils {
     public static void init(AWSCredentialsProvider credentialsProvider) {
         awsCredentialsProvider = credentialsProvider;
         s3Client = new AmazonS3Client(awsCredentialsProvider);
+        securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider);
         if (System.getProperty("EC2_REGION") != null && !"us-east-1".equals(System.getProperty("EC2_REGION"))) {
             s3Client.setEndpoint("s3-" + System.getProperty("EC2_REGION") + ".amazonaws.com");
         }
@@ -105,6 +130,44 @@ public class AwsUtils {
         } while (page.isTruncated());
 
         return result;
+    }
+
+    /**
+     * List all object summary with given prefix in the s3 bucket.
+     * @param bucket
+     * @param prefix
+     * @return
+     */
+    public static List<S3ObjectSummary> listAllObjects(String bucket, String prefix, String accountId, String roleResourceName, String roleSessionName) {
+        AmazonS3Client s3Client = AwsUtils.s3Client;
+
+        try {
+            ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withPrefix(prefix);
+            List<S3ObjectSummary> result = Lists.newLinkedList();
+
+            if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(roleSessionName)) {
+                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName);
+                s3Client = new AmazonS3Client(
+                        new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
+                                assumedCredentials.getSecretAccessKey(),
+                                assumedCredentials.getSessionToken()));
+            }
+
+            ObjectListing page = null;
+            do {
+                if (page != null)
+                    request.setMarker(page.getNextMarker());
+                page = s3Client.listObjects(request);
+                result.addAll(page.getObjectSummaries());
+
+            } while (page.isTruncated());
+
+            return result;
+        }
+        finally {
+            if (s3Client != AwsUtils.s3Client)
+                s3Client.shutdown();
+        }
     }
 
     /**
@@ -175,6 +238,33 @@ public class AwsUtils {
         }
     }
 
+    public static boolean downloadFileIfChangedSince(String bucketName, String bucketFilePrefix, File file, long milles, String accountId, String roleResourceName, String roleSessionName) {
+        AmazonS3Client s3Client = AwsUtils.s3Client;
+
+        try {
+            if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(roleSessionName)) {
+                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName);
+                s3Client = new AmazonS3Client(
+                        new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
+                                assumedCredentials.getSecretAccessKey(),
+                                assumedCredentials.getSessionToken()));
+            }
+
+            ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, bucketFilePrefix + file.getName());
+            boolean download = !file.exists() || metadata.getLastModified().getTime() > milles;
+
+            if (download) {
+                return download(s3Client, bucketName, bucketFilePrefix + file.getName(), file);
+            }
+            else
+                return download;
+        }
+        finally {
+            if (s3Client != AwsUtils.s3Client)
+                s3Client.shutdown();
+        }
+    }
+
     public static boolean downloadFileIfChangedSince(String bucketName, String bucketFilePrefix, File file, long milles) {
         ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, bucketFilePrefix + file.getName());
         boolean download = !file.exists() || metadata.getLastModified().getTime() > milles;
@@ -214,6 +304,10 @@ public class AwsUtils {
     }
 
     private static boolean download(String bucketName, String fileKey, File file) {
+        return download(s3Client, bucketName, fileKey, file);
+    }
+
+    private static boolean download(AmazonS3Client s3Client, String bucketName, String fileKey, File file) {
         do {
             S3Object s3Object = s3Client.getObject(bucketName, fileKey);
             InputStream input = s3Object.getObjectContent();

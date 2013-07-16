@@ -20,18 +20,24 @@ import com.google.common.collect.Maps;
 import com.netflix.ice.common.AccountService;
 import com.netflix.ice.tag.Account;
 import com.netflix.ice.tag.Zone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 
 public class BasicAccountService implements AccountService {
 
+    Logger logger = LoggerFactory.getLogger(getClass());
+
     private Map<String, Account> accountsById = Maps.newConcurrentMap();
     private Map<String, Account> accountsByName = Maps.newConcurrentMap();
     private Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
+    private Map<Account, String> reservationAccessRoles = Maps.newHashMap();
 
-    public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts) {
+    public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts, Map<Account, String> reservationAccessRoles) {
         this.reservationAccounts = reservationAccounts;
+        this.reservationAccessRoles = reservationAccessRoles;
         for (Account account: accounts) {
             accountsByName.put(account.name, account);
             accountsById.put(account.id, account);
@@ -44,6 +50,7 @@ public class BasicAccountService implements AccountService {
             account = new Account(accountId, accountId);
             accountsByName.put(account.name, account);
             accountsById.put(account.id, account);
+            logger.info("created account " + accountId + ".");
         }
         return account;
     }
@@ -67,6 +74,10 @@ public class BasicAccountService implements AccountService {
 
     public Map<Account, List<Account>> getReservationAccounts() {
         return reservationAccounts;
+    }
+
+    public Map<Account, String> getReservationAccessRoles() {
+        return reservationAccessRoles;
     }
 
     public Zone getAccountMappedZone(Account mapAccount, Account account, Zone zone) {

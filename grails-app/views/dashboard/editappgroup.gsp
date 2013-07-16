@@ -43,7 +43,7 @@
       </tr>
       <tr class="prop" ng-repeat="row in data">
         <td class="name" colspan="2">Selected {{row.displayName}}:<br>
-          <select ng-model="left[row.name]" style="vertical-align: top; min-width: 200px" multiple="true" size="10" ng-options="c.name for c in appgroup.data[row.name] | filter:rightfilter[row.name]"></select>
+          <select ng-model="left[row.name]" style="vertical-align: top; min-width: 200px" multiple="true" size="10" ng-options="c.name for c in appgroup.data[row.name] | filter:leftfilter[row.name]"></select>
           <input ng-model="leftfilter[row.name]" type="text" class="metaFilter" placeholder="filter">
         </td>
         <td class="name"><br><br><br><br><br>

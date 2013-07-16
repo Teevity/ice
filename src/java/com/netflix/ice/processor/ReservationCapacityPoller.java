@@ -42,23 +42,6 @@ import java.util.Map;
  */
 public class ReservationCapacityPoller extends Poller {
     private boolean updatedConfig = false;
-    private AWSCredentialsProvider awsCredentialsProvider;
-    private String roleResourceName;
-    private String roleSessionName;
-
-    /**
-     * If only awsCredentialsProvider is specifiled, AmazonEcClient will be created using awsCredentialsProvider.getCredentials().
-     * If roleResourceName and roleSessionName are also specified, temporary security credentials will be used
-     * to create AmazonEcClient.
-     * @param awsCredentialsProvider
-     * @param roleResourceName
-     * @param roleSessionName
-     */
-    public ReservationCapacityPoller(AWSCredentialsProvider awsCredentialsProvider, String roleResourceName, String roleSessionName) {
-        this.awsCredentialsProvider = awsCredentialsProvider;
-        this.roleResourceName = roleResourceName;
-        this.roleSessionName = roleSessionName;
-    }
 
     public boolean updatedConfig() {
         return updatedConfig;
@@ -128,13 +111,9 @@ public class ReservationCapacityPoller extends Poller {
         for (Account account: config.accountService.getReservationAccounts().keySet()) {
             try {
                 AmazonEC2Client ec2Client;
-                if (roleSessionName != null) {
-                    AssumeRoleRequest request = new AssumeRoleRequest().withRoleArn("arn:aws:iam::" + account.id + ":role/" + roleResourceName).withRoleSessionName(roleSessionName);
-                    AWSSecurityTokenServiceClient securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider.getCredentials());
-                    AssumeRoleResult roleResult = securityClient.assumeRole(request);
-
-                    final Credentials credentials = roleResult.getCredentials();
-
+                String assumeRole = config.accountService.getReservationAccessRoles().get(account);
+                if (assumeRole != null) {
+                    final Credentials credentials = AwsUtils.getAssumedCredentials(account.id, config.role, assumeRole);
                     ec2Client = new AmazonEC2Client(new AWSSessionCredentials() {
                         public String getAWSAccessKeyId() {
                             return credentials.getAccessKeyId();
@@ -150,7 +129,7 @@ public class ReservationCapacityPoller extends Poller {
                     });
                 }
                 else
-                    ec2Client = new AmazonEC2Client(awsCredentialsProvider.getCredentials());
+                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials());
 
                 for (Region region: Region.getAllRegions()) {
 

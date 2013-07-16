@@ -25,8 +25,6 @@ import java.util.Properties;
 
 public abstract class Config {
 
-    public final String billingS3BucketName;
-    public final String billingS3BucketPrefix;
     public final String workS3BucketName;
     public final String workS3BucketPrefix;
     public final String localDir;
@@ -57,13 +55,10 @@ public abstract class Config {
         if (productService == null) throw new IllegalArgumentException("productService must be specified");
 
         DateTime startDate = new DateTime(Long.parseLong(properties.getProperty(IceOptions.START_MILLIS)), DateTimeZone.UTC);
-        billingS3BucketName = properties.getProperty(IceOptions.BILLING_S3_BUCKET_NAME);
-        billingS3BucketPrefix = properties.getProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, "ice/");
         workS3BucketName = properties.getProperty(IceOptions.WORK_S3_BUCKET_NAME);
         workS3BucketPrefix = properties.getProperty(IceOptions.WORK_S3_BUCKET_PREFIX, "ice/");
         localDir = properties.getProperty(IceOptions.LOCAL_DIR, "/mnt/ice");
 
-        if (billingS3BucketName == null) throw new IllegalArgumentException("IceOptions.BILLING_S3_BUCKET_NAME must be specified");
         if (workS3BucketName == null) throw new IllegalArgumentException("IceOptions.WORK_S3_BUCKET_NAME must be specified");
 
         this.credentialsProvider = credentialsProvider;

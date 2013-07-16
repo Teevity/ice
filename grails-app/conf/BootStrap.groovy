@@ -36,6 +36,9 @@ import com.netflix.ice.basic.BasicS3ApplicationGroupService
 import com.netflix.ice.basic.BasicManagers
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.BasicSessionCredentials
+import org.apache.commons.io.IOUtils
 
 class BootStrap {
     private static boolean initialized = false;
@@ -64,25 +67,30 @@ class BootStrap {
             prop.load(is);
 
             AWSCredentialsProvider credentialsProvider;
-            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey"))) {
-                credentialsProvider = new InstanceProfileCredentialsProvider();
-            }
-            else {
-                credentialsProvider = new AWSCredentialsProvider() {
-                    com.amazonaws.auth.AWSCredentials getCredentials() {
-                        return new com.amazonaws.auth.AWSCredentials() {
-                            String getAWSAccessKeyId() {
-                                return System.getProperty("ice.s3AccessKeyId");
-                            }
-                            String getAWSSecretKey() {
-                                return System.getProperty("ice.s3SecretKey");
-                            }
-                        }
-                    }
 
-                    void refresh() {}
-                };
-            }
+            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")))
+                credentialsProvider = new InstanceProfileCredentialsProvider();
+            else
+                credentialsProvider = new AWSCredentialsProvider() {
+                        public AWSCredentials getCredentials() {
+                            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")))
+                                return new AWSCredentials() {
+                                    public String getAWSAccessKeyId() {
+                                        return System.getProperty("ice.s3AccessKeyId");
+                                    }
+
+                                    public String getAWSSecretKey() {
+                                        return System.getProperty("ice.s3SecretKey");
+                                    }
+                                };
+                            else
+                                return new BasicSessionCredentials(System.getProperty("ice.s3AccessKeyId"), System.getProperty("ice.s3SecretKey"),
+                                        System.getProperty("ice.s3AccessToken"));
+                        }
+
+                        public void refresh() {
+                        }
+                    };
 
             JSONConverter.register();
 
@@ -94,8 +102,9 @@ class BootStrap {
                 }
             }
             Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
+            Map<Account, String> reservationAccessRoles = Maps.newHashMap();
             for (String name: prop.stringPropertyNames()) {
-                if (name.startsWith("ice.owneraccount.")) {
+                if (name.startsWith("ice.owneraccount.") && !name.endsWith(".role")) {
                     String accountName = name.substring("ice.owneraccount.".length());
                     String[] childen = prop.getProperty(name).split(",");
                     List<Account> childAccouns = Lists.newArrayList();
@@ -104,24 +113,35 @@ class BootStrap {
                         if (childAccount != null)
                             childAccouns.add(childAccount);
                     }
+                    String role = prop.getProperty(name + ".role", "");
                     reservationAccounts.put(accounts.get(accountName), childAccouns);
+                    reservationAccessRoles.put(accounts.get(accountName), role);
                 }
             }
 
-            BasicAccountService accountService = new BasicAccountService(Lists.newArrayList(accounts.values()), reservationAccounts);
+            BasicAccountService accountService = new BasicAccountService(Lists.newArrayList(accounts.values()), reservationAccounts, reservationAccessRoles);
             Properties properties = new Properties();
             if (!StringUtils.isEmpty(prop.getProperty(IceOptions.START_MILLIS)))
                 properties.setProperty(IceOptions.START_MILLIS, prop.getProperty(IceOptions.START_MILLIS));
             else
                 properties.setProperty(IceOptions.START_MILLIS, "" + new DateTime(DateTimeZone.UTC).withMillisOfDay(0).withDayOfMonth(1).getMillis());
-            properties.setProperty(IceOptions.BILLING_S3_BUCKET_NAME, prop.getProperty(IceOptions.BILLING_S3_BUCKET_NAME));
-            properties.setProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, prop.getProperty(IceOptions.BILLING_S3_BUCKET_PREFIX));
             properties.setProperty(IceOptions.WORK_S3_BUCKET_NAME, prop.getProperty(IceOptions.WORK_S3_BUCKET_NAME));
             properties.setProperty(IceOptions.WORK_S3_BUCKET_PREFIX, prop.getProperty(IceOptions.WORK_S3_BUCKET_PREFIX));
 
             if ("true".equals(prop.getProperty("ice.processor"))) {
 
                 properties.setProperty(IceOptions.LOCAL_DIR, prop.getProperty("ice.processor.localDir"));
+                properties.setProperty(IceOptions.BILLING_S3_BUCKET_NAME, prop.getProperty(IceOptions.BILLING_S3_BUCKET_NAME));
+                properties.setProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, prop.getProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, ""));
+                properties.setProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, prop.getProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, ""));
+                properties.setProperty(IceOptions.BILLING_ACCESS_ROLENAME, prop.getProperty(IceOptions.BILLING_ACCESS_ROLENAME, ""));
+                String role;
+                if (StringUtils.isEmpty(System.getProperty(IceOptions.ICE_ROLE)))
+                    role = getCurrentRole();
+                else
+                    role = System.getProperty(IceOptions.ICE_ROLE);
+                properties.setProperty(IceOptions.ICE_ROLE, role);
+
                 if (prop.getProperty(IceOptions.COMPANY_NAME) != null)
                     properties.setProperty(IceOptions.COMPANY_NAME, prop.getProperty(IceOptions.COMPANY_NAME));
                 if (prop.getProperty(IceOptions.COST_PER_MONITORMETRIC_PER_HOUR) != null)
@@ -137,28 +157,7 @@ class BootStrap {
 
                 ReservationCapacityPoller reservationCapacityPoller = null;
                 if ("true".equals(prop.getProperty("ice.reservationCapacityPoller"))) {
-                    AWSCredentialsProvider reservationCredentialProvider;
-                    if (StringUtils.isEmpty(System.getProperty("ice.reservationAccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.reservationSecretKey"))) {
-                        reservationCredentialProvider = new InstanceProfileCredentialsProvider();
-                    }
-                    else {
-                        reservationCredentialProvider = new AWSCredentialsProvider() {
-                            com.amazonaws.auth.AWSCredentials getCredentials() {
-                                return new com.amazonaws.auth.AWSCredentials() {
-                                    String getAWSAccessKeyId() {
-                                        return System.getProperty("ice.reservationAccessKeyId");
-                                    }
-                                    String getAWSSecretKey() {
-                                        return System.getProperty("ice.reservationSecretKey");
-                                    }
-                                }
-                            }
-
-                            void refresh() {}
-                        };
-                    }
-                    reservationCapacityPoller = new ReservationCapacityPoller(reservationCredentialProvider,
-                        System.getProperty("ice.reservationRoleResourceName"), System.getProperty("ice.reservationRoleSessionName"));
+                    reservationCapacityPoller = new ReservationCapacityPoller();
                 }
 
                 processorConfig = new ProcessorConfig(
@@ -223,5 +222,15 @@ class BootStrap {
 
         logger.info("Shut down complete.");
         initialized = false;
+    }
+
+    private static String getCurrentRole() throws IOException {
+        URL roleUrl = new URL("http://169.254.169.254/latest/meta-data/iam/security-credentials/");
+        URLConnection urlConnection = roleUrl.openConnection();
+        InputStream input = urlConnection.getInputStream();
+        String role = IOUtils.toString(input).trim();
+        input.close();
+        logger.info("Found role: " + role);
+        return role;
     }
 }

@@ -20,6 +20,11 @@ package com.netflix.ice.common;
 public class IceOptions {
 
     /**
+     * Current IAM role name on the instance. Must be specified if different from result in http://169.254.169.254/latest/meta-data/iam/security-credentials/
+     */
+    public static final String ICE_ROLE = "ice.role";
+
+    /**
      * Data start date in millis.
      */
     public static final String START_MILLIS = "ice.startmillis";
@@ -40,14 +45,28 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
-     * s3 bucket name where billing files are located. Only read permission is needed. It must be specified in Config.
+     * s3 bucket name where billing files are located. For multiple payer accounts, multiple bucket names can be specified delimited by comma ",".
+     * Only read permission is needed. It must be specified in Config.
      */
     public static final String BILLING_S3_BUCKET_NAME = "ice.billing_s3bucketname";
 
     /**
-     * Prefix of billing files in billing s3 bucket. It must be specified in Config.
+     * Prefix of billing files in billing s3 bucket. For multiple payer accounts, multiple bucket prefixes can be specified delimited by comma ",".
+     * It must be specified in Config.
      */
     public static final String BILLING_S3_BUCKET_PREFIX = "ice.billing_s3bucketprefix";
+
+    /**
+     * Payer account id. Must be specified if across-accounts role is used to access billing files. For multiple payer accounts, acocunt ids can
+     * be specified delimited by comma ",".
+     */
+    public static final String BILLING_PAYER_ACCOUNT_ID = "ice.billing_payerAccountId";
+
+    /**
+     * Billing file access role name to assume. Must be specified if across-accounts role is used to access billing files. For multiple payer accounts,
+     * role names can be specified delimited by comma ",".
+     */
+    public static final String BILLING_ACCESS_ROLENAME= "ice.billing_accessRoleName";
 
     /**
      * s3 bucket name where output files are to be store. Both read and write permissions are needed. It must be specified in Config.

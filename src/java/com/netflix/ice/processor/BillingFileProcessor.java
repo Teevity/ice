@@ -71,97 +71,151 @@ public class BillingFileProcessor extends Poller {
     @Override
     protected void poll() throws Exception {
 
+        TreeMap<DateTime, List<BillingFile>> filesToProcess = Maps.newTreeMap();
+        Map<DateTime, List<BillingFile>> monitorFilesToProcess = Maps.newTreeMap();
+
         // list the tar.gz file in billing file folder
-        List<S3ObjectSummary> objectSummaries = AwsUtils.listAllObjects(config.billingS3BucketName, config.billingS3BucketPrefix);
-        logger.info("found " + objectSummaries.size() + " in billing bucket...");
-        TreeMap<DateTime, S3ObjectSummary> filesToProcess = Maps.newTreeMap();
-        Map<DateTime, S3ObjectSummary> monitorFilesToProcess = Maps.newTreeMap();
+        for (int i = 0; i < config.billingS3BucketNames.length; i++) {
+            String billingS3BucketName = config.billingS3BucketNames[i];
+            String billingS3BucketPrefix = config.billingS3BucketPrefixes.length > i ? config.billingS3BucketPrefixes[i] : "";
+            String accountId = config.billingAccountIds.length > i ? config.billingAccountIds[i] : "";
+            String billingAccessRoleName = config.billingAccessRoleNames.length > i ? config.billingAccessRoleNames[i] : "";
 
-        // for each file, download&process if not needed
-        DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        for (S3ObjectSummary objectSummary : objectSummaries) {
+            logger.info("trying to list objects in billing bucket " + billingS3BucketName + " using role and assume role " + config.role + " " + billingAccessRoleName);
+            List<S3ObjectSummary> objectSummaries = AwsUtils.listAllObjects(billingS3BucketName, billingS3BucketPrefix,
+                    accountId, config.role, billingAccessRoleName);
+            logger.info("found " + objectSummaries.size() + " in billing bucket " + billingS3BucketName);
+            TreeMap<DateTime, S3ObjectSummary> filesToProcessInOneBucket = Maps.newTreeMap();
+            Map<DateTime, S3ObjectSummary> monitorFilesToProcessInOneBucket = Maps.newTreeMap();
 
-            String fileKey = objectSummary.getKey();
-            DateTime dataTime = AwsUtils.getDateTimeFromFileNameWithTags(fileKey);
-            boolean withTags = true;
-            if (dataTime == null) {
-                dataTime = AwsUtils.getDateTimeFromFileName(fileKey);
-                withTags = false;
-            }
+            // for each file, download&process if not needed
+            for (S3ObjectSummary objectSummary : objectSummaries) {
 
-            if (dataTime != null && !dataTime.isBefore(config.startDate)) {
-                if (!filesToProcess.containsKey(dataTime) ||
-                    withTags && config.resourceService != null || !withTags && config.resourceService == null)
-                    filesToProcess.put(dataTime, objectSummary);
-                else
+                String fileKey = objectSummary.getKey();
+                DateTime dataTime = AwsUtils.getDateTimeFromFileNameWithTags(fileKey);
+                boolean withTags = true;
+                if (dataTime == null) {
+                    dataTime = AwsUtils.getDateTimeFromFileName(fileKey);
+                    withTags = false;
+                }
+
+                if (dataTime != null && !dataTime.isBefore(config.startDate)) {
+                    if (!filesToProcessInOneBucket.containsKey(dataTime) ||
+                        withTags && config.resourceService != null || !withTags && config.resourceService == null)
+                        filesToProcessInOneBucket.put(dataTime, objectSummary);
+                    else
+                        logger.info("ignoring file " + objectSummary.getKey());
+                }
+                else {
                     logger.info("ignoring file " + objectSummary.getKey());
+                }
             }
-            else {
-                logger.info("ignoring file " + objectSummary.getKey());
+
+            for (S3ObjectSummary objectSummary : objectSummaries) {
+                String fileKey = objectSummary.getKey();
+                DateTime dataTime = AwsUtils.getDateTimeFromFileNameWithMonitoring(fileKey);
+
+                if (dataTime != null && !dataTime.isBefore(config.startDate)) {
+                    monitorFilesToProcessInOneBucket.put(dataTime, objectSummary);
+                }
+            }
+
+            for (DateTime key: filesToProcessInOneBucket.keySet()) {
+                List<BillingFile> list = filesToProcess.get(key);
+                if (list == null) {
+                    list = Lists.newArrayList();
+                    filesToProcess.put(key, list);
+                }
+                list.add(new BillingFile(filesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingS3BucketPrefix));
+            }
+
+            for (DateTime key: monitorFilesToProcessInOneBucket.keySet()) {
+                List<BillingFile> list = monitorFilesToProcess.get(key);
+                if (list == null) {
+                    list = Lists.newArrayList();
+                    monitorFilesToProcess.put(key, list);
+                }
+                list.add(new BillingFile(monitorFilesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingS3BucketPrefix));
             }
         }
 
-        for (S3ObjectSummary objectSummary : objectSummaries) {
-            String fileKey = objectSummary.getKey();
-            DateTime dataTime = AwsUtils.getDateTimeFromFileNameWithMonitoring(fileKey);
-
-            if (dataTime != null && !dataTime.isBefore(config.startDate)) {
-                monitorFilesToProcess.put(dataTime, objectSummary);
-            }
-        }
 
         for (DateTime dataTime: filesToProcess.keySet()) {
-            S3ObjectSummary objectSummary = filesToProcess.get(dataTime);
             startMilli = endMilli = dataTime.getMillis();
             init();
 
+            boolean hasNewFiles = false;
+            boolean hasTags = false;
             long lastProcessed = AwsUtils.getLastModified(config.workS3BucketName, config.workS3BucketPrefix + "usage_hourly_all_" + AwsUtils.monthDateFormat.print(dataTime));
-            if (objectSummary.getLastModified().getTime() < lastProcessed) {
-                logger.info("data has been processed. ignoring " + objectSummary.getKey() + "...");
+
+            for (BillingFile billingFile: filesToProcess.get(dataTime)) {
+                S3ObjectSummary objectSummary = billingFile.s3ObjectSummary;
+                if (objectSummary.getLastModified().getTime() < lastProcessed) {
+                    logger.info("data has been processed. ignoring " + objectSummary.getKey() + "...");
+                    continue;
+                }
+                hasNewFiles = true;
+            }
+
+            if (!hasNewFiles) {
+                logger.info("data has been processed. ignoring all files at " + AwsUtils.monthDateFormat.print(dataTime));
                 continue;
             }
 
-            String fileKey = objectSummary.getKey();
-            File file = new File(config.localDir, fileKey.substring(fileKey.lastIndexOf("/") + 1));
-            logger.info("trying to download " + fileKey + "...");
-            boolean downloaded = AwsUtils.downloadFileIfChangedSince(config.billingS3BucketName, config.billingS3BucketPrefix, file, lastProcessed);
-            if (downloaded)
-                logger.info("downloaded " + fileKey);
-            else {
-                logger.info("file already downloaded " + fileKey + "...");
-            }
+            for (BillingFile billingFile: filesToProcess.get(dataTime)) {
 
-            logger.info("processing " + fileKey + "...");
-            boolean withTags = fileKey.contains("with-resources-and-tags");
-            processingMonitor = false;
-            processBillingZipFile(file, withTags);
-            logger.info("done processing " + fileKey);
+                S3ObjectSummary objectSummary = billingFile.s3ObjectSummary;
+                String fileKey = objectSummary.getKey();
 
-            S3ObjectSummary monitorObjectSummary = monitorFilesToProcess.get(dataTime);
-            if (monitorObjectSummary != null) {
-                String monitorFileKey = monitorObjectSummary.getKey();
-                logger.info("processing " + monitorFileKey + "...");
-                File monitorFile = new File(config.localDir, monitorFileKey.substring(monitorFileKey.lastIndexOf("/") + 1));
-                logger.info("trying to download " + monitorFileKey + "...");
-                downloaded = AwsUtils.downloadFileIfChangedSince(config.billingS3BucketName, config.billingS3BucketPrefix, monitorFile, lastProcessed);
+                File file = new File(config.localDir, fileKey.substring(billingFile.prefix.length()));
+                logger.info("trying to download " + fileKey + "...");
+                boolean downloaded = AwsUtils.downloadFileIfChangedSince(objectSummary.getBucketName(), billingFile.prefix, file, lastProcessed,
+                        billingFile.accountId, config.role, billingFile.accessRoleName);
                 if (downloaded)
-                    logger.info("downloaded " + monitorFile);
-                else
-                    logger.warn(monitorFile + "already downloaded...");
-                FileInputStream in = new FileInputStream(monitorFile);
-                try {
-                    processingMonitor = true;
-                    processBillingFile(monitorFile.getName(), in, withTags);
+                    logger.info("downloaded " + fileKey);
+                else {
+                    logger.info("file already downloaded " + fileKey + "...");
                 }
-                catch (Exception e) {
-                    logger.error("Error processing " + monitorFile, e);
-                }
-                finally {
-                    in.close();
+
+                logger.info("processing " + fileKey + "...");
+                boolean withTags = fileKey.contains("with-resources-and-tags");
+                hasTags = hasTags || withTags;
+                processingMonitor = false;
+                processBillingZipFile(file, withTags);
+                logger.info("done processing " + fileKey);
+            }
+
+            if (monitorFilesToProcess.get(dataTime) != null) {
+                for (BillingFile monitorBillingFile: monitorFilesToProcess.get(dataTime)) {
+
+                    S3ObjectSummary monitorObjectSummary = monitorBillingFile.s3ObjectSummary;
+                    if (monitorObjectSummary != null) {
+                        String monitorFileKey = monitorObjectSummary.getKey();
+                        logger.info("processing " + monitorFileKey + "...");
+                        File monitorFile = new File(config.localDir, monitorFileKey.substring(monitorFileKey.lastIndexOf("/") + 1));
+                        logger.info("trying to download " + monitorFileKey + "...");
+                        boolean downloaded = AwsUtils.downloadFileIfChangedSince(monitorObjectSummary.getBucketName(), monitorBillingFile.prefix, monitorFile, lastProcessed,
+                                monitorBillingFile.accountId, config.role, monitorBillingFile.accessRoleName);
+                        if (downloaded)
+                            logger.info("downloaded " + monitorFile);
+                        else
+                            logger.warn(monitorFile + "already downloaded...");
+                        FileInputStream in = new FileInputStream(monitorFile);
+                        try {
+                            processingMonitor = true;
+                            processBillingFile(monitorFile.getName(), in, true);
+                        }
+                        catch (Exception e) {
+                            logger.error("Error processing " + monitorFile, e);
+                        }
+                        finally {
+                            in.close();
+                        }
+                    }
                 }
             }
 
-            if (Months.monthsBetween(dataTime, currentTime).getMonths() == 0) {
+            if (dataTime.equals(filesToProcess.lastKey())) {
                 int hours = (int) ((endMilli - startMilli)/3600000L);
                 logger.info("cut hours to " + hours);
                 cutData(hours);
@@ -170,7 +224,7 @@ public class BillingFileProcessor extends Poller {
             // now get reservation capacity to calculate upfront and un-used cost
             processReservations();
 
-            if (withTags && config.resourceService != null)
+            if (hasTags && config.resourceService != null)
                 config.resourceService.commit();
 
             logger.info("archiving results for " + dataTime + "...");
@@ -361,9 +415,7 @@ public class BillingFileProcessor extends Poller {
                         TagGroup fromTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.reservedInstances, tagGroup.usageType, null);
                         TagGroup lentTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.lentInstances, tagGroup.usageType, null);
                         ReservationService.ReservationInfo reservationBorrowed = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, fromTagGroup);
-                        if (reservationBorrowed.capacity == 0) {
-                            int iii = 0;
-                        }
+
                         usageMap.put(tagGroup, new Double(reservation.capacity));
                         usageMap.put(borrowedTagGroup, value - reservation.capacity);
                         usageMap.put(lentTagGroup, value - reservation.capacity);
@@ -382,11 +434,9 @@ public class BillingFileProcessor extends Poller {
                     Double value = usageMap.get(tagGroup);
                     if (value != null) {
                         ReservationService.ReservationInfo reservation = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, tagGroup);
-                        if (reservation.capacity == 0) {
-                            int iii = 0;
-                        }
                         costMap.put(tagGroup, value * reservation.reservationHourlyCost);
                     }
+                    toMarkUnused.add(tagGroup);
                 }
                 else if (reservationBorrowers.get(tagGroup.account) != null) {
                     Double value = usageMap.remove(tagGroup);
@@ -399,9 +449,7 @@ public class BillingFileProcessor extends Poller {
                         TagGroup fromTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.reservedInstances, tagGroup.usageType, null);
                         TagGroup lentTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.lentInstances, tagGroup.usageType, null);
                         ReservationService.ReservationInfo reservationBorrowed = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, fromTagGroup);
-                        if (reservationBorrowed.capacity == 0) {
-                            int iii = 0;
-                        }
+
                         usageMap.put(borrowedTagGroup, value);
                         usageMap.put(lentTagGroup, value);
                         costMap.remove(tagGroup);
@@ -409,10 +457,6 @@ public class BillingFileProcessor extends Poller {
                         costMap.put(lentTagGroup, value * reservationBorrowed.reservationHourlyCost);
                         toMarkUnused.add(fromTagGroup);
                     }
-                }
-
-                if (costMap.size() != usageMap.size()) {
-                    int iii = 0;
                 }
             }
         }
@@ -801,6 +845,20 @@ public class BillingFileProcessor extends Poller {
             catch (Exception e) {
                 logger.error("Error in sending alert emails", e);
             }
+        }
+    }
+
+    private class BillingFile {
+        final S3ObjectSummary s3ObjectSummary;
+        final String accountId;
+        final String accessRoleName;
+        final String prefix;
+
+        BillingFile(S3ObjectSummary s3ObjectSummary, String accountId, String accessRoleName, String prefix) {
+            this.s3ObjectSummary = s3ObjectSummary;
+            this.accountId = accountId;
+            this.accessRoleName = accessRoleName;
+            this.prefix = prefix;
         }
     }
 }

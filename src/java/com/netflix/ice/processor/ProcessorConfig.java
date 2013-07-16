@@ -30,6 +30,12 @@ public class ProcessorConfig extends Config {
     private static ReservationCapacityPoller reservationCapacityPoller;
     private static BillingFileProcessor billingFileProcessor;
 
+    public final String role;
+    public final String[] billingAccountIds;
+    public final String[] billingS3BucketNames;
+    public final String[] billingS3BucketPrefixes;
+    public final String[] billingAccessRoleNames;
+
     public final ReservationService reservationService;
     public final LineItemProcessor lineItemProcessor;
     public final Randomizer randomizer;
@@ -68,6 +74,12 @@ public class ProcessorConfig extends Config {
             this.costPerMonitorMetricPerHour = Double.parseDouble(properties.getProperty(IceOptions.COST_PER_MONITORMETRIC_PER_HOUR));
         else
             this.costPerMonitorMetricPerHour = 0;
+
+        role = properties.getProperty(IceOptions.ICE_ROLE);
+        billingS3BucketNames = properties.getProperty(IceOptions.BILLING_S3_BUCKET_NAME).split(",");
+        billingS3BucketPrefixes = properties.getProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, "").split(",");
+        billingAccountIds = properties.getProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, "").split(",");
+        billingAccessRoleNames = properties.getProperty(IceOptions.BILLING_ACCESS_ROLENAME, "").split(",");
 
         ProcessorConfig.instance = this;
 

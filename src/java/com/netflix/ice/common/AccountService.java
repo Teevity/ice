@@ -46,10 +46,17 @@ public interface AccountService {
     List<Account> getAccounts(List<String> accountNames);
 
     /**
-     * If you don't share reserved instances among multiple accounts, you can return an empty map.
+     * If you don't have reserved instances, you can return an empty map.
      * @return Map of accounts. The keys are owner accounts, the values are list of borrowing accounts.
      */
     Map<Account, List<Account>> getReservationAccounts();
+
+    /**
+     * If you don't share reserved instances among multiple accounts, you can return an empty map.
+     * @return Map of account access roles. The keys are reservation owner accounts,
+     * the values assumed roles to call ec2 describeReservedInstances on each reservation owner account.
+     */
+    Map<Account, String> getReservationAccessRoles();
 
     /**
      * If you don't share reserved instances among multiple accounts, you can return the input zone.
