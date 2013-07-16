@@ -42,90 +42,95 @@ When representing the cost profile for individual resources, Ice will factor the
 ##Basic setup: 
 Using basic setup, you don't need any extra code change and you will use the provided bootstrap.groovy. You will need to construct your own ice.properties file and have it in your classpath (I put it at src/java). You can use sample.properties (located at src/java) file as the template.
 
-1. Find the s3 billing bucket name and billing file prefix and specify them in ice.properties. For example:
-  
-          ice.billing_s3bucketname=billing.bucket
-          ice.billing_s3bucketprefix=
-  
-  Tip: If Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" may not be able to read those billing files because the AWS Billing user wrote those billing files. In this case, you can either use cross-account roles or create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
+1. Processor configuration
 
-2. Processor configuration
-
-  2.1 Enable processor in ice.properties:
+  1.1 Enable processor in ice.properties:
       
           ice.processor=true
   
-  2.2 In ice.properties, set up the local directory where the processor can copy the billing file to and store the output files. For example:
+  1.2 In ice.properties, set up the local directory where the processor can copy the billing file to and store the output files. The directory must pre-exist. For example:
       
           ice.processor.localDir=/mnt/ice_processor
 
-  2.3 In ice.properties, set up the working s3 bucket and working s3 bucket file prefix to upload the processed output files which will be read by reader. For example:
+  1.3 In ice.properties, set up the working s3 bucket and working s3 bucket file prefix to upload the processed output files which will be read by reader. Ice must have read and write access to the s3 bucket. For example:
       
           ice.work_s3bucketname=work_s3bucketname
           ice.work_s3bucketprefix=work_s3bucketprefix/
-
-  2.4 Set up access permission to the s3 buckets. 
   
-  If running locally, set the following system properties at runtime:
+  1.4 If running locally, set the following system properties at runtime. ice.s3AccessToken is optional.
      
-          ice.s3AccessKeyId=<s3AccessKeyId>
-          ice.s3SecretKey=<s3SecretKey>
+          ice.s3AccessKeyId=<accessKeyId>
+          ice.s3SecretKey=<secretKey>
+          ice.s3AccessToken=<accessToken>
   
-  If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above two properties unset.
+  If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above properties unset.
 
-  2.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013. If this property is not set, Ice will set startmillis to be the beginning of current month.
+  1.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013. If this property is not set, Ice will set startmillis to be the beginning of current month.
       
           ice.startmillis=1364774400000
 
-  2.6 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. For example:
+  1.6 Set up s3 billing bucket in ice.properties. If you have multiple payer accounts, you will need to specify multiple values for each property.
+  
+          # s3 bucket name where the billing files are. multiple bucket names are delimited by ",". Ice must have read access to billing s3 bucket.
+          ice.billing_s3bucketname=billing_s3bucketname1,billing_s3bucketname2
+          # prefix of the billing files. multiple prefixes are delimited by ","
+          ice.billing_s3bucketprefix=,
+          # specify your payer account id here if across-accounts IAM role access is used. multiple account ids are delimited by ",". "ice.billing_payerAccountId=,222222222222" means assumed role access is only used for the second bucket.
+          ice.billing_payerAccountId=,123456789012
+          # specify the assumed role name here if you use IAM role access to read from billing s3 bucket. multiple role names are delimited by ",". "ice.billing_accessRoleName=,ice" means assumed role access is only used for the second bucket.
+          ice.billing_accessRoleName=,ice
+  
+  Tip: If you have multiple payer accounts, or Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" does not have read access to those billing files because Amazon created them. In this case, the recommended way is to use cross-accounts IAM roles. E.g. you can create a role "ice" in both "prod" and "test" accounts. From "prod" account, grant assumed role "ice" with read access to billing bucket, then start Ice in "test" account with role "ice". You can also create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
+  
+  1.7 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. For example:
       
           ice.account.account1=123456789011
           ice.account.account2=123456789012
           ice.account.account3=123456789013
 
-3. Reader configuration
+2. Reader configuration
 
-  3.1 Enable reader in ice.properties:
+  2.1 Enable reader in ice.properties:
   
           ice.reader=true
       
-  3.2 In ice.properties, set up the local directory where the reader will copy files to. For example:
+  2.2 In ice.properties, set up the local directory where the reader will copy files to. The local directory must pre-exist. For example:
       
           ice.reader.localDir=/mnt/ice_reader
     
     Make sure the local directory is different if you run processor and reader on the same instance.
 
-  3.4 Same as 2.4
+  2.3 Same as 1.3
   
-  3.5 Same as 2.5
+  2.4 Same as 1.4
   
-  3.6 Same as 2.6
+  2.5 Same as 1.5
   
-  3.7 Specify your organization name in ice.properties. This will show up in the UI header.
+  2.6 Specify your organization name in ice.properties. This will show up in the UI header.
           ice.companyName=Your Company Name
 
-  3.8 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
+  2.7 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
 
           # Specify your curreny sign here. The default value is $. For other currency symbols, you can use UTF-8 code, e.g. for ¥, you can use ice.currencySign=\u00A5
           ice.currencySign=£
           # Specify your curreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
           ice.currencyRate=0.6666667
 
-4. Running Ice
+3. Running Ice
 
-  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. For the first time, you should first run processor. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
+  After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. For the first time, you should FIRST RUN PROCESSOR. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
   
   Here are the steps of getting ice running locally:
 
-  4.1 Pull the project
+  3.1 Pull the project
   
-  4.2 Run `grails wrapper` from the project root directory. This step will pull all necessary jar from maven central.
+  3.2 Run `grails wrapper` from the project root directory. This step will pull all necessary jar from maven central.
 
-  4.3 Construct ice.properties for processor and make sure ice.properties is added to directory src/java
+  3.3 Construct ice.properties for processor and make sure ice.properties is added to directory src/java
 
-  4.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working 3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
+  3.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working 3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
   
-  4.5 Repeat steps 4.3 and 4.4 to run Ice reader.
+  3.5 Repeat steps 3.3 and 3.4 to run Ice reader.
 
   Tip: Sometimes you want to re-start from a clean slate. To do that:
   
@@ -149,7 +154,7 @@ Options with * require writing your own code.
 
 1. Basic reservation service
 
-  If you have reserved instances in your accounts, you may want to make use of the reservation view in the UI, where you can browse/analyze your on-demand, unused reserved instance usage&cost of different instance types in different regions, zones and accounts. in Bootstrap.groovy, BasiicReservationService is used. You can specify reservation period and reservation utilization type in ice.properties:
+  If you have reserved instances in your accounts, you may want to make use of the reservation view in the UI, where you can browse/analyze your on-demand, unused reserved instance usage&cost of different instance types in different regions, zones and accounts. in Bootstrap.groovy, BasicReservationService is used. You can specify reservation period and reservation utilization type in ice.properties:
   
           # reservation period, possible values are oneyear, threeyear
           ice.reservationPeriod=threeyear
@@ -158,23 +163,19 @@ Options with * require writing your own code.
 
 2. Reservation capacity poller
 
-  To use BasiicReservationService, you should also run reservation capacity poller, which will poll different accounts for reservation capacities and store the reservation capacities history in a file in s3 bucket. To run reservation capacity poller, following steps below:
+  To use BasicReservationService, you should also run reservation capacity poller, which will call ec2 API (describeReservedInstances) to poll reservation capacities for each reservation owner account defined in ice.properties. The reservation capacities history is stored in a file in s3 bucket. To run reservation capacity poller, following steps below:
   
     2.1 Set ice.reservationCapacityPoller=true in ice.properties
     
-    2.2 Set up access to make describeReservedInstances API call. 
-  
-      If running locally, set the following system properties at runtime:
-     
-          ice.reservationAccessKeyId
-          ice.reservationSecretKey
-  
-      If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above two properties unset.
-      
-    2.3 If you IAM account to make the describeReservedInstances API call, also set the following system properties:
-
-          ice.reservationRoleResourceName
-          ice.reservationRoleSessionName
+    2.2 Make sure you set up reservation owner accounts in ice.properties. For example:
+          ice.owneraccount.account1=
+          ice.owneraccount.account2=account3,account4
+          ice.owneraccount.account5=account6
+    
+    2.3 If you need to poll reservation capacity of different accounts, set up IAM roles. Then specify the assumed role in ice.properties. For example, if assumed role "ice" is used:
+          ice.owneraccount.account1.role=ice
+          ice.owneraccount.account2.role=ice
+          ice.owneraccount.account5.role=ice
 
 3. On-demand instance cost alert
 
@@ -192,12 +193,13 @@ Options with * require writing your own code.
 4. Sharing reserved instances among accounts (*)
 
   If reserved instances are shared among accounts, please specify them in ice.properties. For example:
-  
+          # set reservation owner accounts. "ice.owneraccount.account2=account3,account4" means reservations in account2 can be shared by account3 and account4
+          # if reservation capacity poller is enabled, the poller will try to poll reservation capacity through ec2 API (desribeReservedInstances) for each reservation owner account.
           ice.owneraccount.account1_name=
           ice.owneraccount.account2_name=account3_name,account4_name
           ice.owneraccount.account5_name=account6_name
   
-  If different accounts have different AZ mappings, you will also need to subclass BasicAccountService and override method getAccountMappedZone.
+  If different accounts have different AZ mappings, you will also need to subclass BasicAccountService and override method getAccountMappedZone to provide correct AZ mapping.
    
 5. Customized reservation service (*)
 
