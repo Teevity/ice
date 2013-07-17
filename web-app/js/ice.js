@@ -726,7 +726,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
   };
 });
 
-function mainCntl($scope, $location, $timeout, usage_db, highchart) {
+function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
   $scope.currencySign = global_currencySign;
 
   window.onhashchange = function() {
