@@ -62,6 +62,8 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.s3AccessKeyId=<accessKeyId>
           ice.s3SecretKey=<secretKey>
           ice.s3AccessToken=<accessToken>
+          # specify your role here if you use cross-account IAM roles to access billing files in other accounts
+          ice.role=<role>
   
   If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above properties unset.
 
