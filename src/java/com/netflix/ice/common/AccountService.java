@@ -52,11 +52,19 @@ public interface AccountService {
     Map<Account, List<Account>> getReservationAccounts();
 
     /**
-     * If you don't share reserved instances among multiple accounts, you can return an empty map.
+     * If you don't need to poll reservation capacity through ec2 API for other accounts, you can return an empty map.
      * @return Map of account access roles. The keys are reservation owner accounts,
-     * the values assumed roles to call ec2 describeReservedInstances on each reservation owner account.
+     * the values are assumed roles to call ec2 describeReservedInstances on each reservation owner account.
      */
     Map<Account, String> getReservationAccessRoles();
+
+    /**
+     * If you don't need to poll reservation capacity through ec2 API for other accounts, ir if you don't use external ids,
+     * you can return an empty map.
+     * @return Map of account access external ids. The keys are reservation owner accounts,
+     * the values are external ids to call ec2 describeReservedInstances on each reservation owner account.
+     */
+    Map<Account, String> getReservationAccessExternalIds();
 
     /**
      * If you don't share reserved instances among multiple accounts, you can return the input zone.

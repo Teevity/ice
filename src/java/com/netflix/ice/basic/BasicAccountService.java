@@ -34,10 +34,13 @@ public class BasicAccountService implements AccountService {
     private Map<String, Account> accountsByName = Maps.newConcurrentMap();
     private Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
     private Map<Account, String> reservationAccessRoles = Maps.newHashMap();
+    private Map<Account, String> reservationAccessExternalIds = Maps.newHashMap();
 
-    public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts, Map<Account, String> reservationAccessRoles) {
+    public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts,
+                               Map<Account, String> reservationAccessRoles, Map<Account, String> reservationAccessExternalIds) {
         this.reservationAccounts = reservationAccounts;
         this.reservationAccessRoles = reservationAccessRoles;
+        this.reservationAccessExternalIds = reservationAccessExternalIds;
         for (Account account: accounts) {
             accountsByName.put(account.name, account);
             accountsById.put(account.id, account);
@@ -78,6 +81,11 @@ public class BasicAccountService implements AccountService {
 
     public Map<Account, String> getReservationAccessRoles() {
         return reservationAccessRoles;
+    }
+
+
+    public Map<Account, String> getReservationAccessExternalIds() {
+        return reservationAccessExternalIds;
     }
 
     public Zone getAccountMappedZone(Account mapAccount, Account account, Zone zone) {

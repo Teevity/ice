@@ -71,10 +71,12 @@ public class AwsUtils {
      * @param assumeRole
      * @return assumes IAM credentials
      */
-    public static Credentials getAssumedCredentials(String accountId, String role, String assumeRole) {
+    public static Credentials getAssumedCredentials(String accountId, String role, String assumeRole, String externalId) {
         AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
                 .withRoleArn("arn:aws:iam::" + accountId + ":role/" + role)
                 .withRoleSessionName(assumeRole);
+        if (!StringUtils.isEmpty(externalId))
+            assumeRoleRequest.setExternalId(externalId);
         AssumeRoleResult roleResult = securityClient.assumeRole(assumeRoleRequest);
         return roleResult.getCredentials();
     }
@@ -138,7 +140,8 @@ public class AwsUtils {
      * @param prefix
      * @return
      */
-    public static List<S3ObjectSummary> listAllObjects(String bucket, String prefix, String accountId, String roleResourceName, String roleSessionName) {
+    public static List<S3ObjectSummary> listAllObjects(String bucket, String prefix, String accountId,
+                                                       String roleResourceName, String roleSessionName, String externalId) {
         AmazonS3Client s3Client = AwsUtils.s3Client;
 
         try {
@@ -146,7 +149,7 @@ public class AwsUtils {
             List<S3ObjectSummary> result = Lists.newLinkedList();
 
             if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(roleSessionName)) {
-                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName);
+                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName, externalId);
                 s3Client = new AmazonS3Client(
                         new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
                                 assumedCredentials.getSecretAccessKey(),
@@ -238,12 +241,13 @@ public class AwsUtils {
         }
     }
 
-    public static boolean downloadFileIfChangedSince(String bucketName, String bucketFilePrefix, File file, long milles, String accountId, String roleResourceName, String roleSessionName) {
+    public static boolean downloadFileIfChangedSince(String bucketName, String bucketFilePrefix, File file, long milles, String accountId,
+                                                     String roleResourceName, String roleSessionName, String externalId) {
         AmazonS3Client s3Client = AwsUtils.s3Client;
 
         try {
             if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(roleSessionName)) {
-                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName);
+                Credentials assumedCredentials = getAssumedCredentials(accountId, roleResourceName, roleSessionName, externalId);
                 s3Client = new AmazonS3Client(
                         new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
                                 assumedCredentials.getSecretAccessKey(),

@@ -113,7 +113,8 @@ public class ReservationCapacityPoller extends Poller {
                 AmazonEC2Client ec2Client;
                 String assumeRole = config.accountService.getReservationAccessRoles().get(account);
                 if (assumeRole != null) {
-                    final Credentials credentials = AwsUtils.getAssumedCredentials(account.id, config.role, assumeRole);
+                    String externalId = config.accountService.getReservationAccessExternalIds().get(account);
+                    final Credentials credentials = AwsUtils.getAssumedCredentials(account.id, config.role, assumeRole, externalId);
                     ec2Client = new AmazonEC2Client(new AWSSessionCredentials() {
                         public String getAWSAccessKeyId() {
                             return credentials.getAccessKeyId();

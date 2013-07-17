@@ -66,7 +66,13 @@ public class IceOptions {
      * Billing file access role name to assume. Must be specified if across-accounts role is used to access billing files. For multiple payer accounts,
      * role names can be specified delimited by comma ",".
      */
-    public static final String BILLING_ACCESS_ROLENAME= "ice.billing_accessRoleName";
+    public static final String BILLING_ACCESS_ROLENAME = "ice.billing_accessRoleName";
+
+    /**
+     * Billing file access external ID. It is optional. Specify it if cross-accounts role is used to access billing files and external id is needed.
+     * For multiple payer accounts, external ids can be specified delimited by comma ",".
+     */
+    public static final String BILLING_ACCESS_EXTERNALID = "ice.billing_accessExternalId";
 
     /**
      * s3 bucket name where output files are to be store. Both read and write permissions are needed. It must be specified in Config.

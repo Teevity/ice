@@ -103,8 +103,9 @@ class BootStrap {
             }
             Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
             Map<Account, String> reservationAccessRoles = Maps.newHashMap();
+            Map<Account, String> reservationAccessExternalIds = Maps.newHashMap();
             for (String name: prop.stringPropertyNames()) {
-                if (name.startsWith("ice.owneraccount.") && !name.endsWith(".role")) {
+                if (name.startsWith("ice.owneraccount.") && !name.endsWith(".role") && !name.endsWith(".externalId")) {
                     String accountName = name.substring("ice.owneraccount.".length());
                     String[] childen = prop.getProperty(name).split(",");
                     List<Account> childAccouns = Lists.newArrayList();
@@ -113,13 +114,18 @@ class BootStrap {
                         if (childAccount != null)
                             childAccouns.add(childAccount);
                     }
-                    String role = prop.getProperty(name + ".role", "");
                     reservationAccounts.put(accounts.get(accountName), childAccouns);
+
+                    String role = prop.getProperty(name + ".role", "");
                     reservationAccessRoles.put(accounts.get(accountName), role);
+
+                    String externalId = prop.getProperty(name + ".externalId", "");
+                    reservationAccessExternalIds.put(accounts.get(accountName), externalId);
                 }
             }
 
-            BasicAccountService accountService = new BasicAccountService(Lists.newArrayList(accounts.values()), reservationAccounts, reservationAccessRoles);
+            BasicAccountService accountService = new BasicAccountService(Lists.newArrayList(accounts.values()), reservationAccounts,
+                    reservationAccessRoles, reservationAccessExternalIds);
             Properties properties = new Properties();
             if (!StringUtils.isEmpty(prop.getProperty(IceOptions.START_MILLIS)))
                 properties.setProperty(IceOptions.START_MILLIS, prop.getProperty(IceOptions.START_MILLIS));
@@ -135,6 +141,7 @@ class BootStrap {
                 properties.setProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, prop.getProperty(IceOptions.BILLING_S3_BUCKET_PREFIX, ""));
                 properties.setProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, prop.getProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, ""));
                 properties.setProperty(IceOptions.BILLING_ACCESS_ROLENAME, prop.getProperty(IceOptions.BILLING_ACCESS_ROLENAME, ""));
+                properties.setProperty(IceOptions.BILLING_ACCESS_EXTERNALID, prop.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, ""));
                 String role;
                 if (StringUtils.isEmpty(System.getProperty(IceOptions.ICE_ROLE)))
                     role = getCurrentRole();

@@ -80,10 +80,12 @@ public class BillingFileProcessor extends Poller {
             String billingS3BucketPrefix = config.billingS3BucketPrefixes.length > i ? config.billingS3BucketPrefixes[i] : "";
             String accountId = config.billingAccountIds.length > i ? config.billingAccountIds[i] : "";
             String billingAccessRoleName = config.billingAccessRoleNames.length > i ? config.billingAccessRoleNames[i] : "";
+            String billingAccessExternalId = config.billingAccessExternalIds.length > i ? config.billingAccessExternalIds[i] : "";
 
-            logger.info("trying to list objects in billing bucket " + billingS3BucketName + " using role and assume role " + config.role + " " + billingAccessRoleName);
+            logger.info("trying to list objects in billing bucket " + billingS3BucketName + " using role, assume role, and external id "
+                    + config.role + " " + billingAccessRoleName + " " + billingAccessExternalId);
             List<S3ObjectSummary> objectSummaries = AwsUtils.listAllObjects(billingS3BucketName, billingS3BucketPrefix,
-                    accountId, config.role, billingAccessRoleName);
+                    accountId, config.role, billingAccessRoleName, billingAccessExternalId);
             logger.info("found " + objectSummaries.size() + " in billing bucket " + billingS3BucketName);
             TreeMap<DateTime, S3ObjectSummary> filesToProcessInOneBucket = Maps.newTreeMap();
             Map<DateTime, S3ObjectSummary> monitorFilesToProcessInOneBucket = Maps.newTreeMap();
@@ -126,7 +128,7 @@ public class BillingFileProcessor extends Poller {
                     list = Lists.newArrayList();
                     filesToProcess.put(key, list);
                 }
-                list.add(new BillingFile(filesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingS3BucketPrefix));
+                list.add(new BillingFile(filesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix));
             }
 
             for (DateTime key: monitorFilesToProcessInOneBucket.keySet()) {
@@ -135,7 +137,7 @@ public class BillingFileProcessor extends Poller {
                     list = Lists.newArrayList();
                     monitorFilesToProcess.put(key, list);
                 }
-                list.add(new BillingFile(monitorFilesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingS3BucketPrefix));
+                list.add(new BillingFile(monitorFilesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix));
             }
         }
 
@@ -170,7 +172,7 @@ public class BillingFileProcessor extends Poller {
                 File file = new File(config.localDir, fileKey.substring(billingFile.prefix.length()));
                 logger.info("trying to download " + fileKey + "...");
                 boolean downloaded = AwsUtils.downloadFileIfChangedSince(objectSummary.getBucketName(), billingFile.prefix, file, lastProcessed,
-                        billingFile.accountId, config.role, billingFile.accessRoleName);
+                        billingFile.accountId, config.role, billingFile.accessRoleName, billingFile.externalId);
                 if (downloaded)
                     logger.info("downloaded " + fileKey);
                 else {
@@ -195,7 +197,7 @@ public class BillingFileProcessor extends Poller {
                         File monitorFile = new File(config.localDir, monitorFileKey.substring(monitorFileKey.lastIndexOf("/") + 1));
                         logger.info("trying to download " + monitorFileKey + "...");
                         boolean downloaded = AwsUtils.downloadFileIfChangedSince(monitorObjectSummary.getBucketName(), monitorBillingFile.prefix, monitorFile, lastProcessed,
-                                monitorBillingFile.accountId, config.role, monitorBillingFile.accessRoleName);
+                                monitorBillingFile.accountId, config.role, monitorBillingFile.accessRoleName, monitorBillingFile.externalId);
                         if (downloaded)
                             logger.info("downloaded " + monitorFile);
                         else
@@ -852,12 +854,14 @@ public class BillingFileProcessor extends Poller {
         final S3ObjectSummary s3ObjectSummary;
         final String accountId;
         final String accessRoleName;
+        final String externalId;
         final String prefix;
 
-        BillingFile(S3ObjectSummary s3ObjectSummary, String accountId, String accessRoleName, String prefix) {
+        BillingFile(S3ObjectSummary s3ObjectSummary, String accountId, String accessRoleName, String externalId, String prefix) {
             this.s3ObjectSummary = s3ObjectSummary;
             this.accountId = accountId;
             this.accessRoleName = accessRoleName;
+            this.externalId = externalId;
             this.prefix = prefix;
         }
     }
