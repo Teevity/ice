@@ -79,6 +79,8 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.billing_payerAccountId=,123456789012
           # specify the assumed role name here if you use IAM role access to read from billing s3 bucket. multiple role names are delimited by ",". "ice.billing_accessRoleName=,ice" means assumed role access is only used for the second bucket.
           ice.billing_accessRoleName=,ice
+          # specify external id here if it is used. multiple external ids are delimited by ",". if you don't use external id, you can leave this property unset.
+          ice.billing_accessExternalId=
   
   Tip: If you have multiple payer accounts, or Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" does not have read access to those billing files because Amazon created them. In this case, the recommended way is to use cross-accounts IAM roles. E.g. you can create a role "ice" in both "prod" and "test" accounts. From "prod" account, grant assumed role "ice" with read access to billing bucket, then start Ice in "test" account with role "ice". You can also create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
   
@@ -172,10 +174,13 @@ Options with * require writing your own code.
           ice.owneraccount.account2=account3,account4
           ice.owneraccount.account5=account6
     
-    2.3 If you need to poll reservation capacity of different accounts, set up IAM roles. Then specify the assumed role in ice.properties. For example, if assumed role "ice" is used:
+    2.3 If you need to poll reservation capacity of different accounts, set up IAM roles. Then specify the assumed roles and external ids in ice.properties. For example, if assumed role "ice" is used:
           ice.owneraccount.account1.role=ice
           ice.owneraccount.account2.role=ice
           ice.owneraccount.account5.role=ice
+        If you use external id too, specify it like following:
+          ice.owneraccount.account1.externalId=
+          
 
 3. On-demand instance cost alert
 
