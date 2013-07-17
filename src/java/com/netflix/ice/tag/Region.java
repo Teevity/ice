@@ -43,6 +43,7 @@ public class Region extends Tag {
         regionsByShortName.put(US_WEST_2.shortName, US_WEST_2);
         regionsByShortName.put(EU_WEST_1.shortName, EU_WEST_1);
         regionsByShortName.put(AP_SOUTHEAST_1.shortName, AP_SOUTHEAST_1);
+        regionsByShortName.put(AP_SOUTHEAST_2.shortName, AP_SOUTHEAST_2);
         regionsByShortName.put(AP_NORTHEAST_1.shortName, AP_NORTHEAST_1);
         regionsByShortName.put(SA_EAST_1.shortName, SA_EAST_1);
 
@@ -51,6 +52,7 @@ public class Region extends Tag {
         regionsByName.put(US_WEST_2.name, US_WEST_2);
         regionsByName.put(EU_WEST_1.name, EU_WEST_1);
         regionsByName.put(AP_SOUTHEAST_1.name, AP_SOUTHEAST_1);
+        regionsByName.put(AP_SOUTHEAST_2.name, AP_SOUTHEAST_2);
         regionsByName.put(AP_NORTHEAST_1.name, AP_NORTHEAST_1);
         regionsByName.put(SA_EAST_1.name, SA_EAST_1);
     }
