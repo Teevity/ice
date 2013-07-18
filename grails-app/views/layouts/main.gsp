@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="${resource(dir: 'css', file: 'main.css')}"/>
   <g:layoutHead/>
 </head>
-<body class="nactest" ng-controller="mainCntl">
+<body class="nactest" ng-controller="mainCtrl">
   <div class="titlebar" ng-show="!graphOnly()">
     <div class="header" style="padding-top:15px; height:43px">
       <a href="${resource(dir: '/')}">
