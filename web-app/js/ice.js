@@ -117,22 +117,31 @@ ice.factory('highchart', function() {
     hc_options.series = [];
     var i, j;
     for (i in result.data) {
-      var serie = {
-          name: result.data[i].name,
-          data: result.data[i].data,
-          pointStart: result.start,
-          pointInterval: result.interval,
-          //step: true,
-          type: plotType
-      };
+      var data = result.data[i].data;
       var hasData = false;
-      for (j in serie.data) {
-        serie.data[j] = parseFloat(serie.data[j].toFixed(2));
-        if (serie.data[j] !== 0)
+      for (j in data) {
+        data[j] = parseFloat(data[j].toFixed(2));
+        if (data[j] !== 0)
           hasData = true;
       }
-      if (hasData)
+
+      if (hasData) {
+        if (!result.interval && result.time) {
+          for (j in data) {
+            data[j] = [result.time[j], data[j]];
+          }
+        }
+        var serie = {
+            name: result.data[i].name,
+            data: data,
+            pointStart: result.start,
+            pointInterval: result.interval,
+            //step: true,
+            type: plotType
+        };
+
         hc_options.series.push(serie);
+      }
     };
 
     if (showsps && result.sps && result.sps.length > 0) {

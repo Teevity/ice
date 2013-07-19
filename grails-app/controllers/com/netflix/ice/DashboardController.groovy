@@ -587,9 +587,6 @@ class DashboardController {
 
             result.data = data.sort {-it.getValue()[it.getValue().length-1]}
         }
-        if (consolidateType != ConsolidateType.monthly) {
-            result.interval = consolidateType.millis;
-        }
 
         if (showsps || factorsps) {
             result.sps = config.throughputMetricService.getData(interval, consolidateType);
@@ -623,6 +620,12 @@ class DashboardController {
             }
         }
 
+        if (consolidateType != ConsolidateType.monthly) {
+            result.interval = consolidateType.millis;
+        }
+        else {
+            result.time = new IntRange(0, data.values().iterator().next().length - 1).collect { interval.getStart().plusMonths(it).getMillis() }
+        }
         return result;
     }
 
