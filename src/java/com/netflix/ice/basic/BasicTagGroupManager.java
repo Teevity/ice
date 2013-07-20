@@ -56,7 +56,7 @@ public class BasicTagGroupManager extends Poller implements TagGroupManager {
         catch (Exception e) {
             logger.error("cannot poll data", e);
         }
-        start();
+        start(300);
     }
 
     @Override

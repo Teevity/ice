@@ -24,8 +24,12 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Hours;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class Ec2InstanceReservationPrice {
 
@@ -37,8 +41,13 @@ public class Ec2InstanceReservationPrice {
         hourlyPrice = new VersionedPrice();
     }
 
+    private Ec2InstanceReservationPrice(VersionedPrice upfrontPrice, VersionedPrice hourlyPrice) {
+        this.upfrontPrice = upfrontPrice;
+        this.hourlyPrice = hourlyPrice;
+    }
+
     public static class VersionedPrice {
-        private TreeMap<Long, Price> prices = Maps.newTreeMap();
+        private ConcurrentSkipListMap<Long, Price> prices = new ConcurrentSkipListMap<Long, Price>();
 
         public Price getCreatePrice(Long millis) {
             Price price = prices.get(millis);
@@ -80,6 +89,10 @@ public class Ec2InstanceReservationPrice {
             this.listPrice = listPrice;
         }
 
+        public Double getListPrice() {
+            return this.listPrice;
+        }
+
         public void setPrice(Long tier, Double price) {
             tierPrice.put(tier, price);
         }
@@ -108,6 +121,39 @@ public class Ec2InstanceReservationPrice {
             DateTime end = start.plusYears(reservationPeriod.years);
             int hours = Hours.hoursBetween(start, end).getHours();
             return price / hours;
+        }
+    }
+
+    public static class Serializer {
+        private static void serializeVersionedPrice(DataOutput out, VersionedPrice versionedPrice) throws IOException {
+            out.writeInt(versionedPrice.prices.size());
+            for (Long millis: versionedPrice.prices.keySet()) {
+                out.writeLong(millis);
+                out.writeDouble(versionedPrice.prices.get(millis).listPrice);
+            }
+        }
+
+        private static VersionedPrice deserializeVersionedPrice(DataInput in) throws IOException {
+            VersionedPrice versionedPrice = new VersionedPrice();
+            int size = in.readInt();
+            for (int i = 0; i < size; i++) {
+                long millis = in.readLong();
+                double price = in.readDouble();
+                versionedPrice.getCreatePrice(millis).setListPrice(price);
+            }
+            return versionedPrice;
+        }
+
+        public static void serialize(DataOutput out, Ec2InstanceReservationPrice reservationPrice) throws IOException {
+            serializeVersionedPrice(out, reservationPrice.upfrontPrice);
+            serializeVersionedPrice(out, reservationPrice.hourlyPrice);
+        }
+
+        public static Ec2InstanceReservationPrice deserialize(DataInput in) throws IOException {
+            VersionedPrice upfrontPrice = deserializeVersionedPrice(in);
+            VersionedPrice hourlyPrice = deserializeVersionedPrice(in);
+
+            return new Ec2InstanceReservationPrice(upfrontPrice, hourlyPrice);
         }
     }
 
@@ -152,16 +198,32 @@ public class Ec2InstanceReservationPrice {
             result = prime * result + this.usageType.hashCode();
             return result;
         }
+
+        public static class Serializer {
+            public static void serialize(DataOutput out, Key key) throws IOException {
+                out.writeUTF(key.region.toString());
+                UsageType.serialize(out, key.usageType);
+            }
+
+            public static Key deserialize(DataInput in) throws IOException {
+                Region region = Region.getRegionByName(in.readUTF());
+                UsageType usageType = UsageType.deserialize(in);
+
+                return new Key(region, usageType);
+            }
+        }
     }
 
     public static enum ReservationPeriod {
-        oneyear(1),
-        threeyear(3);
+        oneyear(1, "yrTerm1"),
+        threeyear(3, "yrTerm3");
 
         public final int years;
+        public final String jsonTag;
 
-        private ReservationPeriod(int years) {
+        private ReservationPeriod(int years, String jsonTag) {
             this.years = years;
+            this.jsonTag = jsonTag;
         }
 
     }

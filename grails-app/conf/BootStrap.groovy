@@ -166,13 +166,16 @@ class BootStrap {
                 if ("true".equals(prop.getProperty("ice.reservationCapacityPoller"))) {
                     reservationCapacityPoller = new ReservationCapacityPoller();
                 }
-
+                Ec2InstanceReservationPrice.ReservationPeriod reservationPeriod =
+                    Ec2InstanceReservationPrice.ReservationPeriod.valueOf(prop.getProperty("ice.reservationPeriod", "threeyear"));
+                Ec2InstanceReservationPrice.ReservationUtilization reservationUtilization =
+                    Ec2InstanceReservationPrice.ReservationUtilization.valueOf(prop.getProperty("ice.reservationUtilization", "HEAVY"));
                 processorConfig = new ProcessorConfig(
                         properties,
                         credentialsProvider,
                         accountService,
                         new BasicProductService(),
-                        new BasicReservationService(Ec2InstanceReservationPrice.ReservationPeriod.threeyear, Ec2InstanceReservationPrice.ReservationUtilization.HEAVY),
+                        new BasicReservationService(reservationPeriod, reservationUtilization),
                         null,
                         new BasicLineItemProcessor(),
                         null)
