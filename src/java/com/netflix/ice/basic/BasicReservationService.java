@@ -298,6 +298,10 @@ public class BasicReservationService extends Poller implements ReservationServic
         return reservationPeriod;
     }
 
+    public Ec2InstanceReservationPrice.ReservationUtilization getReservationUtilization() {
+        return reservationUtilization;
+    }
+
     public double getLatestHourlyTotalPrice(
             long time,
             Region region,

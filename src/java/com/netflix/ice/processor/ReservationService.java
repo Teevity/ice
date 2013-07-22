@@ -45,6 +45,12 @@ public interface ReservationService {
     Ec2InstanceReservationPrice.ReservationPeriod getReservationPeriod();
 
     /**
+     *
+     * @return
+     */
+    Ec2InstanceReservationPrice.ReservationUtilization getReservationUtilization();
+
+    /**
      * Get reservation info.
      * @param time
      * @param tagGroup

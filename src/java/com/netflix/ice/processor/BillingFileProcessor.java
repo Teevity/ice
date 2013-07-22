@@ -368,6 +368,9 @@ public class BillingFileProcessor extends Poller {
         usage.put(lentTagGroup, borrowedUsage - getValue(usage, reservedTagGroup));
         cost.put(lentTagGroup, borrowedCost - getValue(cost, reservedTagGroup));
         usage.put(unusedTagGroup, unusedUsage);
+        if (config.reservationService.getReservationUtilization() != Ec2InstanceReservationPrice.ReservationUtilization.HEAVY) {
+            unusedCost = 0;
+        }
         cost.put(unusedTagGroup, unusedCost);
     }
 
