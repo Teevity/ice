@@ -173,11 +173,10 @@ public class BasicWeeklyCostEmailService extends Poller {
 
     public synchronized void trigger(boolean test) {
 
-        AmazonSimpleEmailServiceClient emailService = null;
         try {
             headerNote = getHeaderNote();
             throughputMetrics = getThroughputMetrics();
-            emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
+            AmazonSimpleEmailServiceClient emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
             Map<String, ApplicationGroup> appgroups = applicationGroupService.getApplicationGroups();
             Map<String, List<ApplicationGroup>> appgroupsByEmail = collectEmails(appgroups);
 
@@ -193,9 +192,6 @@ public class BasicWeeklyCostEmailService extends Poller {
         }
         catch (Exception e) {
             logger.error("error sending cost emails", e);
-        }
-        finally {
-            if (emailService != null) try {emailService.shutdown();} catch (Exception e){}
         }
     }
 
