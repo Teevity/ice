@@ -224,6 +224,12 @@ Options with * require writing your own code.
    
   You may also want to show your organization's throughput metric alongside usage and cost. You can choose to implement interface ThroughputMetricService, or you can simply use the existing BasicThroughputMetricService. Using BasicThroughputMetricService requires the throughput metric data to be stores monthly in files with names like <filePrefix>_2013_04, <filePrefix>_2013_05. Data in files should be delimited by new lines. <filePrefix> is specified when you create BasicThroughputMetricService instance.
 
+##Support
+
+Please use the [Ice Google Group](https://groups.google.com/d/forum/iceusers) for general questions and discussion.
+
+##Download Snapshot Builds
+Download snapshot builds here: [https://netflixoss.ci.cloudbees.com/job/ice-master/](https://netflixoss.ci.cloudbees.com/job/ice-master/)
 
 ##License
 
