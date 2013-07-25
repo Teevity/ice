@@ -142,12 +142,6 @@ class BootStrap {
                 properties.setProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, prop.getProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, ""));
                 properties.setProperty(IceOptions.BILLING_ACCESS_ROLENAME, prop.getProperty(IceOptions.BILLING_ACCESS_ROLENAME, ""));
                 properties.setProperty(IceOptions.BILLING_ACCESS_EXTERNALID, prop.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, ""));
-                String role;
-                if (StringUtils.isEmpty(System.getProperty(IceOptions.ICE_ROLE)))
-                    role = getCurrentRole();
-                else
-                    role = System.getProperty(IceOptions.ICE_ROLE);
-                properties.setProperty(IceOptions.ICE_ROLE, role);
 
                 if (prop.getProperty(IceOptions.COMPANY_NAME) != null)
                     properties.setProperty(IceOptions.COMPANY_NAME, prop.getProperty(IceOptions.COMPANY_NAME));

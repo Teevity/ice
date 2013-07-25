@@ -20,11 +20,6 @@ package com.netflix.ice.common;
 public class IceOptions {
 
     /**
-     * Current IAM role name on the instance. Must be specified if different from result in http://169.254.169.254/latest/meta-data/iam/security-credentials/
-     */
-    public static final String ICE_ROLE = "ice.role";
-
-    /**
      * Data start date in millis.
      */
     public static final String START_MILLIS = "ice.startmillis";

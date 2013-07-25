@@ -82,10 +82,10 @@ public class BillingFileProcessor extends Poller {
             String billingAccessRoleName = config.billingAccessRoleNames.length > i ? config.billingAccessRoleNames[i] : "";
             String billingAccessExternalId = config.billingAccessExternalIds.length > i ? config.billingAccessExternalIds[i] : "";
 
-            logger.info("trying to list objects in billing bucket " + billingS3BucketName + " using role, assume role, and external id "
-                    + config.role + " " + billingAccessRoleName + " " + billingAccessExternalId);
+            logger.info("trying to list objects in billing bucket " + billingS3BucketName + " using assume role, and external id "
+                    + billingAccessRoleName + " " + billingAccessExternalId);
             List<S3ObjectSummary> objectSummaries = AwsUtils.listAllObjects(billingS3BucketName, billingS3BucketPrefix,
-                    accountId, config.role, billingAccessRoleName, billingAccessExternalId);
+                    accountId, billingAccessRoleName, billingAccessExternalId);
             logger.info("found " + objectSummaries.size() + " in billing bucket " + billingS3BucketName);
             TreeMap<DateTime, S3ObjectSummary> filesToProcessInOneBucket = Maps.newTreeMap();
             Map<DateTime, S3ObjectSummary> monitorFilesToProcessInOneBucket = Maps.newTreeMap();
@@ -172,7 +172,7 @@ public class BillingFileProcessor extends Poller {
                 File file = new File(config.localDir, fileKey.substring(billingFile.prefix.length()));
                 logger.info("trying to download " + fileKey + "...");
                 boolean downloaded = AwsUtils.downloadFileIfChangedSince(objectSummary.getBucketName(), billingFile.prefix, file, lastProcessed,
-                        billingFile.accountId, config.role, billingFile.accessRoleName, billingFile.externalId);
+                        billingFile.accountId, billingFile.accessRoleName, billingFile.externalId);
                 if (downloaded)
                     logger.info("downloaded " + fileKey);
                 else {
@@ -197,7 +197,7 @@ public class BillingFileProcessor extends Poller {
                         File monitorFile = new File(config.localDir, monitorFileKey.substring(monitorFileKey.lastIndexOf("/") + 1));
                         logger.info("trying to download " + monitorFileKey + "...");
                         boolean downloaded = AwsUtils.downloadFileIfChangedSince(monitorObjectSummary.getBucketName(), monitorBillingFile.prefix, monitorFile, lastProcessed,
-                                monitorBillingFile.accountId, config.role, monitorBillingFile.accessRoleName, monitorBillingFile.externalId);
+                                monitorBillingFile.accountId, monitorBillingFile.accessRoleName, monitorBillingFile.externalId);
                         if (downloaded)
                             logger.info("downloaded " + monitorFile);
                         else
