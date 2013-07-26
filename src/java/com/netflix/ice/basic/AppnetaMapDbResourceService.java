@@ -97,12 +97,14 @@ public class AppnetaMapDbResourceService extends ResourceService {
         int roleTagIndex = userTagIndex + 11;
         int statusTagIndex = userTagIndex + 12;
 
-        if (lineItem.length <= config.lineItemProcessor.getUserTagStartIndex()) {
+        if (lineItem.length < roleTagIndex) {
             return UNKNOWN;
-        } else if (StringUtils.isEmpty(lineItem[roleTagIndex])) {
+        }
+
+        final String roleName = lineItem[roleTagIndex];
+        if (StringUtils.isEmpty(roleName)) {
             return UNKNOWN;
         } else {
-            String roleName = lineItem[roleTagIndex];
             instanceDb.SetResource(account, region, resourceId, roleName, millisStart);
             logger.debug("resource set, role name added. resourceId: {}, roleName: {}", resourceId, roleName);
             return roleName;
