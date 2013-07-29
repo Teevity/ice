@@ -64,7 +64,6 @@ public class BasicReservationService extends Poller implements ReservationServic
         instanceTypes.put("hiMemResI", "m2");
         instanceTypes.put("hiCPUResI", "c1");
         instanceTypes.put("clusterCompResI", "cc1");
-        instanceTypes.put("clusterCompResI", "cc2");
         instanceTypes.put("clusterHiMemResI", "cr1");
         instanceTypes.put("clusterGPUResI", "cg1");
         instanceTypes.put("hiIoResI", "hi1");
