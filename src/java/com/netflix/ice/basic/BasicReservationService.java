@@ -203,6 +203,8 @@ public class BasicReservationService extends Poller implements ReservationServic
         type = instanceTypes.get(type);
         size = instanceSizes.get(size);
 
+        if (type.equals("cc1") && size.equals("8xlarge"))
+            type = "cc2";
         return UsageType.getUsageType(type + "." + size + (isWindows ? "." + InstanceOs.windows : ""), Operation.reservedInstances, "");
     }
 
