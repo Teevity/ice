@@ -82,13 +82,15 @@ Using basic setup, you don't need any extra code change and you will use the pro
           # specify external id here if it is used. multiple external ids are delimited by ",". if you don't use external id, you can leave this property unset.
           ice.billing_accessExternalId=
   
-  Tip: If you have multiple payer accounts, or Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" does not have read access to those billing files because Amazon created them. In this case, the recommended way is to use cross-accounts IAM roles. E.g. you can create a role "ice" in both "prod" and "test" accounts. From "prod" account, grant assumed role "ice" with read access to billing bucket, then start Ice in "test" account with role "ice". You can also create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
+  Tip: If you have multiple payer accounts, or Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" does not have read access to those billing files because Amazon created them. In this case, the recommended way is to use cross-accounts IAM roles. E.g. you can create an assumed role "ice". In "prod" account, grant assumed role "ice" with read access to billing bucket, then specify ice.billing_accessRoleName=ice. You can also create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
   
   1.7 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. For example:
       
           ice.account.account1=123456789011
           ice.account.account2=123456789012
           ice.account.account3=123456789013
+
+  1.8 If you have reserved ec2 instances, please also make sure Ice has the permission to make ec2 call describeReservedInstancesOfferings, which is used to get ri prices.
 
 2. Reader configuration
 
