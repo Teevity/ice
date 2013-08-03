@@ -232,7 +232,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 addValue(costs, tagGroup, costValue, config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3);
             }
             else {
-                costValue = usageValue * config.costPerMonitorMetricPerHour;
+                resourceCostValue = usageValue * config.costPerMonitorMetricPerHour;
             }
 
             if (resourceTagGroup != null) {
@@ -399,14 +399,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
     }
 
     private InstanceOs getInstanceOs(String operationStr) {
-        if (operationStr.equals("RunInstances"))
-            return InstanceOs.linux;
-        else if (operationStr.equals("RunInstances:0002"))
-            return InstanceOs.windows;
-        else if (operationStr.equals("RunComputeNode:0001"))
-            return InstanceOs.linux;
-        else
-            return InstanceOs.others;
+        int index = operationStr.indexOf(":");
+        String osStr = index > 0 ? operationStr.substring(index) : "";
+        return InstanceOs.withCode(osStr);
     }
 
     private Operation getOperation(String operationStr, boolean reservationUsage) {

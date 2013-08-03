@@ -148,7 +148,7 @@ public class BillingFileProcessor extends Poller {
 
             boolean hasNewFiles = false;
             boolean hasTags = false;
-            long lastProcessed = AwsUtils.getLastModified(config.workS3BucketName, config.workS3BucketPrefix + "usage_hourly_all_" + AwsUtils.monthDateFormat.print(dataTime));
+            long lastProcessed = lastProcessTime(AwsUtils.monthDateFormat.print(dataTime));
 
             for (BillingFile billingFile: filesToProcess.get(dataTime)) {
                 S3ObjectSummary objectSummary = billingFile.s3ObjectSummary;
@@ -164,6 +164,7 @@ public class BillingFileProcessor extends Poller {
                 continue;
             }
 
+            long processTime = new DateTime(DateTimeZone.UTC).getMillis();
             for (BillingFile billingFile: filesToProcess.get(dataTime)) {
 
                 S3ObjectSummary objectSummary = billingFile.s3ObjectSummary;
@@ -233,8 +234,10 @@ public class BillingFileProcessor extends Poller {
             archive();
             logger.info("done archiving " + dataTime);
 
-            if (dataTime.equals(filesToProcess.lastKey()))
+            updateProcessTime(AwsUtils.monthDateFormat.print(dataTime), processTime);
+            if (dataTime.equals(filesToProcess.lastKey())) {
                 sendOndemandCostAlert();
+            }
         }
 
         logger.info("AWS usage processed.");
@@ -776,15 +779,20 @@ public class BillingFileProcessor extends Poller {
         return ondemandCostsByHour;
     }
 
-    private Long lastAlertMillis() {
+    private void updateLastMillis(long millis, String filename) {
+        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+        s3Client.putObject(config.workS3BucketName, config.workS3BucketPrefix + filename, IOUtils.toInputStream(millis + ""), new ObjectMetadata());
+    }
+
+    private Long getLastMillis(String filename) {
         AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
         InputStream in = null;
         try {
-            in = s3Client.getObject(config.workS3BucketName, config.workS3BucketPrefix + "ondemandAlertMillis").getObjectContent();
+            in = s3Client.getObject(config.workS3BucketName, config.workS3BucketPrefix + filename).getObjectContent();
             return Long.parseLong(IOUtils.toString(in));
         }
         catch (Exception e) {
-            logger.error("Error reading from ondemandAlertMillis file", e);
+            logger.error("Error reading from file " + filename, e);
             return 0L;
         }
         finally {
@@ -793,9 +801,20 @@ public class BillingFileProcessor extends Poller {
         }
     }
 
+    private Long lastProcessTime(String timeStr) {
+        return getLastMillis("lastProcessMillis_" + timeStr);
+    }
+
+    private void updateProcessTime(String timeStr, long millis) {
+        updateLastMillis(millis, "lastProcessMillis_" + timeStr);
+    }
+
+    private Long lastAlertMillis() {
+        return getLastMillis("ondemandAlertMillis");
+    }
+
     private void updateLastAlertMillis(Long millis) {
-        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
-        s3Client.putObject(config.workS3BucketName, config.workS3BucketPrefix + "ondemandAlertMillis", IOUtils.toInputStream(millis.toString()), new ObjectMetadata());
+        updateLastMillis(millis, "ondemandAlertMillis");
     }
 
     private void sendOndemandCostAlert() {
