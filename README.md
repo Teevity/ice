@@ -158,7 +158,7 @@ Options with * require writing your own code.
 
 1. Basic reservation service
 
-  If you have reserved instances in your accounts, you may want to make use of the reservation view in the UI, where you can browse/analyze your on-demand, unused reserved instance usage&cost of different instance types in different regions, zones and accounts. in Bootstrap.groovy, BasicReservationService is used. You can specify reservation period and reservation utilization type in ice.properties:
+  If you have reserved instances in your accounts, you may want to make use of the reservation view in the UI, where you can browse/analyze your on-demand, unused reserved instance usage & cost of different instance types in different regions, zones and accounts. in Bootstrap.groovy, BasicReservationService is used. You can specify reservation period and reservation utilization type in ice.properties:
   
           # reservation period, possible values are oneyear, threeyear
           ice.reservationPeriod=threeyear
