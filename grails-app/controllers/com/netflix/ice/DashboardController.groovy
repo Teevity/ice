@@ -598,8 +598,11 @@ class DashboardController {
             for (Tag tag: result.data.keySet()) {
                 double[] values = result.data.get(tag);
                 for (int i = 0; i < values.length; i++) {
-                    double sps = i < consolidatedSps.length ? consolidatedSps[i] : 0;
-                    values[i] = sps == 0 ? 0 : values[i] / sps * multiply;
+                    double sps = i < consolidatedSps.length ? consolidatedSps[i] : 0.0;
+                    if (sps == 0.0)
+                        values[i] = 0.0;
+                    else
+                        values[i] = values[i] / sps * multiply;
                 }
             }
         }
