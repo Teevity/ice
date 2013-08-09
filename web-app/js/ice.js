@@ -1677,9 +1677,8 @@ function editCtrl($scope, $location, $http) {
   $scope.isDisabled = function() {
     var disabled = !$scope.appgroup.name || !emailRegex.test($scope.appgroup.owner) || jQuery.isEmptyObject($scope.appgroup.data);
     if (!disabled) {
-      disabled = true;
       for (var key in $scope.appgroup.data) {
-        disabled = disabled && $scope.appgroup.data[key].length == 0;
+        disabled = $scope.appgroup.data[key].length == 0;
       }
     }
 
