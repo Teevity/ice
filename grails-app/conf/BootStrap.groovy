@@ -39,6 +39,8 @@ import org.joda.time.DateTimeZone
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.BasicSessionCredentials
 import org.apache.commons.io.IOUtils
+import com.netflix.ice.common.ResourceService
+import com.netflix.ice.basic.BasicResourceService
 
 class BootStrap {
     private static boolean initialized = false;
@@ -164,13 +166,16 @@ class BootStrap {
                     Ec2InstanceReservationPrice.ReservationPeriod.valueOf(prop.getProperty("ice.reservationPeriod", "threeyear"));
                 Ec2InstanceReservationPrice.ReservationUtilization reservationUtilization =
                     Ec2InstanceReservationPrice.ReservationUtilization.valueOf(prop.getProperty("ice.reservationUtilization", "HEAVY"));
+
+                properties.setProperty(IceOptions.CUSTOM_TAGS, prop.getProperty(IceOptions.CUSTOM_TAGS, ""));
+                ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
                 processorConfig = new ProcessorConfig(
                         properties,
                         credentialsProvider,
                         accountService,
                         new BasicProductService(),
                         new BasicReservationService(reservationPeriod, reservationUtilization),
-                        null,
+                        resourceService,
                         new BasicLineItemProcessor(),
                         null)
                 processorConfig.start(reservationCapacityPoller);
@@ -185,13 +190,15 @@ class BootStrap {
                 if (prop.getProperty(IceOptions.CURRENCY_SIGN) != null)
                     properties.setProperty(IceOptions.CURRENCY_SIGN, prop.getProperty(IceOptions.CURRENCY_SIGN));
 
+                ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
+
                 readerConfig = new ReaderConfig(
                         properties,
                         credentialsProvider,
                         new BasicManagers(),
                         accountService,
                         new BasicProductService(),
-                        null,
+                        resourceService,
                         new BasicS3ApplicationGroupService(),
                         null,
                         null)

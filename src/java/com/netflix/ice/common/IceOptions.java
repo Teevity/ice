@@ -70,6 +70,11 @@ public class IceOptions {
     public static final String BILLING_ACCESS_EXTERNALID = "ice.billing_accessExternalId";
 
     /**
+     * User can configure their custom tags.
+     */
+    public static final String CUSTOM_TAGS = "ice.customTags";
+
+    /**
      * s3 bucket name where output files are to be store. Both read and write permissions are needed. It must be specified in Config.
      */
     public static final String WORK_S3_BUCKET_NAME = "ice.work_s3bucketname";

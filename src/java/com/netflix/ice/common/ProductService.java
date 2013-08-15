@@ -19,6 +19,7 @@ package com.netflix.ice.common;
 
 import com.netflix.ice.tag.Product;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ProductService {
@@ -43,4 +44,10 @@ public interface ProductService {
      * @return list of products
      */
     public List<Product> getProducts(List<String> names);
+
+    /**
+     * Get list of products
+     * @return list of products
+     */
+    public Collection<Product> getProducts();
 }

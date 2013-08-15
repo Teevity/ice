@@ -36,6 +36,7 @@ public class ProcessorConfig extends Config {
     public final String[] billingAccessRoleNames;
     public final String[] billingAccessExternalIds;
 
+    public final String[] customTags;
     public final ReservationService reservationService;
     public final LineItemProcessor lineItemProcessor;
     public final Randomizer randomizer;
@@ -80,6 +81,8 @@ public class ProcessorConfig extends Config {
         billingAccountIds = properties.getProperty(IceOptions.BILLING_PAYER_ACCOUNT_ID, "").split(",");
         billingAccessRoleNames = properties.getProperty(IceOptions.BILLING_ACCESS_ROLENAME, "").split(",");
         billingAccessExternalIds = properties.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, "").split(",");
+
+        customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
 
         ProcessorConfig.instance = this;
 

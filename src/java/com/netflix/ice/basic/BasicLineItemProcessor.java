@@ -17,6 +17,7 @@
  */
 package com.netflix.ice.basic;
 
+import com.google.common.collect.Lists;
 import com.netflix.ice.common.*;
 import com.netflix.ice.processor.*;
 import com.netflix.ice.tag.*;
@@ -25,6 +26,7 @@ import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.util.List;
 import java.util.Map;
 
 public class BasicLineItemProcessor implements LineItemProcessor {
@@ -42,6 +44,8 @@ public class BasicLineItemProcessor implements LineItemProcessor {
     private int rateIndex;
     private int costIndex;
     private int resourceIndex;
+
+    private List<String> header;
 
     public void initIndexes(boolean withTags, String[] header) {
         boolean hasBlendedCost = false;
@@ -64,6 +68,12 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         rateIndex = 19 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
         costIndex = 20 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
         resourceIndex = 21 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
+
+        this.header = Lists.newArrayList(header);
+    }
+
+    public List<String> getHeader() {
+        return this.header;
     }
 
     public int getUserTagStartIndex() {

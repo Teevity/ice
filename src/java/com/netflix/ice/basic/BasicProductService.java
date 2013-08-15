@@ -22,6 +22,7 @@ import com.google.common.collect.Maps;
 import com.netflix.ice.common.ProductService;
 import com.netflix.ice.tag.Product;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
@@ -92,6 +93,10 @@ public class BasicProductService implements ProductService {
         for (String name: names)
             result.add(productsByName.get(name));
         return result;
+    }
+
+    public Collection<Product> getProducts() {
+        return productsByName.values();
     }
 
     private static class BasicProduct {
