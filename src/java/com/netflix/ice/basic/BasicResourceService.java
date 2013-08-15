@@ -10,7 +10,6 @@ import com.netflix.ice.tag.Region;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
-import java.util.Random;
 
 public class BasicResourceService extends ResourceService {
 
@@ -21,8 +20,6 @@ public class BasicResourceService extends ResourceService {
         processorConfig = ProcessorConfig.getInstance();
     }
 
-    String[] randoms = new String[] {"aaa", "bbb", "cccc", "eeee"};
-    Random random = new Random();
     @Override
     public String getResource(Account account, Region region, Product product, String resourceId, String[] lineItem, long millisStart) {
         List<String> header = processorConfig.lineItemProcessor.getHeader();
@@ -30,11 +27,7 @@ public class BasicResourceService extends ResourceService {
         String result = "";
         for (String tag: processorConfig.customTags) {
             int index = header.indexOf(tag);
-            if (index < 0) {
-                result = StringUtils.isEmpty(result) ? randoms[random.nextInt(randoms.length)] : result + "_" + randoms[random.nextInt(randoms.length)];
-            }
-            else
-            if (!StringUtils.isEmpty(lineItem[index]))
+            if (index > 0 && lineItem.length > index && !StringUtils.isEmpty(lineItem[index]))
                 result = StringUtils.isEmpty(result) ? lineItem[index] : result + "_" + lineItem[index];
         }
 
