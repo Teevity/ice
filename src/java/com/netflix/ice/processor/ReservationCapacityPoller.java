@@ -130,7 +130,7 @@ public class ReservationCapacityPoller extends Poller {
                     });
                 }
                 else
-                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials());
+                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials(), AwsUtils.clientConfig);
 
                 for (Region region: Region.getAllRegions()) {
 
