@@ -137,7 +137,7 @@ public class BasicReservationService extends Poller implements ReservationServic
                 .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"));
         String token = null;
         boolean hasNewPrice = false;
-        AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider);
+        AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
 
         for (Region region: Region.getAllRegions()) {
             ec2Client.setEndpoint("ec2." + region.name + ".amazonaws.com");
