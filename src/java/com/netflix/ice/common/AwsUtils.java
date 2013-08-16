@@ -73,7 +73,7 @@ public class AwsUtils {
     public static Credentials getAssumedCredentials(String accountId, String assumeRole, String externalId) {
         AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
                 .withRoleArn("arn:aws:iam::" + accountId + ":role/" + assumeRole)
-                .withRoleSessionName(assumeRole.substring(0, Math.min(assumeRole.length(), 32));
+                .withRoleSessionName(assumeRole.substring(0, Math.min(assumeRole.length(), 32)));
         if (!StringUtils.isEmpty(externalId))
             assumeRoleRequest.setExternalId(externalId);
         AssumeRoleResult roleResult = securityClient.assumeRole(assumeRoleRequest);
