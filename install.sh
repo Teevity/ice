@@ -39,7 +39,7 @@ else
 fi
 
 # Initialize Ice with Grails
-grails wrapper
+grails ${JAVA_OPTS} wrapper
 
 # (Bug: Ice can't deal with this file existing and being empty.)
 rm grails-app/i18n/messages.properties
