@@ -21,9 +21,10 @@ if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
   cd ${GRAILS_VERSION}
   # ("Install")
   unzip ../grails-${GRAILS_VERSION}-download.zip
-  GRAILS_HOME=${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
-  PATH=$PATH:${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
 fi
+
+GRAILS_HOME=${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
+PATH=$PATH:${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
 
 # Get ice
 cd
