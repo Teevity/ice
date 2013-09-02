@@ -5,7 +5,7 @@
 GRAILS_VERSION=2.2.1
 
 # Install prerequisites
-sudo yum -y install git java-1.6.0-openjdk-devel.x86_64
+sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget
 
 cd
 
