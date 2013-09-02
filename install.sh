@@ -45,8 +45,8 @@ grails ${JAVA_OPTS} wrapper
 rm grails-app/i18n/messages.properties
 
 # Create our local work directories (both for processing and reading)
-mkdir ~/ice_processor
-mkdir ~/ice_reader
+mkdir ${HOME_DIR}/ice_processor
+mkdir ${HOME_DIR}/ice_reader
 
 # Set up the config file
 cp src/java/sample.properties src/java/ice.properties
