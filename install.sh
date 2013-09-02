@@ -5,9 +5,13 @@
 GRAILS_VERSION=2.2.1
 
 # Install prerequisites
-sudo yum -y install git java-1.6.0-openjdk-devel.x86_64
+sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget
+
+INSTALL_DIR=$(pwd)
 
 cd
+
+HOME_DIR=$(pwd)
 
 # Prep grails in such a way that we only download it once
 if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
@@ -19,31 +23,33 @@ if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
   cd ${GRAILS_VERSION}
   # ("Install")
   unzip ../grails-${GRAILS_VERSION}-download.zip
-  GRAILS_HOME=/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
-  PATH=$PATH:/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
 fi
 
+GRAILS_HOME=${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
+PATH=$PATH:${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
+
 # Get ice
-cd
-if [ -x 'ice/.git' ]; then
+cd ${INSTALL_DIR}
+
+if [ -x '.git' ]; then
   # We already have it; update to latest git
-  cd ice
   git pull
 else
   # We don't have it at all yet; clone the repo
   git clone https://github.com/Netflix/ice.git
   cd ice
+  INSTALL_DIR=$(pwd)
 fi
 
 # Initialize Ice with Grails
-grails wrapper
+grails ${JAVA_OPTS} wrapper
 
 # (Bug: Ice can't deal with this file existing and being empty.)
 rm grails-app/i18n/messages.properties
 
 # Create our local work directories (both for processing and reading)
-mkdir ~/ice_processor
-mkdir ~/ice_reader
+mkdir ${HOME_DIR}/ice_processor
+mkdir ${HOME_DIR}/ice_reader
 
 # Set up the config file
 cp src/java/sample.properties src/java/ice.properties
