@@ -7,6 +7,8 @@ GRAILS_VERSION=2.2.1
 # Install prerequisites
 sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget
 
+INSTALL_DIR=$(pwd)
+
 cd
 
 HOME_DIR=$(pwd)
@@ -27,15 +29,16 @@ GRAILS_HOME=${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSIO
 PATH=$PATH:${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
 
 # Get ice
-cd
-if [ -x 'ice/.git' ]; then
+cd ${INSTALL_DIR}
+
+if [ -x '.git' ]; then
   # We already have it; update to latest git
-  cd ice
   git pull
 else
   # We don't have it at all yet; clone the repo
   git clone https://github.com/Netflix/ice.git
   cd ice
+  INSTALL_DIR=$(pwd)
 fi
 
 # Initialize Ice with Grails
