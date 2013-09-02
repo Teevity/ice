@@ -9,6 +9,8 @@ sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget
 
 cd
 
+HOME_DIR=$(pwd)
+
 # Prep grails in such a way that we only download it once
 if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
   mkdir -p .grails/wrapper/
@@ -19,8 +21,8 @@ if [ ! -x ".grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}" ]; then
   cd ${GRAILS_VERSION}
   # ("Install")
   unzip ../grails-${GRAILS_VERSION}-download.zip
-  GRAILS_HOME=/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
-  PATH=$PATH:/home/ec2-user/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
+  GRAILS_HOME=${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/
+  PATH=$PATH:${HOME_DIR}/.grails/wrapper/${GRAILS_VERSION}/grails-${GRAILS_VERSION}/bin/
 fi
 
 # Get ice
