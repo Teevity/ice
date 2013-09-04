@@ -526,8 +526,12 @@ class DashboardController {
                     aggregate,
                     forReservation
                 );
-                if (groupBy == TagType.Product && dataOfProduct.size() > 0)
-                    dataOfProduct.put(Tag.aggregated, dataOfProduct.get(dataOfProduct.keySet().iterator().next()));
+                
+                if (groupBy == TagType.Product && dataOfProduct.size() > 0) {
+                    double[] currentProductValues = dataOfProduct.get(dataOfProduct.keySet().iterator().next());
+                    dataOfProduct.put(Tag.aggregated, Arrays.copyOf(currentProductValues, currentProductValues.size()));
+                } 
+                
                 merge(dataOfProduct, data);
                 System.out.println(product);
             }
