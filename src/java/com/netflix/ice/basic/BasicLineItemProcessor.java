@@ -47,6 +47,8 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
     private List<String> header;
 
+    private boolean useOnDemand = true;
+
     public void initIndexes(boolean withTags, String[] header) {
         boolean hasBlendedCost = false;
         for (String column: header) {
@@ -251,7 +253,12 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
                 if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3) {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
-                    addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
+                    if (useOnDemand) {
+                        addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
+
+                    } else {
+                        addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
+                    }
                 }
                 else {
                     Map<String, Double> distribution = config.randomizer.getDistribution(tagGroup);
