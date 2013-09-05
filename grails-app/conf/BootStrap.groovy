@@ -169,6 +169,9 @@ class BootStrap {
 
                 properties.setProperty(IceOptions.CUSTOM_TAGS, prop.getProperty(IceOptions.CUSTOM_TAGS, ""));
                 ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
+                
+                properties.setProperty(IceOptions.USEONDEMAND, prop.getProperty(IceOptions.USEONDEMAND, "reserved"));
+
                 processorConfig = new ProcessorConfig(
                         properties,
                         credentialsProvider,

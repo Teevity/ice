@@ -42,6 +42,8 @@ public class ProcessorConfig extends Config {
     public final Randomizer randomizer;
     public final double costPerMonitorMetricPerHour;
 
+    public final String useCostForResourceGroup;
+
     /**
      *
      * @param properties (required)
@@ -83,6 +85,8 @@ public class ProcessorConfig extends Config {
         billingAccessExternalIds = properties.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, "").split(",");
 
         customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
+
+        useCostForResourceGroup = properties.getProperty(IceOptions.USEONDEMAND);
 
         ProcessorConfig.instance = this;
 

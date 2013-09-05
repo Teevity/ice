@@ -118,4 +118,9 @@ public class IceOptions {
      * ec2 ondemand hourly cost alert emails, separated by ","
      */
     public static final String ONDEMAND_COST_ALERT_EMAILS = "ice.ondemandCostAlertEmails";
+
+    /**
+    * What pricing data ice should use when calculating usage costs for resource groups
+    */
+    public static final String USEONDEMAND = "ice.resourceGroupPricing";
 }

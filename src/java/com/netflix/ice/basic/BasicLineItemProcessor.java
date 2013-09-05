@@ -253,7 +253,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
                 if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3) {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
-                    if (useOnDemand) {
+                    if (config.useCostForResourceGroup.equals("ondemand")) {
                         addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
 
                     } else {
