@@ -123,4 +123,29 @@ public class IceOptions {
     * What pricing data ice should use when calculating usage costs for resource groups
     */
     public static final String USEONDEMAND = "ice.resourceGroupPricing";
+
+    /**
+    * Enable weekly cost email per application groups
+    */
+    public static final String WEEKLYEMAILS = "ice.weeklyCostEmails";
+
+    /**
+    * from email address for weekly cost emails. Must be registered in aws ses.
+    */
+    public static final String WEEKLYFROM = "ice.weeklyCostEmails_fromEmail";
+
+    /**
+    * bcc email address for weekly cost emails.
+    */
+    public static final String WEEKLYBCC = "ice.weeklyCostEmails_bccEmail";
+
+    /**
+    * from email to use when test flag is enabled.
+    */
+    public static final String WEEKLYTEST = "ice.weeklyCostEmails_testEmail";
+
+    /**
+    * from email to use when test flag is enabled.
+    */
+    public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
 }
