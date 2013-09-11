@@ -251,7 +251,12 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
                 if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3) {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
-                    addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
+                    if (!config.useCostForResourceGroup.equals("modeled")) {
+                        addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
+
+                    } else {
+                        addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
+                    }
                 }
                 else {
                     Map<String, Double> distribution = config.randomizer.getDistribution(tagGroup);

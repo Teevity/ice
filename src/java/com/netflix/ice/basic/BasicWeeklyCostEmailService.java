@@ -222,9 +222,13 @@ public class BasicWeeklyCostEmailService extends Poller {
 
         for (Product product: products) {
             List<ResourceGroup> resourceGroups = getResourceGroups(appgroup, product);
-            if (resourceGroups.size() == 0)
+            if (resourceGroups.size() == 0) {
                 continue;
+            }
             DataManager dataManager = config.managers.getCostManager(product, ConsolidateType.weekly);
+            if (dataManager == null) {
+                continue;
+            }
             TagLists tagLists = new TagLists(accounts, regions, null, Lists.newArrayList(product), null, null, resourceGroups);
             Map<Tag, double[]> data = dataManager.getData(interval, tagLists, TagType.Product, AggregateType.none, false);
             for (Tag tag: data.keySet()) {
@@ -351,9 +355,13 @@ public class BasicWeeklyCostEmailService extends Poller {
         double[] total = new double[numWeeks];
         for (Product product: products) {
             List<ResourceGroup> resourceGroups = getResourceGroups(appGroup, product);
-            if (resourceGroups.size() == 0)
+            if (resourceGroups.size() == 0) {
                 continue;
+            }
             DataManager dataManager = config.managers.getCostManager(product, ConsolidateType.weekly);
+            if (dataManager == null) {
+                continue;
+            }
             for (int i = 0; i < accounts.size(); i++) {
                 List<Account> accountList = Lists.newArrayList(accounts.get(i));
                 TagLists tagLists = new TagLists(accountList, regions, null, Lists.newArrayList(product), null, null, resourceGroups);
