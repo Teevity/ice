@@ -122,7 +122,7 @@ public class IceOptions {
     /**
     * What pricing data ice should use when calculating usage costs for resource groups
     */
-    public static final String USEONDEMAND = "ice.resourceGroupPricing";
+    public static final String RESOURCE_GROUP_COST = "ice.resourceGroupCost";
 
     /**
     * Enable weekly cost email per application groups

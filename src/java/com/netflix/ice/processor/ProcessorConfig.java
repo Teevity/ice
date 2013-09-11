@@ -86,7 +86,7 @@ public class ProcessorConfig extends Config {
 
         customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
 
-        useCostForResourceGroup = properties.getProperty(IceOptions.USEONDEMAND);
+        useCostForResourceGroup = properties.getProperty(IceOptions.RESOURCE_GROUP_COST, "modeled");
 
         ProcessorConfig.instance = this;
 
