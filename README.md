@@ -221,6 +221,9 @@ Options with * require writing your own code.
           # specify your custom tags here. Multiple tags are delimited by ",". If specified, BasicResourceService will be used to generate resource groups for you.
           # PLEASE MAKE SURE you have limited number (e.g. < 100) of unique value combinations from your custom tags, otherwise Ice performance will be greatly affected.
           ice.customTags=tag1,tag2
+          
+  You will need to ensure that any tag you wish to use in ICE is ticked in the "Manage Cost allocation report" page here: https://portal.aws.amazon.com/gp/aws/developer/account?ie=UTF8&action=cost-allocation-report
+ 
 
 7. Weekly cost email per application group (*)
 
