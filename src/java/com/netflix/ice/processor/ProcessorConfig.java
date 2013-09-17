@@ -116,7 +116,8 @@ public class ProcessorConfig extends Config {
             }
         }
 
-        billingFileProcessor.start(300);
+        //Give the reservation service time before kicking off the processor
+        billingFileProcessor.start(60, 60*5, true);
     }
 
     public void shutdown() {

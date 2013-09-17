@@ -95,13 +95,7 @@ public class BasicReservationService extends Poller implements ReservationServic
 
         AwsUtils.downloadFileIfNotExist(config.workS3BucketName, config.workS3BucketPrefix, file);
         if (!file.exists()) {
-            try {
-                poll();
-            }
-            catch (Exception e) {
-                throw new RuntimeException("failed to poll reservation prices " + e.getMessage());
-            }
-            start(3600*24, 3600*24, true);
+            start(3600*24);
         }
         else {
             try {
