@@ -90,7 +90,6 @@ public class ProcessorConfig extends Config {
 
         ProcessorConfig.instance = this;
 
-        reservationService.init();
         if (resourceService != null)
             resourceService.init();
 
@@ -116,8 +115,7 @@ public class ProcessorConfig extends Config {
             }
         }
 
-        //Give the reservation service time before kicking off the processor
-        billingFileProcessor.start(60, 60*5, true);
+        billingFileProcessor.start(300);
     }
 
     public void shutdown() {
