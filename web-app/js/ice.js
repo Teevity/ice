@@ -833,11 +833,12 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
     return usage_db.graphOnly() ? "" : defaultWidth;
   }
 
-  /* Go and query whether there's any data from today ready */
-  $scope.iceReady = {
-      "status": true,
+  $scope.iceStatus = {
+      "ready": true,
       "message": null
   };
+
+  /* Go and query whether there's any data from today ready */
   var setIceStatus = function() {
 
     /* Set up some params for getData */
@@ -873,19 +874,25 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
 
         var ready = true;
         /* Check if there's missing data */
-        if(outer_index === 0 || inspection_result === 0) {
-            /* outer_index = 0 = for loop had nothing to loop over */
+        if(inspection_result === 0) {
             ready = false;
         }
         console.log(inspection_result);
-        $scope.iceReady.status = ready;
-        $scope.iceReady.message = "Lack of data message";
+        $scope.iceStatus.status = ready;
+        $scope.iceStatus.message = "It looks like we're still processing some data. If you'd like up to date billing information, please try again later.";
       }
 
       var http_promise = usage_db.getData($scope, callback);
+
       http_promise.error(function(error) {
-        $scope.iceReady.status = false;
-        $scope.iceReady.message = "500 error from server message";
+        var error_message;
+          if(error.status === 500) {
+            error_message = "The Billing Service returned a 500. It looks like it may have just restarted. Please try again later!"; 
+          } else {
+            error_message = "The Billing Service returned a " + error.status + ".";
+          }
+        $scope.iceStatus.ready = false;
+        $scope.iceStatus.message = error_message;
       });
     };
     isReady();

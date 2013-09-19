@@ -69,7 +69,7 @@
     </li>
     </g:if>
   </ul>
-  <div ng-hide="iceReady.status">{{iceReady.message}}</div>
+  <div ng-hide="iceStatus.ready">{{iceStatus.message}}</div>
   <div class="clear"> </div>
   <g:layoutBody/>
   <form action="download" id="download_form" method="post" style="display: none;">
