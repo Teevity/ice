@@ -833,16 +833,11 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
     return usage_db.graphOnly() ? "" : defaultWidth;
   }
 
-  $scope.iceStatus = {
-      "ready": true,
-      "message": null
-  };
+  //Default to everything being ok
+  $scope.iceStatus = { "ready": true, "message": null };
 
-  /* Go and query whether there's any data from today ready */
-  var setIceStatus = function() {
-
-    /* Set up some params for getData */
-    $scope.groupBy = {name: "Product"};
+  var guessIceStatus = function() {
+    $scope.groupBy = { name: "Product" };
     $scope.consolidate = "hourly";
     $scope.end = new Date();
     $scope.start = new Date();
@@ -850,54 +845,48 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
     /* Setup the time window for data for the last 12 hours */
     var startHours = $scope.end.getUTCHours() - 12;
     if(startHours < 0) {
-        startHours = 24 + startHours;
-        var startDay = $scope.end.getUTCDate() - 1;
-        $scope.start.setUTCDate(startDay);
+      startHours = 24 + startHours;
+      var startDay = $scope.end.getUTCDate() - 1;
+      $scope.start.setUTCDate(startDay);
     }
-
     $scope.start.setUTCHours(startHours);
     $scope.end = highchart.dateFormat($scope.end);
     $scope.start = highchart.dateFormat($scope.start);
 
-    /* Make the getData request */
-    var isReady = function() {
-      var callback = function(results) {
+    //Check the result of an API call and display a warning banner if needed
+    var api_call_promise = usage_db.getData($scope, function(results) {
 
-        var inspection_result = 0;
-        console.log(results.data);
-        /* Inspect the last value in the array */
-        for(var outer_index in results.data){
-          var last_inner_index = results.data[outer_index].length
-          inspection_result += results.data[outer_index][last_inner_index-1];
-          console.log('inspection:' + inspection_result);
-        }
-
-        var ready = true;
-        /* Check if there's missing data */
-        if(inspection_result === 0) {
-            ready = false;
-        }
-        console.log(inspection_result);
-        $scope.iceStatus.status = ready;
-        $scope.iceStatus.message = "It looks like we're still processing some data. If you'd like up to date billing information, please try again later.";
+      //Sometimes when the reader doesn't have all the data for that month, it
+      //will pad the rest of the month out with zeros. Check for this case.
+      var sum_of_latest_costs = 0;
+      for(var outer_index in results.data) {
+        var last_inner_index = results.data[outer_index].length
+        sum_of_latest_costs += results.data[outer_index][last_inner_index-1];
       }
 
-      var http_promise = usage_db.getData($scope, callback);
-
-      http_promise.error(function(error) {
-        var error_message;
-          if(error.status === 500) {
-            error_message = "The Billing Service returned a 500. It looks like it may have just restarted. Please try again later!"; 
-          } else {
-            error_message = "The Billing Service returned a " + error.status + ".";
-          }
+      //This also catches the case where results.data is empty
+      if(sum_of_latest_costs === 0) {
         $scope.iceStatus.ready = false;
-        $scope.iceStatus.message = error_message;
-      });
-    };
-    isReady();
+        $scope.iceStatus.message = "Ice may still be processing billing data \
+          so this page could not be up to date. Processing can take many \
+          minutes, please refresh the page later.";
+      }
+    });
+
+    //Inspect HTTP errors, 500s usually mean we're still processing.
+    api_call_promise.error(function(error_body, error_status) {
+      $scope.iceStatus.ready = false;
+      if(error_status === 500) {
+        $scope.iceStatus.message = "Ice may still be processing billing data \
+          so this page could not be up to date. Processing can take many \
+          minutes, please refresh the page later.";
+        } else {
+          $scope.iceStatus.message = "Ice API returned a " + error_status +
+            " HTTP error. Please try again later.";
+        }
+    });
   }
-  setIceStatus();
+  guessIceStatus();
 }
 
 function reservationCtrl($scope, $location, usage_db, highchart) {
