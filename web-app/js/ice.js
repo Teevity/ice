@@ -737,7 +737,6 @@ ice.factory('usage_db', function($window, $http, $filter) {
 
 function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
   $scope.currencySign = global_currencySign;
-
   window.onhashchange = function() {
     window.location.reload();
   }
@@ -833,6 +832,56 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
   $scope.getBodyWidth = function(defaultWidth) {
     return usage_db.graphOnly() ? "" : defaultWidth;
   }
+
+  /* Go and query whether there's any data from today ready */
+  $scope.iceReady = true;
+  var setIceStatus = function() {
+
+    /* Set up some params for getData */
+    $scope.groupBy = {name: "Product"};
+    $scope.consolidate = "hourly";
+    $scope.end = new Date();
+    $scope.start = new Date();
+
+    /* Setup the time window for data for the last 12 hours */
+    var startHours = $scope.end.getUTCHours() - 12;
+    if(startHours < 0) {
+        startHours = 24 + startHours;
+        var startDay = $scope.end.getUTCDate() - 1;
+        $scope.start.setUTCDate(startDay);
+    }
+
+    $scope.start.setUTCHours(startHours);
+    $scope.end = highchart.dateFormat($scope.end); 
+    $scope.start = highchart.dateFormat($scope.start);
+  
+    /* Make the getData request */
+    var isReady = function() {
+      var callback = function(results) {
+
+        var inspection_result = 0;
+        console.log(results.data);
+        /* Inspect the last value in the array */
+        for(var outer_index in results.data){
+          var last_inner_index = results.data[outer_index].length
+          inspection_result += results.data[outer_index][last_inner_index-1];
+          console.log('inspection:' + inspection_result);
+        }
+
+        var ready = true;
+        /* Check if there's missing data */
+        if(outer_index === 0 || inspection_result === 0) {
+            /* outer_index = 0 = for loop had nothing to loop over */
+            ready = false;
+        }
+        console.log(inspection_result);
+        $scope.iceReady = ready;
+      }
+      usage_db.getData($scope, callback);
+    };
+    isReady();
+  }
+  setIceStatus();
 }
 
 function reservationCtrl($scope, $location, usage_db, highchart) {
