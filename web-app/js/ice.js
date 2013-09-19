@@ -700,7 +700,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
       }
 
       if (!download) {
-        $http({
+        return $http({
           method: "POST",
           url: "getData",
           data: params
@@ -834,7 +834,10 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
   }
 
   /* Go and query whether there's any data from today ready */
-  $scope.iceReady = true;
+  $scope.iceReady = {
+      "status": true,
+      "message": null
+  };
   var setIceStatus = function() {
 
     /* Set up some params for getData */
@@ -852,9 +855,9 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
     }
 
     $scope.start.setUTCHours(startHours);
-    $scope.end = highchart.dateFormat($scope.end); 
+    $scope.end = highchart.dateFormat($scope.end);
     $scope.start = highchart.dateFormat($scope.start);
-  
+
     /* Make the getData request */
     var isReady = function() {
       var callback = function(results) {
@@ -875,9 +878,15 @@ function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
             ready = false;
         }
         console.log(inspection_result);
-        $scope.iceReady = ready;
+        $scope.iceReady.status = ready;
+        $scope.iceReady.message = "Lack of data message";
       }
-      usage_db.getData($scope, callback);
+
+      var http_promise = usage_db.getData($scope, callback);
+      http_promise.error(function(error) {
+        $scope.iceReady.status = false;
+        $scope.iceReady.message = "500 error from server message";
+      });
     };
     isReady();
   }

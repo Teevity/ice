@@ -69,7 +69,7 @@
     </li>
     </g:if>
   </ul>
-  <div ng-hide="iceReady">It looks like we're still processing some data. Please try again later to see up to date billing information.</div>
+  <div ng-hide="iceReady.status">{{iceReady.message}}</div>
   <div class="clear"> </div>
   <g:layoutBody/>
   <form action="download" id="download_form" method="post" style="display: none;">
