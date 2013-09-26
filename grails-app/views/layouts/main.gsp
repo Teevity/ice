@@ -70,7 +70,6 @@
     </g:if>
   </ul>
   <div class="clear"> </div>
-  <div ng-cloak ng-hide="iceStatus.ready" class="ng-cloak alert alert-warning"><strong>Warning:</strong> {{iceStatus.message}}</div>
   <g:layoutBody/>
   <form action="download" id="download_form" method="post" style="display: none;">
   </form>
