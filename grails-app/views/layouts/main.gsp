@@ -69,7 +69,7 @@
     </li>
     </g:if>
   </ul>
-  <div class="clear"> </div>
+  <div class="clear"></div>
   <g:layoutBody/>
   <form action="download" id="download_form" method="post" style="display: none;">
   </form>

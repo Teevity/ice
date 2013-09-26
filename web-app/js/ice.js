@@ -700,7 +700,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
       }
 
       if (!download) {
-        return $http({
+        $http({
           method: "POST",
           url: "getData",
           data: params
@@ -737,6 +737,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
 
 function mainCtrl($scope, $location, $timeout, usage_db, highchart) {
   $scope.currencySign = global_currencySign;
+
   window.onhashchange = function() {
     window.location.reload();
   }
