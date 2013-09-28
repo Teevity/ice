@@ -169,6 +169,8 @@ public class BasicReservationService extends Poller implements ReservationServic
                     UsageType usageType = getUsageType(offer.getInstanceType(), offer.getProductDescription());
                     hasNewPrice = setPrice(currentTime, Zone.getZone(offer.getAvailabilityZone()).region, usageType,
                             offer.getFixedPrice(), hourly) || hasNewPrice;
+
+                    logger.info("Setting RI price for " + Zone.getZone(offer.getAvailabilityZone()).region + " " + usageType + " " + offer.getFixedPrice() + " " + hourly);
                 }
             } while (!StringUtils.isEmpty(token));
         }
@@ -325,7 +327,7 @@ public class BasicReservationService extends Poller implements ReservationServic
             latestHourly.setListPrice(hourly);
             latestUpfront.setListPrice(upfront);
 
-            logger.info("setting reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
+            //logger.info("setting reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
             return true;
         }
         else if (latestHourly.getListPrice() != hourly || latestUpfront.getListPrice() != upfront) {
@@ -337,7 +339,7 @@ public class BasicReservationService extends Poller implements ReservationServic
             latestHourly.setListPrice(hourly);
             latestUpfront.setListPrice(upfront);
 
-            logger.info("changing reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
+            //logger.info("changing reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
             return true;
         }
         else {
@@ -445,8 +447,8 @@ public class BasicReservationService extends Poller implements ReservationServic
             String offeringType = reservedInstances.getOfferingType();
             if (offeringType.indexOf(" ") > 0)
                 offeringType = offeringType.substring(0, offeringType.indexOf(" "));
-            Reservation reservation = new Reservation(reservedInstances.getInstanceCount(), reservedInstances.getStart().getTime(),
-                    reservedInstances.getStart().getTime() + reservedInstances.getDuration() * 1000);
+            long endTime = Math.min(reservedInstances.getEnd().getTime(), reservedInstances.getStart().getTime() + reservedInstances.getDuration() * 1000);
+            Reservation reservation = new Reservation(reservedInstances.getInstanceCount(), reservedInstances.getStart().getTime(), endTime);
 
             String osStr = reservedInstances.getProductDescription();
             InstanceOs os = InstanceOs.withDescription(osStr);

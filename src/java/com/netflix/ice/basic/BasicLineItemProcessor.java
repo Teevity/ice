@@ -25,11 +25,14 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 
 public class BasicLineItemProcessor implements LineItemProcessor {
+    private Logger logger = LoggerFactory.getLogger(BasicLineItemProcessor.class);
 
     private int accountIdIndex;
     private int productIndex;
@@ -204,7 +207,13 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 if (usageType.name.endsWith(InstanceOs.others.name())) {
                     usageTypeForPrice = UsageType.getUsageType(usageType.name.replace(InstanceOs.others.name(), InstanceOs.windows.name()), usageType.unit);
                 }
-                resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice);
+                try {
+                    resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice);
+                }
+                catch (Exception e) {
+                    logger.error("failed to get RI price for " + tagGroup.region + " " + usageTypeForPrice);
+                    resourceCostValue = -1;
+                }
             }
 
             String resourceGroupStr = config.resourceService.getResource(account, reformedMetaData.region, product, items[resourceIndex], items, millisStart);
@@ -251,7 +260,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
                 if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3) {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
-                    if (!config.useCostForResourceGroup.equals("modeled")) {
+                    if (!config.useCostForResourceGroup.equals("modeled") || resourceCostValue < 0) {
                         addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
 
                     } else {

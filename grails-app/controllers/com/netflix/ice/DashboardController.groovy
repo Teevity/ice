@@ -284,6 +284,7 @@ class DashboardController {
         bwriter.write(StringUtils.join(record, ","));
         bwriter.newLine();
 
+        ConsolidateType consolidateType = ConsolidateType.valueOf(query.getString("consolidate"));
         for (int timeIndex = 0; timeIndex < num; timeIndex++) {
             record[0] = dateFormatter.print(start);
             index = 1;
@@ -293,7 +294,10 @@ class DashboardController {
             }
             bwriter.write(StringUtils.join(record, ","));
             bwriter.newLine();
-            start += AwsUtils.hourMillis;
+            if (consolidateType != ConsolidateType.monthly)
+                start += result.interval;
+            else
+                start = new DateTime(start, DateTimeZone.UTC).plusMonths(1).getMillis()
         }
         bwriter.close();
 

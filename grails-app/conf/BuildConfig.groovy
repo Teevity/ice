@@ -64,7 +64,7 @@ grails.project.dependency.resolution = {
 
         compile(
                 // Amazon Web Services programmatic interface
-                'com.amazonaws:aws-java-sdk:1.4.4.1',
+                'com.amazonaws:aws-java-sdk:1.5.8',
         ) {
             // AWS defines their dependencies as open-ended, which causes problems when resolving.
             // See http://stackoverflow.com/a/7990573/869
