@@ -352,3 +352,15 @@ div.legendIcon {float: left; margin-right: 3px; width: 16px; height: 12px; borde
 .ui-timepicker-rtl{ direction: rtl; }
 .ui-timepicker-rtl dl { text-align: right; }
 .ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }
+
+.alert {
+    margin: 1em auto;
+    max-width: 1200px;
+    padding: 0.8em;
+    border: 4px solid;
+    font-size: 1.3em;
+}
+.alert-warning {
+    background-color: #FA6C14;
+    border-color: #FC883F;
+}
