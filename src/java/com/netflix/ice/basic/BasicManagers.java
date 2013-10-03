@@ -56,7 +56,6 @@ public class BasicManagers extends Poller implements Managers {
 
     public void init() {
         config = ReaderConfig.getInstance();
-        doWork();
         start(300);
     }
 

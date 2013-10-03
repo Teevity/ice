@@ -90,7 +90,6 @@ public class ProcessorConfig extends Config {
 
         ProcessorConfig.instance = this;
 
-        reservationService.init();
         if (resourceService != null)
             resourceService.init();
 
