@@ -151,8 +151,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         if (usageType.name.startsWith("TimedStorage-ByteHrs"))
             result = Result.daily;
 
-        boolean monthlyCost = StringUtils.isEmpty(items[descriptionIndex]) ? false : items[descriptionIndex].toLowerCase().contains("-month");
-
         ReadWriteData usageData = usageDataByProduct.get(null);
         ReadWriteData costData = costDataByProduct.get(null);
         ReadWriteData usageDataOfProduct = usageDataByProduct.get(product);
@@ -170,11 +168,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
             usageValue = usageValue * endIndex / numHoursInMonth;
             costValue = costValue * endIndex / numHoursInMonth;
-        }
-
-        if (monthlyCost) {
-            int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
-            costValue = costValue / numHoursInMonth;
         }
 
         int[] indexes;
