@@ -111,6 +111,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
   2.5 Same as 1.5
   
   2.6 Specify your organization name in ice.properties. This will show up in the UI header.
+
           ice.companyName=Your Company Name
 
   2.7 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
@@ -119,6 +120,10 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.currencySign=£
           # Specify your curreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
           ice.currencyRate=0.6666667
+
+  2.8 By default, Ice pulls in [Highstock](http://www.highcharts.com/) from its CDN. This CDN, unfortunately, does not (at present) support HTTPS. If you're serving Ice over HTTPS, your browser shouldn't or won't download Highstock from there. To fix this, you can serve Highstock somewhere else, and set this property:
+
+          ice.highstockUrl=https://example.com/js/highstock.js
 
 3. Running Ice
 
