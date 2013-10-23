@@ -86,6 +86,6 @@
 <script type="text/javascript" src="${resource(dir: 'js', file: 'jquery-ui-timepicker-addon.js')}"></script>
 <script type="text/javascript" src="${resource(dir: 'js', file: 'angular-1.0.5.min.js')}"></script>
 <script type="text/javascript" src="${resource(dir: 'js', file: 'angular-ui.js')}"></script>
-<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script type="text/javascript" src="${ReaderConfig.getInstance().highstockUrl}"></script>
 <script type="text/javascript" src="${resource(dir: 'js', file: 'ice.js')}"></script>
 </html>

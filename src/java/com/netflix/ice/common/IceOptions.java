@@ -40,6 +40,12 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
+     * The URL of highstock.js. The default value is the Highcharts CDN; change this if you need to
+     * serve it from somewhere else (for example, if you need HTTPS).
+     */
+    public static final String HIGHSTOCK_URL = "ice.highstockUrl";
+
+    /**
      * s3 bucket name where billing files are located. For multiple payer accounts, multiple bucket names can be specified delimited by comma ",".
      * Only read permission is needed. It must be specified in Config.
      */
