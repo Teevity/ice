@@ -174,7 +174,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
         if (monthlyCost) {
             int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
-            costValue = costValue / numHoursInMonth;
+            usageValue = usageValue * numHoursInMonth;
         }
 
         int[] indexes;

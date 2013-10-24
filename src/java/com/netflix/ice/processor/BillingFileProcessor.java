@@ -74,8 +74,6 @@ public class BillingFileProcessor extends Poller {
         TreeMap<DateTime, List<BillingFile>> filesToProcess = Maps.newTreeMap();
         Map<DateTime, List<BillingFile>> monitorFilesToProcess = Maps.newTreeMap();
 
-        config.reservationService.init();
-
         // list the tar.gz file in billing file folder
         for (int i = 0; i < config.billingS3BucketNames.length; i++) {
             String billingS3BucketName = config.billingS3BucketNames[i];
