@@ -840,10 +840,30 @@ function reservationCtrl($scope, $location, usage_db, highchart) {
   var reservationOps = [
     "OndemandInstances",
     "ReservedInstances",
-    "BorrowedInstances",
-    "LentInstances",
-    "UnusedInstances",
-    "UpfrontAmortized"];
+    "ReservedInstancesFixed",
+    "BonusReservedInstancesFixed",
+    "BorrowedInstancesFixed",
+    "LentInstancesFixed",
+    "UnusedInstancesFixed",
+    "UpfrontAmortizedFixed",
+    "ReservedInstancesHeavy",
+    "BonusReservedInstancesHeavy",
+    "BorrowedInstancesHeavy",
+    "LentInstancesHeavy",
+    "UnusedInstancesHeavy",
+    "UpfrontAmortizedHeavy",
+    "ReservedInstancesMedium",
+    "BonusReservedInstancesMedium",
+    "BorrowedInstancesMedium",
+    "LentInstancesMedium",
+    "UnusedInstancesMedium",
+    "UpfrontAmortizedMedium",
+    "ReservedInstancesLight",
+    "BonusReservedInstancesLight",
+    "BorrowedInstancesLight",
+    "LentInstancesLight",
+    "UnusedInstancesLight",
+    "UpfrontAmortizedLight"];
 
   var predefinedQuery = {operation: reservationOps.join(",")};
   $scope.legends = [];

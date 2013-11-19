@@ -67,11 +67,9 @@ public interface AccountService {
     Map<Account, String> getReservationAccessExternalIds();
 
     /**
-     * If you don't share reserved instances among multiple accounts, you can return the input zone.
-     * @param mapAccount
      * @param account
      * @param zone
-     * @return Mapped zone of mapAccount.
+     * @return Whether or not external mappings are not available in specified account.
      */
-    Zone getAccountMappedZone(Account mapAccount, Account account, Zone zone);
+    boolean externalMappingExist(Account account, Zone zone);
 }

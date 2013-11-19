@@ -100,16 +100,16 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         if (account == null)
             return Result.ignore;
 
+        double usageValue = Double.parseDouble(items[usageQuantityIndex]);
+        double costValue = Double.parseDouble(items[costIndex]);
+
         Product product = config.productService.getProductByAwsName(items[productIndex]);
         boolean reservationUsage = "Y".equals(items[reservedIndex]);
-        ReformedMetaData reformedMetaData = reform(product, reservationUsage, items[operationIndex], items[usageTypeIndex], items[descriptionIndex]);
+        ReformedMetaData reformedMetaData = reform(config, product, reservationUsage, items[operationIndex], items[usageTypeIndex], items[descriptionIndex], costValue);
         product = reformedMetaData.product;
         Operation operation = reformedMetaData.operation;
         UsageType usageType = reformedMetaData.usageType;
         Zone zone = Zone.getZone(items[zoneIndex], reformedMetaData.region);
-
-        double usageValue = Double.parseDouble(items[usageQuantityIndex]);
-        double costValue = Double.parseDouble(items[costIndex]);
 
         long millisStart;
         long millisEnd;
@@ -199,16 +199,17 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
         double resourceCostValue = costValue;
         if (items.length > resourceIndex && !StringUtils.isEmpty(items[resourceIndex]) && config.resourceService != null) {
-            if (product == Product.ec2_instance && !reservationUsage && operation == Operation.ondemandInstances)
-                operation = Operation.reservedInstances;
 
-            if (product == Product.ec2_instance && operation == Operation.reservedInstances) {
+            if (product == Product.ec2_instance && !reservationUsage && operation == Operation.ondemandInstances)
+                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization());
+
+            if (product == Product.ec2_instance && operation instanceof Operation.ReservationOperation) {
                 UsageType usageTypeForPrice = usageType;
                 if (usageType.name.endsWith(InstanceOs.others.name())) {
                     usageTypeForPrice = UsageType.getUsageType(usageType.name.replace(InstanceOs.others.name(), InstanceOs.windows.name()), usageType.unit);
                 }
                 try {
-                    resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice);
+                    resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice, config.reservationService.getDefaultReservationUtilization());
                 }
                 catch (Exception e) {
                     logger.error("failed to get RI price for " + tagGroup.region + " " + usageTypeForPrice);
@@ -345,7 +346,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.hourly;
     }
 
-    protected ReformedMetaData reform(Product product, boolean reservationUsage, String operationStr, String usageTypeStr, String description) {
+    protected ReformedMetaData reform(ProcessorConfig config, Product product, boolean reservationUsage, String operationStr, String usageTypeStr, String description, double cost) {
 
         Operation operation = null;
         UsageType usageType = null;
@@ -379,21 +380,34 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             index = usageTypeStr.indexOf(":");
             usageTypeStr = index < 0 ? "m1.small" : usageTypeStr.substring(index+1);
 
-            operation = getOperation(operationStr, reservationUsage);
+            if (reservationUsage && product == Product.ec2 && cost == 0)
+                operation = Operation.reservedInstancesFixed;
+            else if (reservationUsage && product == Product.ec2)
+                operation = Operation.reservedInstances;
+            else
+                operation = Operation.ondemandInstances;
             os = getInstanceOs(operationStr);
         }
         else if (usageTypeStr.startsWith("Node") && operationStr.startsWith("RunComputeNode")) {
             index = usageTypeStr.indexOf(":");
             usageTypeStr = index < 0 ? "m1.small" : usageTypeStr.substring(index+1);
 
-            operation = getOperation(operationStr, reservationUsage);
+            operation = getOperation(operationStr, reservationUsage, null);
             os = getInstanceOs(operationStr);
         }
-        else if (usageTypeStr.startsWith("HeavyUsage")) {
+        else if (usageTypeStr.startsWith("HeavyUsage") || usageTypeStr.startsWith("MediumUsage") || usageTypeStr.startsWith("LightUsage")) {
             index = usageTypeStr.indexOf(":");
-            usageTypeStr = index < 0 ? "m1.small" : usageTypeStr.substring(index+1);
+            String offeringType;
+            if (index < 0) {
+                offeringType = usageTypeStr;
+                usageTypeStr = "m1.small";
+            }
+            else {
+                offeringType = usageTypeStr;
+                usageTypeStr = usageTypeStr.substring(index+1);
+            }
 
-            operation = getOperation(operationStr, reservationUsage);
+            operation = getOperation(operationStr, reservationUsage, Ec2InstanceReservationPrice.ReservationUtilization.get(offeringType));
             os = getInstanceOs(operationStr);
         }
 
@@ -410,7 +424,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             if (operation instanceof Operation.ReservationOperation) {
                 if (os != InstanceOs.linux) {
                     usageTypeStr = usageTypeStr + "." + os;
-                    operation = operation.name.startsWith("ReservedInstances") ? Operation.reservedInstances : Operation.ondemandInstances;
+                    operation = operation.name.startsWith("ReservedInstances") ? operation : Operation.ondemandInstances;
                 }
             }
         }
@@ -428,8 +442,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         return InstanceOs.withCode(osStr);
     }
 
-    private Operation getOperation(String operationStr, boolean reservationUsage) {
-        if (operationStr.startsWith("RunInstances") || operationStr.startsWith("RunComputeNode"))
+    private Operation getOperation(String operationStr, boolean reservationUsage, Ec2InstanceReservationPrice.ReservationUtilization utilization) {
+        if (operationStr.startsWith("RunInstances"))
+            return (reservationUsage ? Operation.getReservedInstances(utilization) : Operation.ondemandInstances);
+        else if (operationStr.startsWith("RunComputeNode"))
             return (reservationUsage ? Operation.reservedInstances : Operation.ondemandInstances);
         else
             return null;

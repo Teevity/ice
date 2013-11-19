@@ -284,7 +284,8 @@ public class BasicTagGroupManager extends Poller implements TagGroupManager {
                 break;
         }
         if (groupBy == TagType.Operation && !forReservation) {
-            groupByTags.remove(Operation.lentInstances);
+            for (Operation.ReservationOperation lentOp: Operation.getLentInstances())
+                groupByTags.remove(lentOp);
         }
         for (Tag tag: groupByTags) {
             if (tagLists.contains(tag, groupBy)) {
@@ -294,7 +295,8 @@ public class BasicTagGroupManager extends Poller implements TagGroupManager {
                         List<Operation> operations = Lists.newArrayList(getOperations(tmp));
                         tmp = new TagLists(tmp.accounts, tmp.regions, tmp.zones, tmp.products, operations, tmp.usageTypes, tmp.resourceGroups);
                     }
-                    tmp.operations.remove(Operation.lentInstances);
+                    for (Operation.ReservationOperation lentOp: Operation.getLentInstances())
+                        tmp.operations.remove(lentOp);
                 }
                 result.put(tag, tmp);
             }

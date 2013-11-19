@@ -82,6 +82,8 @@ public class ReservationCapacityPoller extends Poller {
                     String offeringType = tokens[9];
                     String state = tokens[10];
                     Long end = tokens.length > 11 ? Long.parseLong(tokens[11]) : null;
+                    float fixedPrice = tokens.length > 12 ? Float.parseFloat(tokens[12]) : 0;
+                    float usagePrice = tokens.length > 13 ? Float.parseFloat(tokens[13]) : 0;
 
                     ReservedInstances reservation = new ReservedInstances()
                             .withAvailabilityZone(zone)
@@ -91,7 +93,9 @@ public class ReservationCapacityPoller extends Poller {
                             .withProductDescription(productDescription)
                             .withInstanceCount(instanceCount)
                             .withOfferingType(offeringType)
-                            .withState(state);
+                            .withState(state)
+                            .withFixedPrice(fixedPrice)
+                            .withUsagePrice(usagePrice);
                     if (end != null)
                         reservation.setEnd(new Date(end));
                     else
@@ -143,9 +147,12 @@ public class ReservationCapacityPoller extends Poller {
                         for (ReservedInstances reservation: result.getReservedInstances()) {
                             String key = account.id + "," + region.name + "," + reservation.getReservedInstancesId();
                             reservations.put(key, reservation);
-                            if (reservation.getEnd() == null) {
+                            if (reservation.getEnd() == null)
                                 reservation.setEnd(new Date(reservation.getStart().getTime() + reservation.getDuration() * 1000L));
-                            }
+                            if (reservation.getFixedPrice() == null)
+                                reservation.setFixedPrice(0f);
+                            if (reservation.getUsagePrice() == null)
+                                reservation.setUsagePrice(0f);
                         }
                     }
                     catch (Exception e) {
@@ -178,7 +185,9 @@ public class ReservationCapacityPoller extends Poller {
                         reservation.getInstanceCount().toString(),
                         reservation.getOfferingType(),
                         reservation.getState(),
-                        reservation.getEnd().getTime() + ""
+                        reservation.getEnd().getTime() + "",
+                        reservation.getFixedPrice() + "",
+                        reservation.getUsagePrice() + "",
                 };
                 writer.write(StringUtils.join(line, ","));
                 writer.newLine();

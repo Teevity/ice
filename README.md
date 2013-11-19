@@ -204,11 +204,13 @@ Options with * require writing your own code.
 
 4. Sharing reserved instances among accounts (*)
 
+  All linked accounts under the same payer account can share each other's reservations (see http://docs.aws.amazon.com/awsaccountbilling/latest/about/AboutConsolidatedBilling.html).
+
   If reserved instances are shared among accounts, please specify them in ice.properties. For example:
-          # set reservation owner accounts. "ice.owneraccount.account2=account3,account4" means reservations in account2 can be shared by account3 and account4
+          # set reservation owner accounts. In the example below, account1, account2, account3 and account4 are linked under the same payer account. account5, account6 are linked under the same payer account.
           # if reservation capacity poller is enabled, the poller will try to poll reservation capacity through ec2 API (desribeReservedInstances) for each reservation owner account.
-          ice.owneraccount.account1_name=
-          ice.owneraccount.account2_name=account3_name,account4_name
+          ice.owneraccount.account1_name=account2_name,account3_name,account4_name
+          ice.owneraccount.account2_name=account1_name,account3_name,account4_name
           ice.owneraccount.account5_name=account6_name
   
   If different accounts have different AZ mappings, you will also need to subclass BasicAccountService and override method getAccountMappedZone to provide correct AZ mapping.

@@ -231,7 +231,22 @@ public class Ec2InstanceReservationPrice {
     public static enum ReservationUtilization {
         LIGHT,
         MEDIUM,
-        HEAVY;
+        HEAVY,
+        FIXED;
+
+        public static ReservationUtilization get(String offeringType) {
+            if (offeringType.indexOf(" ") > 0) {
+                offeringType = offeringType.substring(0, offeringType.indexOf(" ")).toUpperCase();
+                return valueOf(offeringType);
+            }
+            else {
+                for (ReservationUtilization utilization: values()) {
+                    if (offeringType.toUpperCase().startsWith(utilization.name()))
+                        return utilization;
+                }
+                throw new RuntimeException("Unknown ReservationUtilization " + offeringType);
+            }
+        }
     }
 }
 

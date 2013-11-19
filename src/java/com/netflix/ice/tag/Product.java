@@ -21,6 +21,7 @@ public class Product extends Tag {
     public static final Product cloudfront = new Product("cloudfront");
     public static final Product cloudhsm = new Product("cloudhsm");
     public static final Product cloudwatch = new Product("cloudwatch");
+    public static final Product data_pipeline = new Product("data_pipeline");
     public static final Product data_transfer = new Product("data_transfer");
     public static final Product direct_connect = new Product("direct_connect");
     public static final Product dynamodb = new Product("dynamodb");
@@ -40,6 +41,7 @@ public class Product extends Tag {
     public static final Product ses = new Product("ses");
     public static final Product sns = new Product("sns");
     public static final Product sqs = new Product("sqs");
+    public static final Product storage_gateway = new Product("storage_gateway");
     public static final Product sws = new Product("sws");
     public static final Product vpc = new Product("vpc");
 

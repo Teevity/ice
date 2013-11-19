@@ -34,6 +34,7 @@ public class BasicProductService implements ProductService {
     public static final BasicProduct cloudfront = new BasicProduct(Product.cloudfront, "CloudFront");
     public static final BasicProduct cloudhsm = new BasicProduct(Product.cloudhsm, "CloudHSM");
     public static final BasicProduct cloudwatch = new BasicProduct(Product.cloudwatch, "CloudWatch");
+    public static final BasicProduct data_pipeline = new BasicProduct(Product.data_pipeline, "Data Pipeline");
     public static final BasicProduct data_transfer = new BasicProduct(Product.data_transfer, "Data Transfer");
     public static final BasicProduct direct_connect = new BasicProduct(Product.direct_connect, "Direct Connect");
     public static final BasicProduct dynamodb = new BasicProduct(Product.dynamodb, "DynamoDB");
@@ -52,11 +53,12 @@ public class BasicProductService implements ProductService {
     public static final BasicProduct ses = new BasicProduct(Product.ses, "Simple Email Service");
     public static final BasicProduct sns = new BasicProduct(Product.sns, "Simple Notification Service");
     public static final BasicProduct sqs = new BasicProduct(Product.sqs, "Simple Queue Service");
+    public static final BasicProduct storage_gateway = new BasicProduct(Product.storage_gateway, "Storage Gateway");
     public static final BasicProduct sws = new BasicProduct(Product.sws, "Simple Workflow Service");
     public static final BasicProduct vpc = new BasicProduct(Product.vpc, "Virtual Private Cloud");
     public static final BasicProduct monitor = new BasicProduct(Product.monitor, "monitor");
 
-    private static BasicProduct[] products = new BasicProduct[]{cloudfront, cloudhsm, cloudwatch, data_transfer, direct_connect, dynamodb, ebs, ec2, ec2_instance, eip, elasticache, emr, glacier, rds, redshift, route53, s3, simpledb, ses, sns, sqs, sws, vpc};
+    private static BasicProduct[] products = new BasicProduct[]{cloudfront, cloudhsm, cloudwatch, data_pipeline, data_transfer, direct_connect, dynamodb, ebs, ec2, ec2_instance, eip, elasticache, emr, glacier, rds, redshift, route53, s3, simpledb, ses, sns, sqs, storage_gateway, sws, vpc};
 
     static {
         for (BasicProduct product: products) {

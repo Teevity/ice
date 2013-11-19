@@ -88,7 +88,7 @@ public class BasicAccountService implements AccountService {
         return reservationAccessExternalIds;
     }
 
-    public Zone getAccountMappedZone(Account mapAccount, Account account, Zone zone) {
-        return zone;
+    public boolean externalMappingExist(Account account, Zone zone) {
+        return true;
     }
 }

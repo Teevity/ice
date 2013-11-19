@@ -219,7 +219,8 @@ class DashboardController {
         }
 
         if (!forReservation) {
-            data.remove(Operation.lentInstances);
+            for (Operation.ReservationOperation lentOp: Operation.getLentInstances())
+                data.remove(lentOp);
         }
 
         def result = [status: 200, data: data]

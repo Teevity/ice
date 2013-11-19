@@ -225,7 +225,8 @@ public class BillingFileProcessor extends Poller {
             }
 
             // now get reservation capacity to calculate upfront and un-used cost
-            processReservations();
+            for (Ec2InstanceReservationPrice.ReservationUtilization utilization: Ec2InstanceReservationPrice.ReservationUtilization.values())
+                processReservations(utilization);
 
             if (hasTags && config.resourceService != null)
                 config.resourceService.commit();
@@ -243,284 +244,152 @@ public class BillingFileProcessor extends Poller {
         logger.info("AWS usage processed.");
     }
 
-    private double getSum(List<TagGroup> tagGroups, Map<TagGroup, Double> map) {
-        double sum = 0;
-        for (TagGroup tagGroup: tagGroups) {
-            Double v = map.get(tagGroup);
-            if (v != null)
-                sum += v;
-        }
-        return sum;
-    }
+    private void borrow(int i, long time,
+                        Map<TagGroup, Double> usageMap,
+                        Map<TagGroup, Double> costMap,
+                        List<Account> fromAccounts,
+                        TagGroup tagGroup,
+                        Ec2InstanceReservationPrice.ReservationUtilization utilization,
+                        boolean forBonus) {
 
-    private double getValue(Map<TagGroup, Double> map, TagGroup tagGroup) {
-        Double v = map.get(tagGroup);
-        return v == null ? 0 : v;
-    }
+        Double existing = usageMap.get(tagGroup);
 
-    private void adjustUsage(
-            ReservationService.ReservationInfo reservation,
-            Map<TagGroup, Double> usage,
-            Map<TagGroup, Double> cost,
-            TagGroup ondemandTagGroup,
-            TagGroup reservedTagGroup,
-            TagGroup unusedTagGroup,
-            TagGroup lentTagGroup,
-            List<TagGroup> borrowedTagGroups,
-            List<TagGroup> ondemandTagGroups) {
+        if (existing != null && config.accountService.externalMappingExist(tagGroup.account, tagGroup.zone) && fromAccounts != null) {
 
-        double ondemandUsage = getSum(ondemandTagGroups, usage);
-        double ondemandCost = getSum(ondemandTagGroups, cost);
-        double borrowedUsage = getSum(borrowedTagGroups, usage);
-        double borrowedCost = getSum(borrowedTagGroups, cost);
-
-        double unusedUsage = reservation.capacity - borrowedUsage;
-        double unusedCost = reservation.capacity * reservation.reservationHourlyCost - borrowedCost;
-
-        if (unusedUsage < 0 || unusedUsage > 0 && ondemandUsage > 0) {
-
-            double toRemoveUsage = 0;
-            double toRemoveRate = 0;
-            double toAddRate = 0;
-            List<TagGroup> fromTagGroups = null;
-            List<TagGroup> toTagGroups = null;
-            if (unusedUsage < 0) {
-                toRemoveUsage = -unusedUsage;
-                toRemoveRate = reservation.reservationHourlyCost;
-                if (ondemandUsage == 0) {
-                    String key = ondemandTagGroup.operation + "|" + ondemandTagGroup.region + "|" + ondemandTagGroup.usageType;
-                    if (ondemandRate.get(key) == null) {
-                        int iii = 0;
-                        toAddRate = toRemoveRate;
-                    }
-                    else
-                        toAddRate = ondemandRate.get(key);
-                }
-                else
-                    toAddRate = ondemandCost / ondemandUsage;
-                fromTagGroups = borrowedTagGroups;
-                toTagGroups = ondemandTagGroups;
-            }
-            else if (unusedUsage > 0 && ondemandUsage > 0) {
-                toRemoveUsage = Math.min(unusedUsage, ondemandUsage);
-                toRemoveRate = ondemandCost / ondemandUsage;
-                toAddRate = reservation.reservationHourlyCost;
-                fromTagGroups = ondemandTagGroups;
-                toTagGroups = borrowedTagGroups;
-            }
-
-            for (int i = 0; i < fromTagGroups.size(); i++) {
-                TagGroup from = fromTagGroups.get(i);
-                TagGroup to = toTagGroups.get(i);
-
-                Double u = usage.get(from);
-                Double c = cost.get(from);
-                if (u == null)
-                    continue;
-
-                double deltaUsage = Math.min(toRemoveUsage, u);
-                double deltaCost = deltaUsage * toRemoveRate;
-
-                u -= deltaUsage;
-                c -= deltaCost;
-
-                usage.put(from, u);
-                cost.put(from, c);
-
-                u = usage.get(to);
-                c = cost.get(to);
-
-                deltaCost =  deltaUsage * toAddRate;
-                u = u == null ? deltaUsage : u + deltaUsage;
-                c = c == null ? deltaCost : c + deltaCost;
-
-                usage.put(to, u);
-                cost.put(to, c);
-
-                toRemoveUsage -= deltaUsage;
-                if (toRemoveUsage <= 0)
+            for (Account from: fromAccounts) {
+                if (existing <= 0)
                     break;
-            }
 
-            if (toRemoveUsage > 0) {
-                int iii = 0;
-            }
-        }
+                TagGroup unusedTagGroup = new TagGroup(from, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getUnusedInstances(utilization), tagGroup.usageType, null);
+                Double unused = usageMap.get(unusedTagGroup);
 
-        ondemandUsage = getSum(ondemandTagGroups, usage);
-        ondemandCost = getSum(ondemandTagGroups, cost);
-        borrowedUsage = getSum(borrowedTagGroups, usage);
-        borrowedCost = getSum(borrowedTagGroups, cost);
+                if (unused != null && unused > 0) {
+                    double hourlyCost = costMap.get(unusedTagGroup) / unused;
 
-        unusedUsage = reservation.capacity - borrowedUsage;
-        unusedCost = reservation.capacity * reservation.reservationHourlyCost - borrowedCost;
+                    double reservedBorrowed = Math.min(existing, unused);
+                    double reservedUnused = unused - reservedBorrowed;
 
-        if (unusedUsage < 0 || unusedCost < -0.0001 || unusedUsage > 0 && ondemandUsage > 0 || unusedCost > 0.0001 && ondemandCost > 0.0001) {
-            int iii = 0;
+                    existing -= reservedBorrowed;
 
-            for (TagGroup tg: borrowedTagGroups) {
-                Double u = usage.get(tg);
-                Double c = cost.get(tg);
+                    TagGroup borrowedTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getBorrowedInstances(utilization), tagGroup.usageType, null);
+                    TagGroup lentTagGroup = new TagGroup(from, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getLentInstances(utilization), tagGroup.usageType, null);
 
-                if (u != null) {
-                    double rate = c / u;
-                    rate = c / u;
+                    Double existingLent = usageMap.get(lentTagGroup);
+                    double reservedLent = existingLent == null ? reservedBorrowed : reservedBorrowed + existingLent;
+                    Double existingBorrowed = usageMap.get(borrowedTagGroup);
+                    reservedBorrowed = existingBorrowed == null ? reservedBorrowed : reservedBorrowed + existingBorrowed;
+
+                    usageMap.put(borrowedTagGroup, reservedBorrowed);
+                    costMap.put(borrowedTagGroup, reservedBorrowed * hourlyCost);
+                    usageMap.put(lentTagGroup, reservedLent);
+                    costMap.put(lentTagGroup, reservedLent * hourlyCost);
+                    usageMap.put(tagGroup, existing);
+                    costMap.put(tagGroup, existing * hourlyCost);
+
+                    usageMap.put(unusedTagGroup, reservedUnused);
+                    costMap.put(unusedTagGroup, reservedUnused * hourlyCost);
                 }
             }
         }
-        usage.put(lentTagGroup, borrowedUsage - getValue(usage, reservedTagGroup));
-        cost.put(lentTagGroup, borrowedCost - getValue(cost, reservedTagGroup));
-        usage.put(unusedTagGroup, unusedUsage);
-        if (config.reservationService.getReservationUtilization() != Ec2InstanceReservationPrice.ReservationUtilization.HEAVY) {
-            unusedCost = 0;
+
+        // the rest is bonus
+        if (existing != null && existing > 0 && !forBonus) {
+            ReservationService.ReservationInfo reservation = config.reservationService.getReservation(time, tagGroup, utilization);
+            TagGroup bonusTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getBonusReservedInstances(utilization), tagGroup.usageType, null);
+            usageMap.put(bonusTagGroup, existing);
+            costMap.put(bonusTagGroup, existing * reservation.reservationHourlyCost);
+
+            usageMap.remove(tagGroup);
+            costMap.remove(tagGroup);
         }
-        cost.put(unusedTagGroup, unusedCost);
     }
 
-    private void processReservations() {
+    private void processReservations(Ec2InstanceReservationPrice.ReservationUtilization utilization) {
+
+        if (config.reservationService.getTagGroups(utilization).size() == 0)
+            return;
 
         ReadWriteData usageData = usageDataByProduct.get(null);
         ReadWriteData costData = costDataByProduct.get(null);
 
         Map<Account, List<Account>> reservationAccounts = config.accountService.getReservationAccounts();
         Set<Account> reservationOwners = reservationAccounts.keySet();
-        Map<Account, Account> reservationBorrowers = Maps.newHashMap();
+        Map<Account, List<Account>> reservationBorrowers = Maps.newHashMap();
         for (Account account: reservationAccounts.keySet()) {
             List<Account> list = reservationAccounts.get(account);
-            for (Account borrowingAccount: list)
-                reservationBorrowers.put(borrowingAccount, account);
+            for (Account borrowingAccount: list) {
+                if (borrowingAccount.name.equals(account.name))
+                    continue;
+                List<Account> from = reservationBorrowers.get(borrowingAccount);
+                if (from == null) {
+                    from = Lists.newArrayList();
+                    reservationBorrowers.put(borrowingAccount, from);
+                }
+                from.add(account);
+            }
         }
 
-        // first mark borrowed instances
+        // first mark owner accounts
+        Set<TagGroup> toMarkOwners = Sets.newTreeSet();
+        for (TagGroup tagGroup: config.reservationService.getTagGroups(utilization)) {
+
+            for (int i = 0; i < usageData.getNum(); i++) {
+
+                Map<TagGroup, Double> usageMap = usageData.getData(i);
+                Map<TagGroup, Double> costMap = costData.getData(i);
+
+                Double existing = usageMap.get(tagGroup);
+                double value = existing == null ? 0 : existing;
+                ReservationService.ReservationInfo reservation = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, tagGroup, utilization);
+                double reservedUsed = Math.min(value, reservation.capacity);
+                double reservedUnused = reservation.capacity - reservedUsed;
+                double bonusReserved = value > reservation.capacity ? value - reservation.capacity : 0;
+
+                if (reservedUsed > 0 || existing != null) {
+                    usageMap.put(tagGroup, reservedUsed);
+                    costMap.put(tagGroup, reservedUsed * reservation.reservationHourlyCost);
+                }
+
+                if (reservedUnused > 0) {
+                    TagGroup unusedTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getUnusedInstances(utilization), tagGroup.usageType, null);
+                    usageMap.put(unusedTagGroup, reservedUnused);
+                    costMap.put(unusedTagGroup, reservedUnused * reservation.reservationHourlyCost);
+                }
+
+                if (bonusReserved > 0) {
+                    TagGroup bonusTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getBonusReservedInstances(utilization), tagGroup.usageType, null);
+                    usageMap.put(bonusTagGroup, bonusReserved);
+                    costMap.put(bonusTagGroup, bonusReserved * reservation.reservationHourlyCost);
+                }
+
+                if (reservation.capacity > 0) {
+                    TagGroup upfrontTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getUpfrontAmortized(utilization), tagGroup.usageType, null);
+                    costMap.put(upfrontTagGroup, reservation.capacity * reservation.upfrontAmortized);
+                }
+            }
+
+            toMarkOwners.add(new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getBonusReservedInstances(utilization), tagGroup.usageType, null));
+        }
+
+        // now mark borrowing accounts
         Set<TagGroup> toMarkBorrowing = Sets.newTreeSet();
-        Set<TagGroup> toMarkUnused = Sets.newTreeSet();
         for (TagGroup tagGroup: usageData.getTagGroups()) {
             if (tagGroup.resourceGroup == null &&
                 tagGroup.product == Product.ec2_instance &&
-                (tagGroup.operation == Operation.reservedInstances)) {
+                (!toMarkOwners.contains(tagGroup) && tagGroup.operation == Operation.getReservedInstances(utilization) ||
+                 toMarkOwners.contains(tagGroup) && tagGroup.operation == Operation.getBonusReservedInstances(utilization))) {
 
                 toMarkBorrowing.add(tagGroup);
             }
         }
         for (TagGroup tagGroup: toMarkBorrowing) {
-            TagGroup borrowedTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.borrowedInstances, tagGroup.usageType, null);
             for (int i = 0; i < usageData.getNum(); i++) {
 
                 Map<TagGroup, Double> usageMap = usageData.getData(i);
                 Map<TagGroup, Double> costMap = costData.getData(i);
 
-                if (reservationOwners.contains(tagGroup.account) && reservationBorrowers.containsKey(tagGroup.account)) {
-                    ReservationService.ReservationInfo reservation = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, tagGroup);
-                    Double value = usageMap.get(tagGroup);
-
-                    if (value != null && value > reservation.capacity) {
-
-                        Zone mappedZone = config.accountService.getAccountMappedZone(reservationBorrowers.get(tagGroup.account), tagGroup.account, tagGroup.zone);
-                        if (mappedZone == null) {
-                            mappedZone = tagGroup.zone;
-                            logger.info("failed to find mapped zone for " + reservationBorrowers.get(tagGroup.account) + " " + tagGroup.account + " " + tagGroup.zone);
-                        }
-                        TagGroup fromTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.reservedInstances, tagGroup.usageType, null);
-                        TagGroup lentTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.lentInstances, tagGroup.usageType, null);
-                        ReservationService.ReservationInfo reservationBorrowed = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, fromTagGroup);
-
-                        usageMap.put(tagGroup, new Double(reservation.capacity));
-                        usageMap.put(borrowedTagGroup, value - reservation.capacity);
-                        usageMap.put(lentTagGroup, value - reservation.capacity);
-
-                        costMap.put(tagGroup, reservation.capacity * reservation.reservationHourlyCost);
-                        costMap.put(borrowedTagGroup, (value - reservation.capacity) * reservationBorrowed.reservationHourlyCost);
-                        costMap.put(lentTagGroup, (value - reservation.capacity) * reservationBorrowed.reservationHourlyCost);
-
-                        toMarkUnused.add(fromTagGroup);
-                    }
-                    else if (value != null) {
-                        costMap.put(tagGroup, value * reservation.reservationHourlyCost);
-                    }
-                }
-                else if (reservationOwners.contains(tagGroup.account)) {
-                    Double value = usageMap.get(tagGroup);
-                    if (value != null) {
-                        ReservationService.ReservationInfo reservation = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, tagGroup);
-                        costMap.put(tagGroup, value * reservation.reservationHourlyCost);
-                    }
-                    toMarkUnused.add(tagGroup);
-                }
-                else if (reservationBorrowers.get(tagGroup.account) != null) {
-                    Double value = usageMap.remove(tagGroup);
-                    if (value != null) {
-                        Zone mappedZone = config.accountService.getAccountMappedZone(reservationBorrowers.get(tagGroup.account), tagGroup.account, tagGroup.zone);
-                        if (mappedZone == null) {
-                            mappedZone = tagGroup.zone;
-                            logger.info("failed to find mapped zone for " + reservationBorrowers.get(tagGroup.account) + " " + tagGroup.account + " " + tagGroup.zone);
-                        }
-                        TagGroup fromTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.reservedInstances, tagGroup.usageType, null);
-                        TagGroup lentTagGroup = new TagGroup(reservationBorrowers.get(tagGroup.account), tagGroup.region, mappedZone, tagGroup.product, Operation.lentInstances, tagGroup.usageType, null);
-                        ReservationService.ReservationInfo reservationBorrowed = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, fromTagGroup);
-
-                        usageMap.put(borrowedTagGroup, value);
-                        usageMap.put(lentTagGroup, value);
-                        costMap.remove(tagGroup);
-                        costMap.put(borrowedTagGroup, value * reservationBorrowed.reservationHourlyCost);
-                        costMap.put(lentTagGroup, value * reservationBorrowed.reservationHourlyCost);
-                        toMarkUnused.add(fromTagGroup);
-                    }
-                }
-            }
-        }
-
-        // now mark unused and lent instancs
-        toMarkUnused.addAll(config.reservationService.getTaGroups());
-        for (TagGroup tagGroup: toMarkUnused) {
-
-            TagGroup upfrontTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.upfrontAmortized, tagGroup.usageType, null);
-            TagGroup ondemandTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.ondemandInstances, tagGroup.usageType, null);
-            TagGroup unusedTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.unusedInstances, tagGroup.usageType, null);
-            TagGroup lentTagGroup = new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.lentInstances, tagGroup.usageType, null);
-            TagGroup reservedTagGroup = tagGroup;
-
-            List<TagGroup> borrowedTagGroups = Lists.newArrayList();
-            for (Account borrowingAccount: reservationAccounts.get(tagGroup.account)) {
-                Zone mappedZone = config.accountService.getAccountMappedZone(borrowingAccount, tagGroup.account, tagGroup.zone);
-                if (mappedZone == null) {
-                    mappedZone = tagGroup.zone;
-                    logger.info("failed to find mapped zone for " + borrowingAccount + " " + tagGroup.account + " " + tagGroup.zone);
-                }
-                borrowedTagGroups.add(new TagGroup(borrowingAccount, tagGroup.region, mappedZone, tagGroup.product, Operation.borrowedInstances, tagGroup.usageType, null));
-            }
-            borrowedTagGroups.add(reservedTagGroup);
-
-            List<TagGroup> ondemandTagGroups = Lists.newArrayList();
-            for (Account borrowingAccount: reservationAccounts.get(tagGroup.account)) {
-                Zone mappedZone = config.accountService.getAccountMappedZone(borrowingAccount, tagGroup.account, tagGroup.zone);
-                if (mappedZone == null) {
-                    mappedZone = tagGroup.zone;
-                    logger.info("failed to find mapped zone for " + borrowingAccount + " " + tagGroup.account + " " + tagGroup.zone);
-                }
-                ondemandTagGroups.add(new TagGroup(borrowingAccount, tagGroup.region, mappedZone, tagGroup.product, Operation.ondemandInstances, tagGroup.usageType, null));
-            }
-            ondemandTagGroups.add(ondemandTagGroup);
-
-            for (int i = 0; i < usageData.getNum(); i++) {
-                ReservationService.ReservationInfo reservation = config.reservationService.getReservation(startMilli + i * AwsUtils.hourMillis, reservedTagGroup);
-
-                Map<TagGroup, Double> usageMap = usageData.getData(i);
-                Map<TagGroup, Double> costMap = costData.getData(i);
-
-                if (reservation.capacity > 0) {
-                    costMap.put(upfrontTagGroup, reservation.capacity * reservation.upfrontAmortized);
-                }
-
-                adjustUsage(
-                    reservation,
-                    usageMap,
-                    costMap,
-                    ondemandTagGroup,
-                    reservedTagGroup,
-                    unusedTagGroup,
-                    lentTagGroup,
-                    borrowedTagGroups,
-                    ondemandTagGroups);
+                borrow(i, startMilli + i * AwsUtils.hourMillis, usageMap, costMap,
+                       reservationBorrowers.get(tagGroup.account), tagGroup, utilization, reservationOwners.contains(tagGroup.account));
             }
         }
     }
