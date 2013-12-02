@@ -5,7 +5,15 @@
 GRAILS_VERSION=2.2.1
 
 # Install prerequisites
-sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget unzip
+
+if [ -f /etc/redhat-release ]; then
+    echo "Installing redhat packages"
+    sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget unzip
+else
+   [ -f /etc/debian-release ];
+    echo "Installing debian packages"
+    sudo apt-get -y install git openjdk-6-jdk wget unzip
+fi
 
 INSTALL_DIR=$(pwd)
 
