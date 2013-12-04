@@ -383,7 +383,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             if (reservationUsage && product == Product.ec2 && cost == 0)
                 operation = Operation.reservedInstancesFixed;
             else if (reservationUsage && product == Product.ec2)
-                operation = Operation.reservedInstances;
+                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization());
             else
                 operation = Operation.ondemandInstances;
             os = getInstanceOs(operationStr);
