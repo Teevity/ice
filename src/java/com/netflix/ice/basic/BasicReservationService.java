@@ -106,6 +106,7 @@ public class BasicReservationService extends Poller implements ReservationServic
                 pollAPI();
             }
             catch (Exception e) {
+                logger.error("failed to poll reservation prices", e);
                 throw new RuntimeException("failed to poll reservation prices for " + e.getMessage());
             }
         }
