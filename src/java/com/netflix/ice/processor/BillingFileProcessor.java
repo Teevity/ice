@@ -376,8 +376,8 @@ public class BillingFileProcessor extends Poller {
         for (TagGroup tagGroup: usageData.getTagGroups()) {
             if (tagGroup.resourceGroup == null &&
                 tagGroup.product == Product.ec2_instance &&
-                (!toMarkOwners.contains(tagGroup) && tagGroup.operation == Operation.getReservedInstances(utilization) ||
-                 toMarkOwners.contains(tagGroup) && tagGroup.operation == Operation.getBonusReservedInstances(utilization))) {
+                (tagGroup.operation == Operation.getReservedInstances(utilization) && !toMarkOwners.contains(tagGroup) ||
+                 tagGroup.operation == Operation.getBonusReservedInstances(utilization))) {
 
                 toMarkBorrowing.add(tagGroup);
             }
