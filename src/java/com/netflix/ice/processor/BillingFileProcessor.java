@@ -368,7 +368,7 @@ public class BillingFileProcessor extends Poller {
                 }
             }
 
-            toMarkOwners.add(new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getBonusReservedInstances(utilization), tagGroup.usageType, null));
+            toMarkOwners.add(new TagGroup(tagGroup.account, tagGroup.region, tagGroup.zone, tagGroup.product, Operation.getReservedInstances(utilization), tagGroup.usageType, null));
         }
 
         // now mark borrowing accounts
