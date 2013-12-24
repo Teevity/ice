@@ -16,16 +16,18 @@
 
 --%>
 
+<%@ page import="com.netflix.ice.reader.ReaderConfig" %>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="layout" content="main"/>
-  <title>Application Group {{appgroup.name}}</title>
+  <title>${ReaderConfig.getInstance().applicationGroup} {{appgroup.name}}</title>
 </head>
 <body>
 <div class="" style="margin: auto; width: 1652px; padding: 10px 30px"  ng-controller="appgroupCtrl">
 
-  <h1>Application Group <b>{{appgroup.name}}</b>
+  <h1>${ReaderConfig.getInstance().applicationGroup} <b>{{appgroup.name}}</b>
     <a href="editappgroup#{{appgroup.name}}" style="font-weight: normal; font-size: 12px; text-decoration: underline; float: right">Edit Application Group</a>
   </h1>
 

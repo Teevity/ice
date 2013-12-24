@@ -16,6 +16,8 @@
 
 --%>
 
+<%@ page import="com.netflix.ice.reader.ReaderConfig" %>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -31,7 +33,7 @@
       <td>Account</td>
       <td>Region</td>
       <td>Product</td>
-      <td ng-show="showResourceGroups">ResourceGroup</td>
+      <td ng-show="showResourceGroups">${ReaderConfig.getInstance().resourceGroup}</td>
       <td>Operation</td>
       <td>UsageType</td>
     </tr>

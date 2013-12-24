@@ -198,6 +198,10 @@ class BootStrap {
                     properties.setProperty(IceOptions.CURRENCY_SIGN, prop.getProperty(IceOptions.CURRENCY_SIGN));
                 if (prop.getProperty(IceOptions.HIGHSTOCK_URL) != null)
                     properties.setProperty(IceOptions.HIGHSTOCK_URL, prop.getProperty(IceOptions.HIGHSTOCK_URL));
+                if (prop.getProperty(IceOptions.RESOURCE_GROUP) != null)
+                    properties.setProperty(IceOptions.RESOURCE_GROUP, prop.getProperty(IceOptions.RESOURCE_GROUP));
+                if (prop.getProperty(IceOptions.APPLICATION_GROUP) != null)
+                    properties.setProperty(IceOptions.APPLICATION_GROUP, prop.getProperty(IceOptions.APPLICATION_GROUP));
 
                 ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
                 ApplicationGroupService applicationGroupService = new BasicS3ApplicationGroupService();

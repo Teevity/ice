@@ -47,7 +47,7 @@
       <ul>
         <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#{{getTimeParams()}}" ng-click="reload()">General Details</a></li>
         <g:if test="${ReaderConfig.getInstance().resourceService != null}">
-        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#showResourceGroups=true&{{getTimeParams()}}" ng-click="reload()">Details With Resource Groups</a></li>
+        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#showResourceGroups=true&{{getTimeParams()}}" ng-click="reload()">Details With ${ReaderConfig.getInstance().resourceGroup}s</a></li>
         </g:if>
       </ul>
     </li>
@@ -62,9 +62,9 @@
     <li class="menuButton dropdown">
       <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=ApplicationGroup&{{getTimeParams()}}" ng-click="reload()">Breakdown</a>
       <ul>
-        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=ApplicationGroup&{{getTimeParams()}}" ng-click="reload()">By Application Group</a></li>
-        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#{{getTimeParams()}}" ng-click="reload()">By Resource Group</a></li>
-        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'editappgroup')}" ng-click="reload()">Create New Application Group</a></li>
+        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=ApplicationGroup&{{getTimeParams()}}" ng-click="reload()">By ${ReaderConfig.getInstance().applicationGroup}</a></li>
+        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#{{getTimeParams()}}" ng-click="reload()">By ${ReaderConfig.getInstance().resourceGroup}</a></li>
+        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'editappgroup')}" ng-click="reload()">Create New ${ReaderConfig.getInstance().applicationGroup}</a></li>
       </ul>
     </li>
     </g:if>
