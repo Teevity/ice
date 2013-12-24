@@ -154,4 +154,14 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+    * Term to use instead of resource groups.
+    */
+    public static final String RESOURCE_GROUP = "ice.resourceGroup";
+
+    /**
+    * Term to use instead of application groups.
+    */
+    public static final String APPLICATION_GROUP = "ice.applicationGroup";
 }
