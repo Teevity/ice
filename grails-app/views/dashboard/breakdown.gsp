@@ -16,6 +16,8 @@
 
 --%>
 
+<%@ page import="com.netflix.ice.reader.ReaderConfig" %>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -89,8 +91,8 @@
     <table>
       <thead>
       <tr>
-        <th rowspan="2" ng-show="groupBy.name == 'ApplicationGroup'" style="text-align: center; width: 35px">Edit</th>
-        <th rowspan="2" ng-show="groupBy.name == 'ApplicationGroup'" style="text-align: center; width: 40px">Delete</th>
+        <th rowspan="2" ng-show="groupBy.name == ${ReaderConfig.getInstance().applicationGroup}" style="text-align: center; width: 35px">Edit</th>
+        <th rowspan="2" ng-show="groupBy.name == ${ReaderConfig.getInstance().applicationGroup}" style="text-align: center; width: 40px">Delete</th>
         <th rowspan="2" ng-click="order('name')">{{groupBy.name}}</th>
         <th colspan="2" ng-repeat="period in periods" style="text-align: center;">{{dayFormat(period)}} {{getConsolidateName(data_consolidate)}}</th>
       </tr>
@@ -100,14 +102,14 @@
       </thead>
       <tbody>
       <tr ng-repeat="row in data | filter:filter_legend" class="{{getTrClass($index)}}">
-        <td ng-show="groupBy.name == 'ApplicationGroup'" style="text-align: center;">
+        <td ng-show="groupBy.name == ${ReaderConfig.getInstance().applicationGroup}" style="text-align: center;">
           <a ng-href="editappgroup#{{row.name}}"><img src="${resource(dir: '/')}images/tango/16/tools/draw-freehand.png" alt="Edit"></a>
         </td>
-        <td ng-show="groupBy.name == 'ApplicationGroup'" style="text-align: center;">
+        <td ng-show="groupBy.name == ${ReaderConfig.getInstance().applicationGroup}" style="text-align: center;">
           <a href="javascript:void(0)" ng-click="deleteAppGroup(row.name);"><img src="${resource(dir: '/')}images/tango/16/places/user-trash.png" alt="Delete"></a>
         </td>
         <td ng-switch on="groupBy.name">
-          <a ng-switch-when="ResourceGroup" ng-href="detail#showResourceGroups=true&groupBy=UsageType&start={{dataStart}}&end={{dataEnd}}&usage_cost={{usage_cost}}&resourceGroup={{row.name}}">{{row.name}}</a>
+          <a ng-switch-when="${ReaderConfig.getInstance().resourceGroup}" ng-href="detail#showResourceGroups=true&groupBy=UsageType&start={{dataStart}}&end={{dataEnd}}&usage_cost={{usage_cost}}&resourceGroup={{row.name}}">{{row.name}}</a>
           <a ng-switch-default ng-href="appgroup#appgroup={{row.name}}&start={{dataStart}}&end={{dataEnd}}&usage_cost={{usage_cost}}">{{row.name}}</a>
         </td>
         <td ng-repeat="header in headers">

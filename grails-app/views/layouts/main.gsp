@@ -60,9 +60,9 @@
     </li>
     <g:if test="${ReaderConfig.getInstance().resourceService != null}">
     <li class="menuButton dropdown">
-      <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=ApplicationGroup&{{getTimeParams()}}" ng-click="reload()">Breakdown</a>
+      <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=${ReaderConfig.getInstance().applicationGroup}&{{getTimeParams()}}" ng-click="reload()">Breakdown</a>
       <ul>
-        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=ApplicationGroup&{{getTimeParams()}}" ng-click="reload()">By ${ReaderConfig.getInstance().applicationGroup}</a></li>
+        <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#groupBy=${ReaderConfig.getInstance().applicationGroup}&{{getTimeParams()}}" ng-click="reload()">By ${ReaderConfig.getInstance().applicationGroup}</a></li>
         <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'breakdown')}#{{getTimeParams()}}" ng-click="reload()">By ${ReaderConfig.getInstance().resourceGroup}</a></li>
         <li class="menuButton"><a class="" href="${resource(dir: 'dashboard', file: 'editappgroup')}" ng-click="reload()">Create New ${ReaderConfig.getInstance().applicationGroup}</a></li>
       </ul>
