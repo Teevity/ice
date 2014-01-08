@@ -80,6 +80,8 @@
   var throughput_factoredCostCurrencySign = '${ReaderConfig.getInstance().throughputMetricService == null ? "" : ReaderConfig.getInstance().throughputMetricService.getFactoredCostCurrencySign()}';
   var throughput_factoredCostMultiply = '${ReaderConfig.getInstance().throughputMetricService == null ? "" : ReaderConfig.getInstance().throughputMetricService.getFactoredCostMultiply()}';
   var global_currencySign = '${ReaderConfig.getInstance().currencySign}';
+  var application_group_name = '${ReaderConfig.getInstance().applicationGroup}';
+  var resource_group_name = '${ReaderConfig.getInstance().resourceGroup}';
 </script>
 <script type="text/javascript" src="${resource(dir: 'js', file: 'jquery-1.9.1.min.js')}"></script>
 <script type="text/javascript" src="${resource(dir: 'js', file: 'jquery-ui-1.10.1.min.js')}"></script>

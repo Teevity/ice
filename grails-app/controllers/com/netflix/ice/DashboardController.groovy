@@ -261,16 +261,6 @@ class DashboardController {
         render result as JSON
     }
 
-    def getApplicationGroupName = {
-        def result = [status: 200, data: getConfig().applicationGroup]
-        render result as JSON
-    }
-
-    def getResourceGroupName = {
-        def result = [status: 200, data: getConfig().resourceGroup]
-        render result as JSON
-    }
-
     def download = {
         def o = params;
         JSONObject query = new JSONObject();
