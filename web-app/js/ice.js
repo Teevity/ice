@@ -278,8 +278,8 @@ ice.factory('highchart', function() {
 ice.factory('usage_db', function($window, $http, $filter) {
 
   var graphonly = false;
-  var resourcegroup = "Component";
-  var applicationgroup = "Project";
+  var resourcegroup = resource_group_name;
+  var applicationgroup = application_group_name;
 
   var retrieveNamesIfNotAll = function(array, selected, preselected, filter) {
     if (!selected && !preselected)
