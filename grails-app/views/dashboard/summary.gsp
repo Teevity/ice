@@ -31,6 +31,7 @@
       <td>Account</td>
       <td>Region</td>
       <td>Product</td>
+      <td ng-show="showResourceGroups">ResourceGroup</td>
       <td>Operation</td>
       <td>UsageType</td>
     </tr>
@@ -50,6 +51,10 @@
         <select ng-model="selected_products" ng-options="a.name for a in products | filter:filter_products" ng-change="productsChanged()" multiple="multiple" class="metaProducts metaSelect"></select>
         <br><input ng-model="filter_products" type="text" class="metaFilter" placeholder="filter">
       </td>
+      <td class="metaTd" ng-show="showResourceGroups">
+        <select ng-model="selected_resourceGroups" ng-options="a.name for a in resourceGroups | filter:filter_resourceGroups" ng-change="resourceGroupsChanged()" multiple="multiple" class="metaResourceGroups metaSelect"></select>
+        <br><input ng-model="filter_resourceGroups" type="text" class="metaFilter" placeholder="filter">
+      </td>
       <td class="metaTd">
         <select ng-model="selected_operations" ng-options="a.name for a in operations | filter:filter_operations" ng-change="operationsChanged()" multiple="multiple" class="metaOperations metaSelect"></select>
         <br><input ng-model="filter_operations" type="text" class="metaFilter" placeholder="filter">
@@ -64,7 +69,7 @@
     <img src="${resource(dir: '/')}images/spinner.gif" ng-show="loading">
     <a href="javascript:void(0)" class="monitor" style="background-image: url(${resource(dir: '/')}images/tango/16/apps/utilities-system-monitor.png)"
        ng-click="updateUrl(); getData()" ng-show="!loading"
-       ng-disabled="selected_accounts.length == 0|| selected_regions.length == 0 || selected_products.length == 0 || selected_operations.length == 0 || selected_usageTypes.length == 0">Submit</a>
+       ng-disabled="selected_accounts.length == 0|| selected_regions.length == 0 || selected_products.length == 0 || showResourceGroups && selected_resourceGroups.length == 0 || selected_operations.length == 0 || selected_usageTypes.length == 0">Submit</a>
   </div>
 
   <div id="highchart_container" style="width: 100%; height: 400px;">
