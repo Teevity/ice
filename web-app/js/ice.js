@@ -46,7 +46,8 @@ ice.factory('highchart', function() {
       text: 'Cost Per Hour'
     },
     legend: {
-        enabled: true
+        enabled: true,
+        maxHeight: 55
     },
     rangeSelector: {
         inputEnabled: false ,
