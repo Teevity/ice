@@ -103,14 +103,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         double usageValue = Double.parseDouble(items[usageQuantityIndex]);
         double costValue = Double.parseDouble(items[costIndex]);
 
-        Product product = config.productService.getProductByAwsName(items[productIndex]);
-        boolean reservationUsage = "Y".equals(items[reservedIndex]);
-        ReformedMetaData reformedMetaData = reform(config, product, reservationUsage, items[operationIndex], items[usageTypeIndex], items[descriptionIndex], costValue);
-        product = reformedMetaData.product;
-        Operation operation = reformedMetaData.operation;
-        UsageType usageType = reformedMetaData.usageType;
-        Zone zone = Zone.getZone(items[zoneIndex], reformedMetaData.region);
-
         long millisStart;
         long millisEnd;
         try {
@@ -121,6 +113,14 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             millisStart = amazonBillingDateFormat2.parseMillis(items[startTimeIndex]);
             millisEnd = amazonBillingDateFormat2.parseMillis(items[endTimeIndex]);
         }
+
+        Product product = config.productService.getProductByAwsName(items[productIndex]);
+        boolean reservationUsage = "Y".equals(items[reservedIndex]);
+        ReformedMetaData reformedMetaData = reform(millisStart, config, product, reservationUsage, items[operationIndex], items[usageTypeIndex], items[descriptionIndex], costValue);
+        product = reformedMetaData.product;
+        Operation operation = reformedMetaData.operation;
+        UsageType usageType = reformedMetaData.usageType;
+        Zone zone = Zone.getZone(items[zoneIndex], reformedMetaData.region);
 
         int startIndex = (int)((millisStart - startMilli)/ AwsUtils.hourMillis);
         int endIndex = (int)((millisEnd + 1000 - startMilli)/ AwsUtils.hourMillis);
@@ -201,7 +201,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         if (items.length > resourceIndex && !StringUtils.isEmpty(items[resourceIndex]) && config.resourceService != null) {
 
             if (product == Product.ec2_instance && !reservationUsage && operation == Operation.ondemandInstances)
-                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization());
+                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization(0L));
 
             if (product == Product.ec2_instance && operation instanceof Operation.ReservationOperation) {
                 UsageType usageTypeForPrice = usageType;
@@ -209,7 +209,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                     usageTypeForPrice = UsageType.getUsageType(usageType.name.replace(InstanceOs.others.name(), InstanceOs.windows.name()), usageType.unit);
                 }
                 try {
-                    resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice, config.reservationService.getDefaultReservationUtilization());
+                    resourceCostValue = usageValue * config.reservationService.getLatestHourlyTotalPrice(millisStart, tagGroup.region, usageTypeForPrice, config.reservationService.getDefaultReservationUtilization(0L));
                 }
                 catch (Exception e) {
                     logger.error("failed to get RI price for " + tagGroup.region + " " + usageTypeForPrice);
@@ -346,7 +346,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.hourly;
     }
 
-    protected ReformedMetaData reform(ProcessorConfig config, Product product, boolean reservationUsage, String operationStr, String usageTypeStr, String description, double cost) {
+    protected ReformedMetaData reform(long millisStart, ProcessorConfig config, Product product, boolean reservationUsage, String operationStr, String usageTypeStr, String description, double cost) {
 
         Operation operation = null;
         UsageType usageType = null;
@@ -383,7 +383,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             if (reservationUsage && product == Product.ec2 && cost == 0)
                 operation = Operation.reservedInstancesFixed;
             else if (reservationUsage && product == Product.ec2)
-                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization());
+                operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization(millisStart));
             else
                 operation = Operation.ondemandInstances;
             os = getInstanceOs(operationStr);

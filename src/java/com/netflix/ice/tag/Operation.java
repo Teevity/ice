@@ -40,14 +40,14 @@ public class Operation extends Tag {
     public static final ReservationOperation bonusReservedInstancesLight = new ReservationOperation("BonusReservedInstancesLight", 3);
     public static final ReservationOperation borrowedInstancesLight = new ReservationOperation("BorrowedInstancesLight", 4);
     public static final ReservationOperation lentInstancesLight = new ReservationOperation("LentInstancesLight", 5);
-    public static final ReservationOperation unusedInstancesLight = new ReservationOperation("UnusedInstancesHeavy", 6);
+    public static final ReservationOperation unusedInstancesLight = new ReservationOperation("UnusedInstancesLight", 6);
     public static final ReservationOperation upfrontAmortizedLight = new ReservationOperation("UpfrontAmortizedLight", 7);
 
     public static final ReservationOperation reservedInstancesMedium = new ReservationOperation("ReservedInstancesMedium", 8);
     public static final ReservationOperation bonusReservedInstancesMedium = new ReservationOperation("BonusReservedInstancesMedium", 9);
     public static final ReservationOperation borrowedInstancesMedium = new ReservationOperation("BorrowedInstancesMedium", 10);
     public static final ReservationOperation lentInstancesMedium = new ReservationOperation("LentInstancesMedium", 11);
-    public static final ReservationOperation unusedInstancesMedium = new ReservationOperation("UnusedInstancesHeavy", 12);
+    public static final ReservationOperation unusedInstancesMedium = new ReservationOperation("UnusedInstancesMedium", 12);
     public static final ReservationOperation upfrontAmortizedMedium = new ReservationOperation("UpfrontAmortizedMedium", 13);
 
     public static final ReservationOperation reservedInstancesHeavy = new ReservationOperation("ReservedInstancesHeavy", 14);

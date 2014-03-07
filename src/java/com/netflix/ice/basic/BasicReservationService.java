@@ -306,7 +306,7 @@ public class BasicReservationService extends Poller implements ReservationServic
         return reservations.get(utilization).keySet();
     }
 
-    public ReservationUtilization getDefaultReservationUtilization() {
+    public ReservationUtilization getDefaultReservationUtilization(long time) {
         return defaultUtilization;
     }
 

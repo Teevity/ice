@@ -43,7 +43,7 @@ public interface ReservationService {
      *
      * @return
      */
-    Ec2InstanceReservationPrice.ReservationUtilization getDefaultReservationUtilization();
+    Ec2InstanceReservationPrice.ReservationUtilization getDefaultReservationUtilization(long time);
 
     /**
      * Get reservation info.
