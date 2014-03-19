@@ -87,6 +87,9 @@ grails.project.dependency.resolution = {
 
                 // Easier Java from of the Apache Foundation
                 'commons-lang:commons-lang:2.4',
+     
+                // Better Zip Support
+                'org.apache.commons:commons-compress:1.8',
 
                 // Easier Java from Joshua Bloch and Google
                 'com.google.guava:guava:14.0',

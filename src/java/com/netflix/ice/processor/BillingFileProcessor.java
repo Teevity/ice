@@ -33,6 +33,8 @@ import com.netflix.ice.tag.Product;
 import com.netflix.ice.tag.Zone;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Months;
@@ -41,8 +43,6 @@ import org.joda.time.Weeks;
 import java.io.*;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Class to process billing files and produce tag, usage, cost output files for reader/UI.
@@ -526,12 +526,10 @@ public class BillingFileProcessor extends Poller {
     private void processBillingZipFile(File file, boolean withTags) throws IOException {
 
         InputStream input = new FileInputStream(file);
-        ZipInputStream zipInput;
-
-        zipInput = new ZipInputStream(input);
+        ZipArchiveInputStream zipInput = new ZipArchiveInputStream(input);
 
         try {
-            ZipEntry entry;
+            ArchiveEntry entry;
             while ((entry = zipInput.getNextEntry()) != null) {
                 if (entry.isDirectory())
                     continue;
