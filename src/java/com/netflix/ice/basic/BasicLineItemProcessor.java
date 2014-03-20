@@ -200,7 +200,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         double resourceCostValue = costValue;
         if (items.length > resourceIndex && !StringUtils.isEmpty(items[resourceIndex]) && config.resourceService != null) {
 
-            if (product == Product.ec2_instance && !reservationUsage && operation == Operation.ondemandInstances)
+            if (config.useCostForResourceGroup.equals("modeled") && product == Product.ec2_instance)
                 operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization(0L));
 
             if (product == Product.ec2_instance && operation instanceof Operation.ReservationOperation) {
@@ -263,7 +263,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
                     if (!config.useCostForResourceGroup.equals("modeled") || resourceCostValue < 0) {
                         addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
-
                     } else {
                         addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
                     }

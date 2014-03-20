@@ -379,6 +379,10 @@ ice.factory('usage_db', function($window, $http, $filter) {
       var result = {};
       if (hash) {
         var params = hash.split("&");
+        for (i = 0; i < params.length; i++) {
+          if (params[i].indexOf("=") < 0 && i > 0 && (params[i-1].indexOf("appgroup=") == 0 || params[i-1].indexOf("resourceGroup=") == 0))
+            params[i-1] = params[i-1] + "&"  + params[i];
+        }
         var i, j, time = "";
         for (i = 0; i < params.length; i++) {
 
