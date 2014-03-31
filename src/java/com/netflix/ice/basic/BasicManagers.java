@@ -99,7 +99,6 @@ public class BasicManagers extends Poller implements Managers {
             }
             else {
                 String name = key.substring((config.workS3BucketPrefix + TagGroupWriter.DB_PREFIX).length());
-                name = name.replaceAll("--", "/");
                 product = config.productService.getProductByName(name);
             }
             if (!products.contains(product)) {
