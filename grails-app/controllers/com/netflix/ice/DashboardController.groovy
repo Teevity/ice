@@ -34,6 +34,7 @@ import org.joda.time.DateTime
 import org.joda.time.Interval
 import com.netflix.ice.tag.Tag
 import com.netflix.ice.reader.*;
+import com.netflix.ice.login.LoginConfig;
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.google.common.collect.Maps
@@ -62,6 +63,16 @@ class DashboardController {
             managers = ReaderConfig.getInstance().managers;
         }
         return managers;
+    }
+
+    def beforeInterceptor = {
+        LoginConfig lc = LoginConfig.getInstance();
+        if ( lc.loginEnable )
+        {
+            if (session.authenticated != true) {
+                redirect(controller: "login")      
+            }
+        }
     }
 
     def index = {

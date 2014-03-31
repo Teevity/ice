@@ -23,7 +23,7 @@ import org.joda.time.DateTimeZone;
 
 import java.util.Properties;
 
-public abstract class Config {
+public abstract class Config implements BaseConfig {
 
     public final String workS3BucketName;
     public final String workS3BucketPrefix;

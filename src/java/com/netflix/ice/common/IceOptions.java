@@ -154,4 +154,29 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+    * true/false for using Login
+    */
+    public static final String LOGIN_ENABLE = "ice.login";
+
+    /**
+    * true/false for using Login
+    */
+    public static final String LOGIN_DEFAULT = "ice.login.default_endpoint";
+
+    /**
+    * Implementation login classes
+    */
+    public static final String LOGIN_CLASSES = "ice.login.classes";
+
+    /**
+    * Implementation login endpoints.  Will map to /logic/<endpoint>
+    */
+    public static final String LOGIN_ENDPOINTS = "ice.login.endpoints";
+
+    /**
+    * Simple passphrase for allowing Authentication
+    */
+    public static final String LOGIN_PASSPHRASE = "ice.login.passphrase";
 }
