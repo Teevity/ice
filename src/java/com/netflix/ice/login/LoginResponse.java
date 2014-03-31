@@ -21,8 +21,8 @@ import java.io.File;
  */
 public class LoginResponse
 {
-  public boolean loginSuccess=false;
-  public boolean loginFailed=false;
-  public String contentType=null;
-  public File renderFile=null;
+    public boolean loginSuccess=false;
+    public boolean loginFailed=false;
+    public String contentType=null;
+    public File renderFile=null;
 }

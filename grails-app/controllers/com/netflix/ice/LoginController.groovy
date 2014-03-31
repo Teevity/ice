@@ -57,7 +57,6 @@ class LoginController {
         } else if (loginResponse.loginFailed) {
              redirect(action: "failure");
         } else if (loginResponse.renderFile) {
-             System.out.println("Render " + loginResponse.renderFile + " - " + loginResponse.contentType);
              render(file: loginResponse.renderFile, contentType: loginResponse.contentType);
            
         } else {
@@ -71,10 +70,8 @@ class LoginController {
     def index = {
         getConfig();
         if (config.loginEnable == false) {
-            System.out.println("Login Disabled, Goto Dashboard")
             redirect(controller: "dashboard")
         } else {
-            System.out.println("No Action, Render Default Endpoint")
             redirect(uri: "/login/handler/" + config.loginDefaultEndpoint)
         } 
     }

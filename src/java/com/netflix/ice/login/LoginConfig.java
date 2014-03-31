@@ -73,21 +73,21 @@ public class LoginConfig implements BaseConfig {
                 System.out.println("Loading " + endpoint + " using class " + className);
                 Class loginMethodClass = Class.forName(className);
                 Constructor ctor = loginMethodClass.getDeclaredConstructor(Properties.class);
-	        ctor.setAccessible(true);
+                ctor.setAccessible(true);
                 LoginMethod loginObject = (LoginMethod)ctor.newInstance(properties);
                 loginMethods.put(endpoint, loginObject);
             }
         } catch(ClassNotFoundException x) {
-	    x.printStackTrace();
+            x.printStackTrace();
         } catch (InstantiationException x) {
-	    x.printStackTrace();
-	} catch (IllegalAccessException x) {
-	    x.printStackTrace();
+            x.printStackTrace();
+        } catch (IllegalAccessException x) {
+            x.printStackTrace();
         } catch (InvocationTargetException x) {
-	    x.printStackTrace();
-	} catch (NoSuchMethodException x) {
-	    x.printStackTrace();
-	}
+            x.printStackTrace();
+        } catch (NoSuchMethodException x) {
+            x.printStackTrace();
+        }
     }
 
 

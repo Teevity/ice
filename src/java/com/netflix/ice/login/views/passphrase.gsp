@@ -5,8 +5,8 @@
 <body>
 Whats the Password!<BR>
 <form method="post">
-  Passphrase: <input type=text name=passphrase></input>
-  <input type=submit name=submit value=submit>
+    Passphrase: <input type=text name=passphrase></input>
+    <input type=submit name=submit value=submit>
 </form>
 </body>
 </html>
