@@ -74,7 +74,7 @@ do
   echo -n "-> "
   read -r PROCBUCKET
 done
-sed -rie 's/=billing_s3bucketprefix\//=/; s/\/mnt\//\/home\/ec2-user\//; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
+sed -rie 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
 
 echo Ice is now ready to run as a processor. If you want to run the reader, edit:
 echo ~/ice/src/java/ice.properties
