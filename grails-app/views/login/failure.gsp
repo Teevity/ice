@@ -23,6 +23,6 @@
   <title>Login Failure</title>
 </head>
 <body>
-   Failure Logging-In
+   A Login Failure occurred.  Click <g:link resource="dashboard">here</g:link> to try again.
 </body>
 </html>

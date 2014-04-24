@@ -16,37 +16,60 @@ package com.netflix.ice.login;
 
 import com.netflix.ice.common.IceOptions;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Map;
+import java.util.Calendar;
+import java.util.Date;
 import java.io.File;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Simple Login Method to protect via a config Passphrase.
- */
+* Simple Login Method to protect via a config Passphrase.  This is more of
+* a reference implementation.
+*/
 public class Passphrase extends LoginMethod {
+    Logger logger = LoggerFactory.getLogger(getClass());
     public final String passphrase;
-    public Passphrase(Properties properties) {
+    public final String PASSPHRASE_PREFIX = propertyPrefix("passphrase");
+    public Passphrase(Properties properties) throws LoginMethodException {
         super(properties);
         passphrase = properties.getProperty(IceOptions.LOGIN_PASSPHRASE);
     }
 
-    public LoginResponse processLogin(Map params) {
+    public String propertyName(String name) {
+       return PASSPHRASE_PREFIX + "." + name;
+    }
+
+    public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
+
         LoginResponse lr = new LoginResponse();
-        String user_passphrase = (String)params.get("passphrase");
-        System.out.println(user_passphrase + " does it equal " + passphrase);
+        String user_passphrase = (String)request.getParameter("passphrase");
+
         if (user_passphrase == null) {
+            /** embedded view simply to give a reference for how this would 
+            *   be done with a self-contained, jar'd login plugin. 
+            */
             URL viewUrl = this.getClass().getResource("/com/netflix/ice/login/views/passphrase.gsp");
             try {
-                lr.renderFile=new File(viewUrl.toURI());
+                lr.templateFile=new File(viewUrl.toURI());
                 lr.contentType="text/html";
             } catch(Exception e) {
-                System.out.println("Bad Resource " + viewUrl);
+                logger.error("Bad Resource " + viewUrl);
             }
-        }
-        else if (user_passphrase.equals(passphrase)) {
+        } else if (user_passphrase.equals(passphrase)) {
+            // allow user
             lr.loginSuccess=true;
+            Date now = new Date();
+            lr.loginStart=now;
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(now);
+            cal.add(Calendar.DATE, 1); //valid for one day
+            lr.loginEnd=cal.getTime();
         } else {
             lr.loginFailed=true;
         }

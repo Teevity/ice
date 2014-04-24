@@ -70,6 +70,11 @@ grails.project.dependency.resolution = {
             // See http://stackoverflow.com/a/7990573/869
             transitive = false
         }
+        compile(
+                'org.opensaml:opensaml:2.6.1'
+        ) {
+           excludes 'xercesImpl' 
+        }
 
         compile(
                 // Transitive dependencies of aws-java-sdk, but also used directly.

@@ -156,9 +156,15 @@ public class IceOptions {
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
 
     /**
-    * true/false for using Login
+    * Prefix/Namespace for login related configuration items.
+    */
+    public static final String LOGIN_PREFIX = "ice.login";
+
+    /**
+    * true/false for using Login.
     */
     public static final String LOGIN_ENABLE = "ice.login";
+
 
     /**
     * true/false for using Login

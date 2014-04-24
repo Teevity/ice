@@ -34,7 +34,7 @@ import java.lang.ClassNotFoundException;
 import java.lang.NoSuchMethodException;
 
 /**
- * COnfiguration class for UI login.
+ * Configuration class for Login Features.
  */
 public class LoginConfig implements BaseConfig {
     private static LoginConfig instance;
@@ -47,22 +47,24 @@ public class LoginConfig implements BaseConfig {
     public final Map<String, LoginMethod> loginMethods = new HashMap<String, LoginMethod>();
 
     /**
-     *
      * @param properties (required)
      */
     public LoginConfig(Properties properties) {
-        System.out.println("Construct LoginConfig");
-        System.out.println(properties.toString());
+        logger.debug("Construct LoginConfig");
+        logger.debug(properties.toString());
         loginEnable = Boolean.parseBoolean(properties.getProperty(IceOptions.LOGIN_ENABLE));
         loginClasses = properties.getProperty(IceOptions.LOGIN_CLASSES);
         loginEndpoints = properties.getProperty(IceOptions.LOGIN_ENDPOINTS);
         loginDefaultEndpoint = properties.getProperty(IceOptions.LOGIN_DEFAULT);
 
-        System.out.println("Constructed LoginConfig");
+        logger.debug("Constructed LoginConfig");
         loadLoginPlugins(loginEndpoints, loginClasses, properties);
         LoginConfig.instance = this;
     }
 
+    /**
+    * Load Plugins based on config.
+    */
     private void loadLoginPlugins(String endpoints, String classes, Properties properties) {
         String[] endpoints_arr = endpoints.split(",");
         String[] classes_arr = classes.split(",");
@@ -70,7 +72,7 @@ public class LoginConfig implements BaseConfig {
             for(int i=0;i<endpoints_arr.length;i++) {
                 String endpoint = endpoints_arr[i];
                 String className = classes_arr[i];
-                System.out.println("Loading " + endpoint + " using class " + className);
+                logger.info("Loading " + endpoint + " using class " + className);
                 Class loginMethodClass = Class.forName(className);
                 Constructor ctor = loginMethodClass.getDeclaredConstructor(Properties.class);
                 ctor.setAccessible(true);
@@ -78,18 +80,17 @@ public class LoginConfig implements BaseConfig {
                 loginMethods.put(endpoint, loginObject);
             }
         } catch(ClassNotFoundException x) {
-            x.printStackTrace();
+            logger.error(x.toString());
         } catch (InstantiationException x) {
-            x.printStackTrace();
+            logger.error(x.toString());
         } catch (IllegalAccessException x) {
-            x.printStackTrace();
+            logger.error(x.toString());
         } catch (InvocationTargetException x) {
-            x.printStackTrace();
+            logger.error(x.toString());
         } catch (NoSuchMethodException x) {
-            x.printStackTrace();
+            logger.error(x.toString());
         }
     }
-
 
     /**
      *

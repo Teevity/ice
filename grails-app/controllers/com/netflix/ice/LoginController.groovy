@@ -17,14 +17,18 @@
  */
 package com.netflix.ice
 
+import java.io.FileInputStream
+import groovy.text.SimpleTemplateEngine
 import grails.converters.JSON
+import org.apache.commons.io.IOUtils
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.DateTimeZone
 import org.joda.time.DateTime
 import org.joda.time.Interval
 import com.netflix.ice.tag.Tag
-import com.netflix.ice.login.*;
+import com.netflix.ice.login.*
+import com.netflix.ice.common.IceSession
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.google.common.collect.Maps
@@ -49,24 +53,52 @@ class LoginController {
         if (loginMethod == null) {
              redirect(action: "error");
         }
-        LoginResponse loginResponse = loginMethod.processLogin(params);
+        LoginResponse loginResponse = loginMethod.processLogin(request);
 
-        if (loginResponse.loginSuccess) {
-             session.authenticated = true;
-             redirect(controller: "dashboard");
+        if (loginResponse.redirectTo != null) {
+            redirect(url: loginResponse.redirectTo);    
+        } else if (loginResponse.loggedOut) {
+            redirect(action: "logout");
+        } else if (loginResponse.loginSuccess) {
+            IceSession iceSession = new IceSession(session);
+            iceSession.authenticate(new Boolean(true));
+            iceSession.setAllowTime(loginResponse.loginStart, loginResponse.loginEnd);
+            if (iceSession.authenticated) { //ensure we are good
+                redirect(controller: "dashboard");
+            } else {
+                redirect(action: "failure");
+            }
         } else if (loginResponse.loginFailed) {
-             redirect(action: "failure");
-        } else if (loginResponse.renderFile) {
-             render(file: loginResponse.renderFile, contentType: loginResponse.contentType);
-           
+            redirect(action: "failure");
+        } else if (loginResponse.renderData) {
+            render(text: loginResponse.renderData, contentType: loginResponse.contentType)
+        } else if (loginResponse.templateFile) {
+            // Fetch the template into memory
+            FileInputStream inputStream = new FileInputStream(loginResponse.templateFile);
+            String templateData = ""
+            try {
+                templateData = IOUtils.toString(inputStream);
+            } finally {
+                inputStream.close();
+            }
+            SimpleTemplateEngine engine = new SimpleTemplateEngine()
+            String processedText = engine.createTemplate(templateData).make(loginResponse.templateBindings)
+            render(text: processedText, contentType: loginResponse.contentType)
         } else {
-             redirect(action: "error");
+            redirect(action: "error");
         }
     }
 
+    /** A Login Failure */
     def failure = {}
+    /** A Login Error(code issues perhaps) */
     def error = {}
+    /** A Login Logout */
+    def logout = {}
 
+    /**
+    * Redirect Authentication request to the appropriate place.
+    */
     def index = {
         getConfig();
         if (config.loginEnable == false) {
