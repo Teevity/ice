@@ -87,6 +87,10 @@ public class BasicAccountService implements AccountService {
         List<Account> result = Lists.newArrayList();
         for (String name: accountNames) {
             Account account = accountsByName.get(name);
+            if (account == null) {
+                logger.error("Got a null account looking up " + name);
+                account = getAccountByName(name);
+            }
             if (session != null && ! session.allowedAccount(account.id)) {
                 continue;
             }
