@@ -472,7 +472,10 @@ class DashboardController {
             start = dateFormatter.parseDateTime(query.getString("start"));
 
         Interval interval = new Interval(start, end);
-        interval = tagGroupManager.getOverlapInterval(interval);
+        Interval overlap_interval = tagGroupManager.getOverlapInterval(interval);
+        if (overlap_interval != null) {
+            interval = overlap_interval
+        }
         if (interval.getEnd().getMonthOfYear() == new DateTime(DateTimeZone.UTC).getMonthOfYear()) {
             DateTime curMonth = new DateTime(DateTimeZone.UTC).withDayOfMonth(1).withMillisOfDay(0);
             int hoursWithData = getManagers().getUsageManager(null, ConsolidateType.hourly).getDataLength(curMonth);
@@ -680,7 +683,9 @@ class DashboardController {
             result.interval = consolidateType.millis;
         }
         else {
-            result.time = new IntRange(0, data.values().iterator().next().length - 1).collect { interval.getStart().plusMonths(it).getMillis() }
+            if (data.values().size() > 0) {
+                result.time = new IntRange(0, data.values().iterator().next().length - 1).collect { interval.getStart().plusMonths(it).getMillis() }
+            }
         }
         return result;
     }
