@@ -41,6 +41,7 @@ public class ProcessorConfig extends Config {
     public final LineItemProcessor lineItemProcessor;
     public final Randomizer randomizer;
     public final double costPerMonitorMetricPerHour;
+    public final boolean useBlended;
 
     public final String useCostForResourceGroup;
 
@@ -85,6 +86,7 @@ public class ProcessorConfig extends Config {
         billingAccessExternalIds = properties.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, "").split(",");
 
         customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
+        useBlended = properties.getProperty(IceOptions.USE_BLENDED) == null ? true : Boolean.parseBoolean(properties.getProperty(IceOptions.USE_BLENDED));
 
         useCostForResourceGroup = properties.getProperty(IceOptions.RESOURCE_GROUP_COST, "modeled");
 
