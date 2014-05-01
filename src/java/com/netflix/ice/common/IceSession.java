@@ -82,7 +82,7 @@ public class IceSession {
     * Has this Session expired?
     */
     public boolean withinAllowTime() {
-        logger.error("Within Allow Time?");
+        logger.info("Within Allow Time?");
         Date notBefore = (Date)session.getAttribute(START_DATE);
         Date notAfter = (Date)session.getAttribute(END_DATE);
         if (notBefore == null || notAfter == null) {
@@ -93,6 +93,7 @@ public class IceSession {
         if ((now.after(notBefore)) && (now.before(notAfter))) {
             return true;
         }
+        logger.info(now.toString() + " is not between " + notBefore.toString() + " - " + notAfter.toString());
         return false;
     }
 
@@ -103,6 +104,7 @@ public class IceSession {
     public void voidSession() {
         logger.info("Void Session!");
         authenticate(false);
+        session.setAttribute(ADMIN_SESSION_KEY, new Boolean(false));
         List<String> allowedAccounts = (List<String>)session.getAttribute(ALLOWED_ACCOUNTS);
         if (allowedAccounts != null) {
             Iterator<String> iter = allowedAccounts.iterator();
