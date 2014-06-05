@@ -26,5 +26,40 @@ public class LoginOptions {
      */
     public final static String LOGIN = "ice.login";
 
+       /**
+    * Prefix/Namespace for login related configuration items.
+    */
+    public static final String LOGIN_PREFIX = "ice.login";
+
+    /**
+    * true/false for using Login.
+    */
+    public static final String LOGIN_ENABLE = "ice.login";
+
+    /**
+    * true/false for using Login
+    */
+    public static final String LOGIN_DEFAULT = "ice.login.default_endpoint";
+
+    /**
+    * Implementation login classes
+    */
+    public static final String LOGIN_CLASSES = "ice.login.classes";
+
+    /**
+    * Implementation login endpoints.  Will map to /logic/<endpoint>
+    */
+    public static final String LOGIN_ENDPOINTS = "ice.login.endpoints";
+
+    /**
+    * Simple passphrase for allowing Authentication
+    */
+    public static final String LOGIN_PASSPHRASE = "ice.login.passphrase";
+
+    /**
+    * Audit log location
+    */
+    public static final String LOGIN_LOG = "ice.login.log";
+
 }
 

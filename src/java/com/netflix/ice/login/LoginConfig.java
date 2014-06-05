@@ -41,6 +41,7 @@ public class LoginConfig implements BaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(LoginConfig.class);
 
     public final String loginClasses;
+    public final String loginLogFile;
     public final String loginEndpoints;
     public boolean loginEnable = false;
     public final String loginDefaultEndpoint;
@@ -50,14 +51,12 @@ public class LoginConfig implements BaseConfig {
      * @param properties (required)
      */
     public LoginConfig(Properties properties) {
-        logger.debug("Construct LoginConfig");
-        logger.debug(properties.toString());
         loginEnable = Boolean.parseBoolean(properties.getProperty(IceOptions.LOGIN_ENABLE));
-        loginClasses = properties.getProperty(IceOptions.LOGIN_CLASSES);
-        loginEndpoints = properties.getProperty(IceOptions.LOGIN_ENDPOINTS);
-        loginDefaultEndpoint = properties.getProperty(IceOptions.LOGIN_DEFAULT);
+        loginLogFile = properties.getProperty(LoginOptions.LOGIN_LOG);
+        loginClasses = properties.getProperty(LoginOptions.LOGIN_CLASSES);
+        loginEndpoints = properties.getProperty(LoginOptions.LOGIN_ENDPOINTS);
+        loginDefaultEndpoint = properties.getProperty(LoginOptions.LOGIN_DEFAULT);
 
-        logger.debug("Constructed LoginConfig");
         loadLoginPlugins(loginEndpoints, loginClasses, properties);
         LoginConfig.instance = this;
     }
@@ -80,15 +79,15 @@ public class LoginConfig implements BaseConfig {
                 loginMethods.put(endpoint, loginObject);
             }
         } catch(ClassNotFoundException x) {
-            logger.error(x.toString());
+            logger.error(x.toString(), x);
         } catch (InstantiationException x) {
-            logger.error(x.toString());
+            logger.error(x.toString(), x);
         } catch (IllegalAccessException x) {
-            logger.error(x.toString());
+            logger.error(x.toString(), x);
         } catch (InvocationTargetException x) {
-            logger.error(x.toString());
+            logger.error(x.toString(), x);
         } catch (NoSuchMethodException x) {
-            logger.error(x.toString());
+            logger.error(x.toString(), x);
         }
     }
 

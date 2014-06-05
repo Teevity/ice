@@ -15,6 +15,7 @@
 package com.netflix.ice.login;
 
 import com.netflix.ice.common.IceOptions;
+import com.netflix.ice.common.IceSession;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -48,9 +49,10 @@ public class Passphrase extends LoginMethod {
     public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
 
         LoginResponse lr = new LoginResponse();
-        String user_passphrase = (String)request.getParameter("passphrase");
+        String userPassphrase = (String)request.getParameter("passphrase");
+        IceSession iceSession = new IceSession(request.getSession());
 
-        if (user_passphrase == null) {
+        if (userPassphrase == null) {
             /** embedded view simply to give a reference for how this would 
             *   be done with a self-contained, jar'd login plugin. 
             */
@@ -61,7 +63,9 @@ public class Passphrase extends LoginMethod {
             } catch(Exception e) {
                 logger.error("Bad Resource " + viewUrl);
             }
-        } else if (user_passphrase.equals(passphrase)) {
+        } else if (userPassphrase.equals(passphrase)) {
+            iceSession.setUsername("Passphrase");
+            whitelistAllAccounts(iceSession);
             // allow user
             lr.loginSuccess=true;
             Date now = new Date();

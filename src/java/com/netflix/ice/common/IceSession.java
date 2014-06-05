@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 */
 public class IceSession {
     private static final Logger logger = LoggerFactory.getLogger(IceSession.class);
+    private final String USER_NAME = "user_name";
     private final String AUTHENTICATED_SESSION_KEY = "authenticated";
     private final String ADMIN_SESSION_KEY = "admin";
     private final String ALLOWED_ACCOUNT_SESSION_PREFIX_KEY = "allowed_account";
@@ -48,7 +49,14 @@ public class IceSession {
     */
     public void authenticate(Boolean authd) { 
        session.setAttribute("authenticated", authd);
-       
+    }
+
+    public String username() { 
+       return (String)session.getAttribute(USER_NAME);
+    }
+
+    public void setUsername(String username) { 
+       session.setAttribute(USER_NAME, username);
     }
 
     /**
