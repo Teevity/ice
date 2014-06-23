@@ -302,9 +302,9 @@ Configurations:
 
 The SAML Setup can be tough.  3 things are required for success:
 
--- The Assertion has to be signed by a trusted cert(ice.login.saml.trusted_signing_certs)
--- The Assertion has to contain a Username via the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name" attribute"
--- The Assertion has to contain a list of accounts via the "com.netflix.ice.account" attribute.  The ice.login.saml_all_accounts value can be submitted to allow access to all accounts.
+- The Assertion has to be signed by a trusted cert(ice.login.saml.trusted_signing_certs)
+- The Assertion has to contain a Username via the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name" attribute"
+- The Assertion has to contain a list of accounts via the "com.netflix.ice.account" attribute.  The ice.login.saml_all_accounts value can be submitted to allow access to all accounts.
 
 ##Support
 
