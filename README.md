@@ -264,9 +264,8 @@ A Framework exists for supplying authentication plugins.  The following properti
 	
 	# Default Endpoint(where /login/ takes us)
 	ice.login.default_endpoint=passphrase
-
-        # Login Log file
-        ice.login.log=/some/path
+	# Login Log file
+	ice.login.log=/some/path
 
 Passphrase is simply a reference implementation that guards your ice data with a passphrase(ice.login.passphrase).  To create your own, you can extend the LoginMethod.
 
@@ -279,25 +278,27 @@ Configurations:
 	#Setup SAML Classes
 	ice.login.classes=com.netflix.ice.login.saml.Saml,com.netflix.ice.login.saml.SamlMetaData
 
-        #Setup Paths
+	#Setup Paths
 	ice.login.endpoints=saml,saml_metadata
 
-        # DER encoded Certificate that we trust for signings
+	# DER encoded Certificate that we trust for signings
 	ice.login.saml.trusted_signing_certs=/some/path/adfs_server.cert
 	# Location of the single-sign on service.  Most services allow you
-        # to deep-link to the service identifier.  The default identifier for
-        # us is "netflix ice" 
-        ice.login.saml.single_sign_on_url=https//sso.server
+
+	# to deep-link to the service identifier.  The default identifier for
+	# us is "netflix ice" 
+	ice.login.saml.single_sign_on_url=https//sso.server
 
 	# SAML Metadata related files
 	ice.login.saml.org_name=My Orgnaization
 	ice.login.saml.org_display_name=A Great display name
 	ice.login.saml.org_url=http://homepage
 	ice.login.saml.service_name=Name of the service
-        # The Account identifier that gives access to all billing data.
+
+	# The Account identifier that gives access to all billing data.
 	ice.login.saml.all_accounts=ADMIN
-        # Url of this service for sign-in.
-        ice.login.saml.signin_url=https://.../ice/login/handler/saml
+	# Url of this service for sign-in.
+	ice.login.saml.signin_url=https://.../ice/login/handler/saml
 
 The SAML Setup can be tough.  3 things are required for success:
 
