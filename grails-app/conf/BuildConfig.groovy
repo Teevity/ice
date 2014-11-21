@@ -90,6 +90,9 @@ grails.project.dependency.resolution = {
      
                 // Better Zip Support
                 'org.apache.commons:commons-compress:1.8',
+                
+                // Better IO Support
+                'commons-io:commons-io:2.4',
 
                 // Easier Java from Joshua Bloch and Google
                 'com.google.guava:guava:14.0',
