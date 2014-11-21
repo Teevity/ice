@@ -120,6 +120,6 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        build ":tomcat:$grailsVersion"
+        build ":tomcat:2.2.1"
     }
 }
