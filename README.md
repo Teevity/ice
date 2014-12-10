@@ -63,7 +63,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.s3SecretKey=<secretKey>
           ice.s3AccessToken=<accessToken>
   
-  If running on a ec2 instance and you want to use the credentails in the instance metadata, you can leave the above properties unset.
+  If running on a ec2 instance and you want to use the credentials in the instance metadata, you can leave the above properties unset.
 
   1.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013. If this property is not set, Ice will set startmillis to be the beginning of current month.
       
@@ -84,7 +84,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
   
   Tip: If you have multiple payer accounts, or Ice is running from a different account of the s3 billing bucket, for example Ice is running in account "test", while the billing files are written to bucket in account "prod", account "test" does not have read access to those billing files because Amazon created them. In this case, the recommended way is to use cross-accounts IAM roles. E.g. you can create an assumed role "ice". In "prod" account, grant assumed role "ice" with read access to billing bucket, then specify ice.billing_accessRoleName=ice. You can also create a secondary s3 bucket in account "prod" and grant read access to account "test", and then create a billing file poller running in account "prod" to copy billing files to the secondary bucket.
   
-  1.7 Specify account id and account name mappings in ice.properties. This is for readabilty purpose. For example:
+  1.7 Specify account id and account name mappings in ice.properties. This is for readability purposes. For example:
       
           ice.account.account1=123456789011
           ice.account.account2=123456789012
@@ -114,11 +114,11 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
           ice.companyName=Your Company Name
 
-  2.7 You can choose to show cost in curreny other than "$". To enable other curreny, specify the following properties in ice.properties:
+  2.7 You can choose to show cost in currency other than "$". To enable other currency, specify the following properties in ice.properties:
 
-          # Specify your curreny sign here. The default value is $. For other currency symbols, you can use UTF-8 code, e.g. for ¥, you can use ice.currencySign=\u00A5
+          # Specify your currency sign here. The default value is $. For other currency symbols, you can use UTF-8 code, e.g. for ¥, you can use ice.currencySign=\u00A5
           ice.currencySign=£
-          # Specify your curreny conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
+          # Specify your currency conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
           ice.currencyRate=0.6666667
 
   2.8 By default, Ice pulls in [Highstock](http://www.highcharts.com/) from its CDN. This CDN, unfortunately, does not (at present) support HTTPS. If you're serving Ice over HTTPS, your browser shouldn't or won't download Highstock from there. To fix this, you can serve Highstock somewhere else, and set this property:
