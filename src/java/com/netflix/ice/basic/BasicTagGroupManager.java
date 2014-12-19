@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.common.Poller;
 import com.netflix.ice.common.TagGroup;
+import com.netflix.ice.common.IceSession;
 import com.netflix.ice.processor.TagGroupWriter;
 import com.netflix.ice.reader.ReaderConfig;
 import com.netflix.ice.reader.TagGroupManager;
@@ -132,6 +133,27 @@ public class BasicTagGroupManager extends Poller implements TagGroupManager {
         return result;
     }
 
+    public Collection<Account> getAccounts(Interval interval, TagLists tagLists, IceSession session) {
+        Set<Account> result = Sets.newTreeSet();
+        Set<TagGroup> tagGroupsInRange = getTagGroupsInRange(getMonthMillis(interval));
+
+        for (TagGroup tagGroup: tagGroupsInRange) {
+            if (tagLists.contains(tagGroup)) {
+                Account acct = tagGroup.account;
+                if (session != null && session.allowedAccount(acct.id) == false) {
+                    logger.debug("Session not allowed to view " + acct.id);
+                    continue; //don't allow a view to this account
+                }
+                logger.debug("Adding " + acct.id);
+                result.add(acct);
+            }
+        }
+
+        return result;
+
+
+    }
+
     public Collection<Account> getAccounts(Interval interval, TagLists tagLists) {
         Set<Account> result = Sets.newTreeSet();
         Set<TagGroup> tagGroupsInRange = getTagGroupsInRange(getMonthMillis(interval));
@@ -217,6 +239,10 @@ public class BasicTagGroupManager extends Poller implements TagGroupManager {
         }
 
         return result;
+    }
+
+    public Collection<Account> getAccounts(TagLists tagLists, IceSession session) {
+        return this.getAccounts(totalInterval, tagLists, session);
     }
 
     public Collection<Account> getAccounts(TagLists tagLists) {

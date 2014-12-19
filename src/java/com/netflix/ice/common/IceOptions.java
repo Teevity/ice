@@ -81,6 +81,11 @@ public class IceOptions {
     public static final String CUSTOM_TAGS = "ice.customTags";
 
     /**
+     * Boolean Flag whether to use blended or Unblended Costs.  Default is Blended Cost(true)
+     */
+    public static final String USE_BLENDED = "ice.use_blended";
+
+    /**
      * s3 bucket name where output files are to be store. Both read and write permissions are needed. It must be specified in Config.
      */
     public static final String WORK_S3_BUCKET_NAME = "ice.work_s3bucketname";
@@ -154,4 +159,35 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+    * Prefix/Namespace for login related configuration items.
+    */
+    public static final String LOGIN_PREFIX = "ice.login";
+
+    /**
+    * true/false for using Login.
+    */
+    public static final String LOGIN_ENABLE = "ice.login";
+
+
+    /**
+    * true/false for using Login
+    */
+    public static final String LOGIN_DEFAULT = "ice.login.default_endpoint";
+
+    /**
+    * Implementation login classes
+    */
+    public static final String LOGIN_CLASSES = "ice.login.classes";
+
+    /**
+    * Implementation login endpoints.  Will map to /logic/<endpoint>
+    */
+    public static final String LOGIN_ENDPOINTS = "ice.login.endpoints";
+
+    /**
+    * Simple passphrase for allowing Authentication
+    */
+    public static final String LOGIN_PASSPHRASE = "ice.login.passphrase";
 }

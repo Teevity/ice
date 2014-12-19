@@ -17,6 +17,12 @@
 class UrlMappings {
 
     static mappings = {
+        "/"(uri: "/dashboard/summary")
+        "/login/" { controller = "login" }
+        "/login/handler/$login_action" { 
+            controller = "login"
+            action = "handler" 
+        }
         "/$controller/$action?/$id?" {}
         "/" { controller = "dashboard"}
         "500" (view: '/error')

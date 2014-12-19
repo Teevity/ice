@@ -125,21 +125,26 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
           ice.highstockUrl=https://example.com/js/highstock.js
 
-3. Running Ice
+3. UnBlended Costs
+  By default, blended costs are shown. You can show Unblended costs with the following configuration:
+
+	ice.use_blended=false
+
+4. Running Ice
 
   After the processor and reader setup, you can choose to run the processor and reader on the same or different instances. Running on different instances is recommended. For the first time, you should FIRST RUN PROCESSOR. Make sure you see non-empty output files in your working s3 bucket. Then run reader and browse to http://localhost:8080/ice/dashboard/summary.
   
   Here are the steps of getting ice running locally:
 
-  3.1 Pull the project
+  4.1 Pull the project
   
-  3.2 Run `grails wrapper` from the project root directory. This step will pull all necessary jar from maven central.
+  4.2 Run `grails wrapper` from the project root directory. This step will pull all necessary jar from maven central.
 
-  3.3 Construct ice.properties for processor and make sure ice.properties is added to directory src/java
+  4.3 Construct ice.properties for processor and make sure ice.properties is added to directory src/java
 
-  3.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working 3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
+  4.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working 3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
   
-  3.5 Repeat steps 3.3 and 3.4 to run Ice reader.
+  4.5 Repeat steps 3.3 and 3.4 to run Ice reader.
 
   Tip: Sometimes you want to re-start from a clean slate. To do that:
   
@@ -239,6 +244,67 @@ Options with * require writing your own code.
 8. Throughput metric service (*)
    
   You may also want to show your organization's throughput metric alongside usage and cost. You can choose to implement interface ThroughputMetricService, or you can simply use the existing BasicThroughputMetricService. Using BasicThroughputMetricService requires the throughput metric data to be stores monthly in files with names like <filePrefix>_2013_04, <filePrefix>_2013_05. Data in files should be delimited by new lines. <filePrefix> is specified when you create BasicThroughputMetricService instance.
+
+## Authentication
+
+A Framework exists for supplying authentication plugins.  The following properties are required:
+
+	# Turn Logging On/Off
+	ice.login=true
+	
+	# Logging Classes, comma delimited
+	ice.login.classes=com.netflix.ice.login.Passphrase
+	
+	# Logging Names, comma delmited.  These map to a handler:
+	# http://.../ice/login/handler/passphrase
+	ice.login.endpoints=passphrase
+	
+	# Passphrase for the Passphrase Implementation
+	ice.login.passphrase=rar
+	
+	# Default Endpoint(where /login/ takes us)
+	ice.login.default_endpoint=passphrase
+	# Login Log file
+	ice.login.log=/some/path
+
+Passphrase is simply a reference implementation that guards your ice data with a passphrase(ice.login.passphrase).  To create your own, you can extend the LoginMethod.
+
+### SAML Implementation
+
+A SAML Implementation exists that allows for the passing of a SMAL Assertion to a saml endpoint.  The SAML Assertion has the ability to limit what accounts the viewer is able to see. 
+
+Configurations:
+
+	#Setup SAML Classes
+	ice.login.classes=com.netflix.ice.login.saml.Saml,com.netflix.ice.login.saml.SamlMetaData
+
+	#Setup Paths
+	ice.login.endpoints=saml,saml_metadata
+
+	# DER encoded Certificate that we trust for signings
+	ice.login.saml.trusted_signing_certs=/some/path/adfs_server.cert
+	# Location of the single-sign on service.  Most services allow you
+
+	# to deep-link to the service identifier.  The default identifier for
+	# us is "netflix ice" 
+	ice.login.saml.single_sign_on_url=https//sso.server
+
+	# SAML Metadata related files
+	ice.login.saml.org_name=My Orgnaization
+	ice.login.saml.org_display_name=A Great display name
+	ice.login.saml.org_url=http://homepage
+	ice.login.saml.service_name=Name of the service
+
+	# The Account identifier that gives access to all billing data.
+	ice.login.saml.all_accounts=ADMIN
+	# Url of this service for sign-in.
+	ice.login.saml.signin_url=https://.../ice/login/handler/saml
+
+The SAML Setup can be tough.  3 things are required for success:
+
+- The Assertion has to be signed by a trusted cert(ice.login.saml.trusted_signing_certs)
+- The Assertion has to contain a Username via the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name" attribute"
+- The Assertion has to contain a list of accounts via the "com.netflix.ice.account" attribute.  The ice.login.saml_all_accounts value can be submitted to allow access to all accounts.
 
 ##Support
 

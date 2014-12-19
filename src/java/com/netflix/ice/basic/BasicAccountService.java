@@ -17,6 +17,7 @@ package com.netflix.ice.basic;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.netflix.ice.common.IceSession;
 import com.netflix.ice.common.AccountService;
 import com.netflix.ice.tag.Account;
 import com.netflix.ice.tag.Zone;
@@ -30,11 +31,11 @@ public class BasicAccountService implements AccountService {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Map<String, Account> accountsById = Maps.newConcurrentMap();
-    private Map<String, Account> accountsByName = Maps.newConcurrentMap();
-    private Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
-    private Map<Account, String> reservationAccessRoles = Maps.newHashMap();
-    private Map<Account, String> reservationAccessExternalIds = Maps.newHashMap();
+    protected Map<String, Account> accountsById = Maps.newConcurrentMap();
+    protected Map<String, Account> accountsByName = Maps.newConcurrentMap();
+    protected Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
+    protected Map<Account, String> reservationAccessRoles = Maps.newHashMap();
+    protected Map<Account, String> reservationAccessExternalIds = Maps.newHashMap();
 
     public BasicAccountService(List<Account> accounts, Map<Account, List<Account>> reservationAccounts,
                                Map<Account, String> reservationAccessRoles, Map<Account, String> reservationAccessExternalIds) {
@@ -45,6 +46,13 @@ public class BasicAccountService implements AccountService {
             accountsByName.put(account.name, account);
             accountsById.put(account.id, account);
         }
+    }
+
+    public Account getAccountById(String accountId, IceSession session) {
+        if (session != null && (! session.allowedAccount(accountId))) {
+            return null;
+        }
+        return getAccountById(accountId); 
     }
 
     public Account getAccountById(String accountId) {
@@ -77,6 +85,22 @@ public class BasicAccountService implements AccountService {
         List<Account> result = Lists.newArrayList();
         for (String name: accountNames)
             result.add(accountsByName.get(name));
+        return result;
+    }
+
+    public List<Account> getAccounts(List<String> accountNames, IceSession session) {
+        List<Account> result = Lists.newArrayList();
+        for (String name: accountNames) {
+            Account account = accountsByName.get(name);
+            if (account == null) {
+                logger.error("Got a null account looking up " + name);
+                account = getAccountByName(name);
+            }
+            if (session != null && ! session.allowedAccount(account.id)) {
+                continue;
+            }
+            result.add(account);
+        }
         return result;
     }
 
