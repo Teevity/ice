@@ -65,13 +65,6 @@ grails.project.dependency.resolution = {
         compile(
                 // Amazon Web Services programmatic interface
                 'com.amazonaws:aws-java-sdk:1.9.12',
-        ) {
-            // AWS defines their dependencies as open-ended, which causes problems when resolving.
-            // See http://stackoverflow.com/a/7990573/869
-            transitive = false
-        }
-
-        compile(
                 // Transitive dependencies of aws-java-sdk, but also used directly.
                 // It would be great if we could upgrade httpcore and httpclient, but we can't until the AWS Java SDK
                 // upgrades its dependencies. If we simply upgrade these, then some Amazon calls fail.
