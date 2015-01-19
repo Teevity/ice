@@ -50,7 +50,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
     private List<String> header;
 
-    public void initIndexes(boolean withTags, String[] header) {
+    public void initIndexes(ProcessorConfig processorConfig, boolean withTags, String[] header) {
         boolean hasBlendedCost = false;
         for (String column: header) {
             if (column.equalsIgnoreCase("UnBlendedCost")) {
@@ -70,6 +70,8 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         endTimeIndex = 15 + (withTags ? 0 : -1);
         rateIndex = 19 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
         costIndex = 20 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
+        rateIndex = 19 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost) ? 0 : -2);
+        costIndex = 20 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost) ? 0 : -2);
         resourceIndex = 21 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
 
         this.header = Lists.newArrayList(header);
