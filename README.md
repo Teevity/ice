@@ -177,15 +177,19 @@ Options with * require writing your own code.
     2.1 Set ice.reservationCapacityPoller=true in ice.properties
     
     2.2 Make sure you set up reservation owner accounts in ice.properties. For example:
+
           ice.owneraccount.account1=
           ice.owneraccount.account2=account3,account4
           ice.owneraccount.account5=account6
     
     2.3 If you need to poll reservation capacity of different accounts, set up IAM roles. Then specify the assumed roles and external ids in ice.properties. For example, if assumed role "ice" is used:
+
           ice.owneraccount.account1.role=ice
           ice.owneraccount.account2.role=ice
           ice.owneraccount.account5.role=ice
+
         If you use external id too, specify it like following:
+
           ice.owneraccount.account1.externalId=
           
 
@@ -207,6 +211,7 @@ Options with * require writing your own code.
   All linked accounts under the same payer account can share each other's reservations (see http://docs.aws.amazon.com/awsaccountbilling/latest/about/AboutConsolidatedBilling.html).
 
   If reserved instances are shared among accounts, please specify them in ice.properties. For example:
+
           # set reservation owner accounts. In the example below, account1, account2, account3 and account4 are linked under the same payer account. account5, account6 are linked under the same payer account.
           # if reservation capacity poller is enabled, the poller will try to poll reservation capacity through ec2 API (desribeReservedInstances) for each reservation owner account.
           ice.owneraccount.account1_name=account2_name,account3_name,account4_name
