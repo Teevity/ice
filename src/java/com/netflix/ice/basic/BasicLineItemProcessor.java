@@ -52,6 +52,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
     public void initIndexes(ProcessorConfig processorConfig, boolean withTags, String[] header) {
         boolean hasBlendedCost = false;
+        boolean useBlendedCost = processorConfig.useBlended;
         for (String column: header) {
             if (column.equalsIgnoreCase("UnBlendedCost")) {
                 hasBlendedCost = true;
