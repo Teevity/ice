@@ -46,6 +46,8 @@
       <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#{{getTimeParams()}}" ng-click="reload()">AWS Details</a>
       <ul>
         <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#{{getTimeParams()}}" ng-click="reload()">General Details</a></li>
+        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'daily')}#{{getTimeParams()}}" ng-click="reload()">Daily Costs</a></li>
+        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'cumulative')}#{{getTimeParams()}}" ng-click="reload()">Cumulative Costs</a></li>
         <g:if test="${ReaderConfig.getInstance().resourceService != null}">
         <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#showResourceGroups=true&{{getTimeParams()}}" ng-click="reload()">Details With Resource Groups</a></li>
         </g:if>

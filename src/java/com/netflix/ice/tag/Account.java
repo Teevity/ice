@@ -19,9 +19,18 @@ package com.netflix.ice.tag;
 
 public class Account extends Tag {
     public final String id;
+    public double dailyEstimate=0.0;
 
     public Account(String accountId, String accountName) {
         super(accountName);
         this.id = accountId;
     }
+
+    public Account(String accountId, String accountName, double dailyEstimate) {
+        super(accountName);
+        this.id = accountId;
+        this.dailyEstimate=dailyEstimate;
+    }
+
+    
 }
