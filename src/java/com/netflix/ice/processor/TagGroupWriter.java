@@ -37,7 +37,7 @@ public class TagGroupWriter {
     private File file;
 
     TagGroupWriter(String name) throws Exception {
-
+        name = name.replaceAll("/","--");
         dbName = DB_PREFIX + name;
         file = new File(config.localDir, dbName);
         logger.info("creating TagGroupWriter for " + file);
