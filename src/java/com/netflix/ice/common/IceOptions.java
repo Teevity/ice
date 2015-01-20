@@ -154,4 +154,14 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+    * Prefix/Namespace for login related configuration items.
+    */
+    public static final String LOGIN_PREFIX = "ice.login";
+
+    /**
+    * true/false for using Login.
+    */
+    public static final String LOGIN_ENABLE = "ice.login";
 }

@@ -240,6 +240,31 @@ Options with * require writing your own code.
    
   You may also want to show your organization's throughput metric alongside usage and cost. You can choose to implement interface ThroughputMetricService, or you can simply use the existing BasicThroughputMetricService. Using BasicThroughputMetricService requires the throughput metric data to be stores monthly in files with names like <filePrefix>_2013_04, <filePrefix>_2013_05. Data in files should be delimited by new lines. <filePrefix> is specified when you create BasicThroughputMetricService instance.
 
+## Authentication
+
+A Framework exists for supplying authentication plugins.  The following properties are required:
+
+	# Turn Logging On/Off
+	ice.login=true
+	
+	# Logging Classes, comma delimited
+	ice.login.classes=com.netflix.ice.login.Passphrase
+	
+	# Logging Names, comma delmited.  These map to a handler above
+        # The name here will expose an http endpoint.
+	# http://.../ice/login/handler/passphrase
+	ice.login.endpoints=passphrase
+	
+	# Passphrase for the Passphrase Implementation
+	ice.login.passphrase=rar
+	
+	# Default Endpoint(where /login/ takes us)
+	ice.login.default_endpoint=passphrase
+	# Login Log file(audit log)
+	ice.login.log=/some/path
+
+Passphrase is simply a reference implementation that guards your ice data with a passphrase(ice.login.passphrase).  To create your own login handler, you can extend the LoginMethod.
+
 ##Support
 
 Please use the [Ice Google Group](https://groups.google.com/d/forum/iceusers) for general questions and discussion.

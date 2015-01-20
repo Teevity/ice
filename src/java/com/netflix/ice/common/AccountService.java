@@ -31,6 +31,14 @@ public interface AccountService {
      */
     Account getAccountById(String accountId);
 
+    /** 
+     * Get account by AWS id. The AWS id is usually an un-readable 12 digit string.
+     * @param accountId
+     * @param session
+     * @return Account object associated with the account id
+     */
+    Account getAccountById(String accountId, IceSession session);
+
     /**
      * Get account by account name. The account name is a user defined readable string.
      * @param accountName
@@ -44,6 +52,14 @@ public interface AccountService {
      * @return List of accounts
      */
     List<Account> getAccounts(List<String> accountNames);
+
+    /**
+     * Get a list of accounts from given account names.
+     * @param accountNames
+     * @param session
+     * @return List of accounts
+     */
+    List<Account> getAccounts(List<String> accountNames, IceSession session);
 
     /**
      * If you don't have reserved instances, you can return an empty map.

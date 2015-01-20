@@ -34,11 +34,14 @@ import org.joda.time.DateTime
 import org.joda.time.Interval
 import com.netflix.ice.tag.Tag
 import com.netflix.ice.reader.*;
+import com.netflix.ice.login.LoginConfig;
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.google.common.collect.Maps
 import org.json.JSONObject
 import com.netflix.ice.common.ConsolidateType
+import com.netflix.ice.common.IceSession
+import com.netflix.ice.common.AccountService
 import org.joda.time.Hours
 import org.apache.commons.lang.StringUtils
 import com.netflix.ice.common.AwsUtils
@@ -64,20 +67,33 @@ class DashboardController {
         return managers;
     }
 
+    def beforeInterceptor = {
+        LoginConfig lc = LoginConfig.getInstance();
+        if ( lc != null && lc.loginEnable )
+        {
+            request["iceSession"] = new IceSession(session);
+            if (! request["iceSession"].isAuthenticated()) {
+                redirect(controller: "login")      
+            }
+        }
+    }
+
     def index = {
         redirect(action: "summary")
     }
 
     def getAccounts = {
         TagGroupManager tagGroupManager = getManagers().getTagGroupManager(null);
-        Collection<Account> data = tagGroupManager == null ? [] : tagGroupManager.getAccounts(new TagLists());
+        IceSession sess = request["iceSession"];
+        Collection<Account> data = tagGroupManager == null ? [] : tagGroupManager.getAccounts(new TagLists(), sess);
 
         def result = [status: 200, data: data]
         render result as JSON
     }
 
     def getRegions = {
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"), sess);
 
         TagGroupManager tagGroupManager = getManagers().getTagGroupManager(null);
         Collection<Region> data = tagGroupManager == null ? [] : tagGroupManager.getRegions(new TagLists(accounts));
@@ -87,7 +103,8 @@ class DashboardController {
     }
 
     def getZones = {
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"), sess);
         List<Region> regions = Region.getRegions(listParams("region"));
 
         TagGroupManager tagGroupManager = getManagers().getTagGroupManager(null);
@@ -119,7 +136,8 @@ class DashboardController {
 
     def getProducts = {
         Object o = params;
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"), sess);
         List<Region> regions = Region.getRegions(listParams("region"));
         List<Zone> zones = Zone.getZones(listParams("zone"));
         List<Operation> operations = Operation.getOperations(listParams("operation"));
@@ -168,7 +186,8 @@ class DashboardController {
     }
 
     def getResourceGroups = {
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams("account"), sess);
         List<Region> regions = Region.getRegions(listParams("region"));
         List<Zone> zones = Zone.getZones(listParams("zone"));
         List<Product> products = getConfig().productService.getProducts(listParams("product"));
@@ -188,7 +207,8 @@ class DashboardController {
     def getOperations = {
         def text = request.reader.text;
         JSONObject query = (JSONObject)JSON.parse(text);
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"), sess);
         List<Region> regions = Region.getRegions(listParams(query, "region"));
         List<Zone> zones = Zone.getZones(listParams(query, "zone"));
         List<Product> products = getConfig().productService.getProducts(listParams(query, "product"));
@@ -230,7 +250,8 @@ class DashboardController {
     def getUsageTypes = {
         def text = request.reader.text;
         JSONObject query = (JSONObject)JSON.parse(text);
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"), sess);
         List<Region> regions = Region.getRegions(listParams(query, "region"));
         List<Zone> zones = Zone.getZones(listParams(query, "zone"));
         List<Product> products = getConfig().productService.getProducts(listParams(query, "product"));
@@ -317,6 +338,28 @@ class DashboardController {
     def getData = {
         def text = request.reader.text;
         JSONObject query = (JSONObject)JSON.parse(text);
+       
+        LoginConfig lc = LoginConfig.getInstance();
+        AccountService accountService = getConfig().accountService;
+        // Apply Data Restrictions if configured 
+        if ( lc != null && lc.loginEnable )
+        {
+            //ensure query is constrained to our session accounts
+            IceSession sess = request["iceSession"];
+            String accounts = (String)query.opt("account");
+            if (accounts == null || accounts.length() == 0) {
+               StringBuilder csvString = new StringBuilder();
+               String delim="";
+               for (String allowedAccount : sess.allowedAccounts()) {
+                   csvString.append(delim);
+                   String allowedAccountName = accountService.getAccountById(allowedAccount);
+                   csvString.append(allowedAccountName);
+                   delim=","; 
+               }
+               query.put("account", csvString.toString());
+            }
+            
+        }
 
         def result = doGetData(query);
         render result as JSON
@@ -397,7 +440,8 @@ class DashboardController {
         boolean showsps = query.getBoolean("showsps");
         boolean factorsps = query.getBoolean("factorsps");
         AggregateType aggregate = AggregateType.valueOf(query.getString("aggregate"));
-        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"));
+        IceSession sess = request["iceSession"];
+        List<Account> accounts = getConfig().accountService.getAccounts(listParams(query, "account"), sess);
         List<Region> regions = Region.getRegions(listParams(query, "region"));
         List<Zone> zones = Zone.getZones(listParams(query, "zone"));
         List<Product> products = getConfig().productService.getProducts(listParams(query, "product"));

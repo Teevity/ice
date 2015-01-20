@@ -16,6 +16,7 @@
 
 import com.netflix.ice.reader.ReaderConfig
 import com.netflix.ice.processor.ProcessorConfig
+import com.netflix.ice.login.LoginConfig
 import com.netflix.ice.JSONConverter
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger
@@ -52,6 +53,7 @@ class BootStrap {
 
     private ReaderConfig readerConfig;
     private ProcessorConfig processorConfig;
+    private LoginConfig loginConfig;
 
     def init = { servletContext ->
         if (initialized) {
@@ -232,6 +234,10 @@ class BootStrap {
                 );
                 readerConfig.start();
             }
+
+            if ("true".equals(prop.getProperty("ice.login"))) {
+                loginConfig = new LoginConfig(prop)
+            } 
 
             initialized = true;
 
