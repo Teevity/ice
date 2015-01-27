@@ -560,7 +560,7 @@ public class BillingFileProcessor extends Poller {
 
     private void processBillingFile(String fileName, InputStream tempIn, boolean withTags) {
 
-        CsvReader reader = new CsvReader(new InputStreamReader(tempIn), ',');
+        CsvReader reader = new CsvReader(new BufferedReader(new InputStreamReader(tempIn), 1024*1024), ',');
 
         long lineNumber = 0;
         List<String[]> delayedItems = Lists.newArrayList();
