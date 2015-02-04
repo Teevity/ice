@@ -74,24 +74,24 @@ class BootStrap {
 
             AWSCredentialsProvider credentialsProvider;
 
-            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")))
+            if (StringUtils.isEmpty(prop.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey")))
                 credentialsProvider = new InstanceProfileCredentialsProvider();
             else
                 credentialsProvider = new AWSCredentialsProvider() {
                         public AWSCredentials getCredentials() {
-                            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")))
+                            if (StringUtils.isEmpty(prop.getProperty("ice.s3AccessToken")))
                                 return new AWSCredentials() {
                                     public String getAWSAccessKeyId() {
-                                        return System.getProperty("ice.s3AccessKeyId");
+                                        return prop.getProperty("ice.s3AccessKeyId");
                                     }
 
                                     public String getAWSSecretKey() {
-                                        return System.getProperty("ice.s3SecretKey");
+                                        return prop.getProperty("ice.s3SecretKey");
                                     }
                                 };
                             else
-                                return new BasicSessionCredentials(System.getProperty("ice.s3AccessKeyId"), System.getProperty("ice.s3SecretKey"),
-                                        System.getProperty("ice.s3AccessToken"));
+                                return new BasicSessionCredentials(prop.getProperty("ice.s3AccessKeyId"), prop.getProperty("ice.s3SecretKey"),
+                                        prop.getProperty("ice.s3AccessToken"));
                         }
 
                         public void refresh() {
