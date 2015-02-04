@@ -17,19 +17,23 @@
  */
 package com.netflix.ice.tag;
 
+import org.joda.time.DateTime;
+import java.util.TreeMap;
+import java.util.Map;
+
 public class Account extends Tag {
     public final String id;
-    public double dailyEstimate=0.0;
+    public Map<DateTime, Long> dailyEstimates=new TreeMap<DateTime, Long>();
 
     public Account(String accountId, String accountName) {
         super(accountName);
         this.id = accountId;
     }
 
-    public Account(String accountId, String accountName, double dailyEstimate) {
+    public Account(String accountId, String accountName, Map<DateTime, Long> dailyEstimates) {
         super(accountName);
         this.id = accountId;
-        this.dailyEstimate=dailyEstimate;
+        this.dailyEstimates=dailyEstimates;
     }
 
     

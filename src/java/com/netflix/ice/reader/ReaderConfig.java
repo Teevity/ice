@@ -25,11 +25,17 @@ import com.netflix.ice.tag.TagType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
+import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.Exception;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Date;
 
 /**
  * COnfiguration class for reader/UI.
@@ -47,6 +53,7 @@ public class ReaderConfig extends Config {
     public final BasicWeeklyCostEmailService costEmailService;
     public final Managers managers;
     public final int monthlyCacheSize;
+    public final Map<String,Map<DateTime,Long>> accountDailyEstimates = new HashMap<String,Map<DateTime,Long>>();
 
     /**
      *

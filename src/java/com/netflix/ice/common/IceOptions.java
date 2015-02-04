@@ -154,4 +154,16 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+     * Daily Estimates per each account.  Can be appended with a ISO8601 Date stamp to
+     * keep a history of estimates.  The no datetime is the default
+     * ice.account.dailyestimate.accountname=100
+     * ice.account.dailyestimate.accountname.2015-01-26=500
+     * ice.account.dailyestimate.accountname.2015-01-30=550
+     * ice.account.dailyestimate.accountname.2015-02-15=650
+     *
+     */
+    public static final String ACCOUNT_DAILY_ESTIMATES = "ice.account.dailyestimate";
+
 }

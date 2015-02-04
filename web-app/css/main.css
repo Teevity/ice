@@ -232,7 +232,7 @@ button.resize div, a.resize                   { background-image: url(../images/
 .buttons a.userData                           { background-image: url(../images/tango/24/actions/document-properties.png);                       }
 .buttons button.takeSnapshot div              { background-image: url(../images/tango/24/devices/camera-photo.png);                              }
 .buttons button.shutdown div                  { background-image: url(../images/tango/24/actions/system-shutdown.png);                           }
-.buttons button.restore div                   { background-image: url(../images/tango/24/actions/edit-undo.png);                                 }
+.buttons button.restore div                   { background-image: url(../images/tango/24/action5s/edit-undo.png);                                 }
 .buttons button.elastic div                   { background-image: url(../images/tango/24/tools/select-lasso.png);                                }
 .buttons button.save div                      { background-image: url(../images/tango/24/actions/document-save.png);                             }
 .buttons button.blueOut div                   { background-image: url(../images/tango/24/tools/draw-ink.png);                padding-right: 0;   }
@@ -329,7 +329,7 @@ div.grippie { background: #EEEEEE url(../images/grippie.png) no-repeat scroll ce
 .messageForIeUsers              { padding: 10px; color: blue; font-size: 13px; font-weight: bold; background-color: white; }
 .chromeFrameInstallDefaultStyle { width: 96%; height: 90%; border: 5px solid blue; z-index: 1000; left: 410px; top: 360px; }
 
-.metaAccounts {width: 115px}
+.metaAccounts {width: 165px}
 .metaRegions {width: 115px}
 .metaProducts {width: 110px}
 .metaOperations {width: 230px}
