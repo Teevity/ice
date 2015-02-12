@@ -74,29 +74,64 @@ class BootStrap {
 
             AWSCredentialsProvider credentialsProvider;
 
-            if (StringUtils.isEmpty(prop.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey")))
+            if (StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")) || 
+                StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey")) ||
+                StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) ||
+                StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey"))
+               ) { /* No credentials supplied? Use instance profile credentials */
                 credentialsProvider = new InstanceProfileCredentialsProvider();
-            else
+            }
+            else {
                 credentialsProvider = new AWSCredentialsProvider() {
                         public AWSCredentials getCredentials() {
-                            if (StringUtils.isEmpty(prop.getProperty("ice.s3AccessToken")))
-                                return new AWSCredentials() {
-                                    public String getAWSAccessKeyId() {
-                                        return prop.getProperty("ice.s3AccessKeyId");
-                                    }
+                            // First - we were not given a token 
+                            if ( StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")) ||
+                                 StringUtils.isEmpty(prop.getProperty("ice.s3AccessToken")) 
+                               ) { 
+                                 if (
+                                     StringUtils.isNotEmpty(System.getProperty("ice.s3SecretKey")) &&
+                                     StringUtils.isNotEmpty(System.getProperty("ice.s3AccessKeyId"))
+                                    ) { /* Command line (System.properties used */
+                                    return new AWSCredentials() {
+                                        public String getAWSAccessKeyId() {
+                                            return system.getProperty("ice.s3AccessKeyId");
+                                        }
 
-                                    public String getAWSSecretKey() {
-                                        return prop.getProperty("ice.s3SecretKey");
-                                    }
-                                };
-                            else
-                                return new BasicSessionCredentials(prop.getProperty("ice.s3AccessKeyId"), prop.getProperty("ice.s3SecretKey"),
-                                        prop.getProperty("ice.s3AccessToken"));
-                        }
+                                        public String getAWSSecretKey() {
+                                            return system.getProperty("ice.s3SecretKey");
+                                        }
+                                    };
+                                } else { /* System properties were empty, check ICE_HOME */
+                                    return new AWSCredentials() {
+                                        public String getAWSAccessKeyId() {
+                                            return prop.getProperty("ice.s3AccessKeyId");
+                                        }
 
-                        public void refresh() {
-                        }
-                    };
+                                        public String getAWSSecretKey() {
+                                            return prop.getProperty("ice.s3SecretKey");
+                                        }
+                                    };
+                                }
+                            }
+                            else { /* Token _was_ given */
+                                 if (
+                                     StringUtils.isNotEmpty(System.getProperty("ice.s3SecretKey")) &&
+                                     StringUtils.isNotEmpty(System.getProperty("ice.s3AccessKeyId"))
+                                    ) { /* Command line (System.properties used */
+                                        return new BasicSessionCredentials(System.getProperty("ice.s3AccessKeyId"), System.getProperty("ice.s3SecretKey"),
+                                                System.getProperty("ice.s3AccessToken"));
+                                 } else { /* Check ICE_HOME */
+                                        return new BasicSessionCredentials(prop.getProperty("ice.s3AccessKeyId"), prop.getProperty("ice.s3SecretKey"),
+                                                prop.getProperty("ice.s3AccessToken"));
+                                 }
+                            }
+
+                        } /* end getCredentials() define */
+                            public void refresh() {
+                            }
+                    }; /* end provider credentials statement */
+            } /* end way to long if statement */
+
 
             JSONConverter.register();
 
