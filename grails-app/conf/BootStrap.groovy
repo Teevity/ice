@@ -74,9 +74,9 @@ class BootStrap {
 
             AWSCredentialsProvider credentialsProvider;
 
-            if (StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")) || 
-                StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey")) ||
-                StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) ||
+            if (StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")) &&
+                StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey")) &&
+                StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) &&
                 StringUtils.isEmpty(prop.getProperty("ice.s3SecretKey"))
                ) { /* No credentials supplied? Use instance profile credentials */
                 credentialsProvider = new InstanceProfileCredentialsProvider();
@@ -85,7 +85,7 @@ class BootStrap {
                 credentialsProvider = new AWSCredentialsProvider() {
                         public AWSCredentials getCredentials() {
                             // First - we were not given a token 
-                            if ( StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")) ||
+                            if ( StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")) &&
                                  StringUtils.isEmpty(prop.getProperty("ice.s3AccessToken")) 
                                ) { 
                                  if (
@@ -94,11 +94,11 @@ class BootStrap {
                                     ) { /* Command line (System.properties used */
                                     return new AWSCredentials() {
                                         public String getAWSAccessKeyId() {
-                                            return system.getProperty("ice.s3AccessKeyId");
+                                            return System.getProperty("ice.s3AccessKeyId");
                                         }
 
                                         public String getAWSSecretKey() {
-                                            return system.getProperty("ice.s3SecretKey");
+                                            return System.getProperty("ice.s3SecretKey");
                                         }
                                     };
                                 } else { /* System properties were empty, check ICE_HOME */
