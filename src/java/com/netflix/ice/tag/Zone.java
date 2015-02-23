@@ -114,8 +114,14 @@ public class Zone extends Tag {
     }
 
     public static Zone getZone(String name, Region region) {
-        if (name.isEmpty() || name.equals(region.name))
-            return null;
+        if (name.isEmpty() || name.equals(region.name)) {
+          // zone is empty for us-east-1a entries
+          if ( region == Region.US_EAST_1 ) {
+              name = US_EAST_1A.name;
+          } else {
+              return null;
+          }
+        }
         Zone zone = zonesByName.get(name);
         if (zone == null) {
             zonesByName.putIfAbsent(name, new Zone(region, name));

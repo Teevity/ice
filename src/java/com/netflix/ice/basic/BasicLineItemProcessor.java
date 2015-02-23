@@ -122,6 +122,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         UsageType usageType = reformedMetaData.usageType;
         Zone zone = Zone.getZone(items[zoneIndex], reformedMetaData.region);
 
+        // TWC: @Ckelner - Hack to get zone where region has shortname and zone is empty in csv line item
+        if(!(checkForRegionShortName(items[usageTypeIndex]).isEmpty()))
+            zone = getEmptyZoneFromRegion(reformedMetaData.region, zone);
+
         int startIndex = (int)((millisStart - startMilli)/ AwsUtils.hourMillis);
         int endIndex = (int)((millisEnd + 1000 - startMilli)/ AwsUtils.hourMillis);
 
@@ -353,7 +357,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
 
         // first try to retrieve region info
         int index = usageTypeStr.indexOf("-");
-        String regionShortName = index > 0 ? usageTypeStr.substring(0, index) : "";
+        String regionShortName = checkForRegionShortName(usageTypeStr);
         Region region = regionShortName.isEmpty() ? null : Region.getRegionByShortName(regionShortName);
         if (region != null) {
             usageTypeStr = usageTypeStr.substring(index+1);
@@ -433,6 +437,26 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         }
 
         return new ReformedMetaData(region, product, operation, usageType);
+    }
+
+    private String checkForRegionShortName(String usageTypeStr) {
+        int index = usageTypeStr.indexOf("-");
+        return index > 0 ? usageTypeStr.substring(0, index) : "";
+    }
+
+    /*
+    There are line items in the AWS csv which have a short region name in the UsageType field
+    but which have no zone entry.  See example:
+    InvoiceID,  PayerAccountId,LinkedAccountId,RecordType,RecordId,            ProductName,                   RateId,  SubscriptionId,PricingPlanId,UsageType,               Operation,     AvailabilityZone,ReservedInstance,ItemDescription,...
+    "Estimated","123456789",   "987654321",    "LineItem","400000000223405011","Amazon Elastic Compute Cloud","3207476",              ,            ,"EU-HeavyUsage:r3.large","RunInstances",,                "Y",             "USD 0.0323 hourly fee per Linux/UNIX (Amazon VPC), r3.large instance (1488.0 hours purchased, 1488.0 hours used)",...
+    So where this occurs, we default to the "a" zone of a given region.
+     */
+    private Zone getEmptyZoneFromRegion(Region region, Zone zone) {
+        if(zone == null) {
+            logger.info("Zone not found, will default to zone 'a' for region: " + region.name);
+            return Zone.getZone(region.name + "a", region);
+        }
+        return zone;
     }
 
     private InstanceOs getInstanceOs(String operationStr) {
