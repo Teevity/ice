@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLTooling xmlns="http://www.opensaml.org/xmltooling-config"
+     xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol"
+     xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      
+     <ObjectProviders>
+ 
+          <!-- EntitiesDescriptor provider -->
+          <ObjectProvider qualifiedName="md:EntitiesDescriptor">
+                <BuilderClass className="org.opensaml.saml2.metadata.impl.EntitiesDescriptorBuilder" />
+                <MarshallingClass className="org.opensaml.saml2.metadata.impl.EntitiesDescriptorMarshaller" />
+                <UnmarshallingClass className="org.opensaml.saml2.metadata.impl.EntitiesDescriptorUnmarshaller" />
+          </ObjectProvider>
+ 
+          <!-- EntityDescriptor provider -->
+          <ObjectProvider qualifiedName="md:EntityDescriptor">
+                <BuilderClass className="org.opensaml.saml2.metadata.impl.EntityDescriptorBuilder" />
+                <MarshallingClass className="org.opensaml.saml2.metadata.impl.EntityDescriptorMarshaller" />
+                <UnmarshallingClass className="org.opensaml.saml2.metadata.impl.EntityDescriptorUnmarshaller" />
+          </ObjectProvider>
+ 
+     </ObjectProviders>
+ 
+     <ValidatorSuites>
+ 
+          <ValidatorSuite id="SAML2-Schema">
+                <Validator className="org.opensaml.saml2.metadata.validator.EntityDescriptorSchemaValidator" qualifiedName="md:EntityDescriptor"/>
+                <Validator className="org.opensaml.saml2.metadata.validator.EntitiesDescriptorSchemaValidator" qualifiedName="md:EntitiesDescriptor"/>
+          </ValidatorSuite>
+ 
+          <ValidatorSuite id="SAML2-SSO-Profile">
+                <Validator className="org.opensaml.saml2.profiles.validator.SSOProfileValidator" qualifiedName="saml2p:AuthnRequest"/>
+          </ValidatorSuite>
+ 
+     </ValidatorSuites>
+ 
+</XMLTooling>

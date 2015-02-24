@@ -48,7 +48,8 @@ public class IceSession {
     * @parm authd
     */
     public void authenticate(Boolean authd) { 
-       session.setAttribute("authenticated", authd);
+       logger.info("authenticate: " + authd);
+       session.setAttribute(AUTHENTICATED_SESSION_KEY, authd);
     }
 
     public String username() { 
@@ -65,10 +66,18 @@ public class IceSession {
     public Boolean isAuthenticated() { 
        logger.debug("isAuthenticated?");
        Boolean authd = (Boolean)session.getAttribute(AUTHENTICATED_SESSION_KEY);
-       if (authd != null && authd && withinAllowTime()) {
-          return true;
+
+       if (authd == null) {
+          logger.error("User has no authentication entry");
+          return false;
+       } else if (! authd.booleanValue()) {
+          logger.error("User has been explicitly denied - " + authd);
+          return false;
+       } else if (! withinAllowTime()) {
+          logger.error("User's allow time has expired");
+          return false;
        }
-       return false;
+       return true;
     }
 
     /**

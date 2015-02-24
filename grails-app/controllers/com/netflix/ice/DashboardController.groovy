@@ -680,7 +680,9 @@ class DashboardController {
             result.interval = consolidateType.millis;
         }
         else {
-            result.time = new IntRange(0, data.values().iterator().next().length - 1).collect { interval.getStart().plusMonths(it).getMillis() }
+            if (data.values().size() > 0) {
+                result.time = new IntRange(0, data.values().iterator().next().length - 1).collect { interval.getStart().plusMonths(it).getMillis() }
+            }
         }
         return result;
     }

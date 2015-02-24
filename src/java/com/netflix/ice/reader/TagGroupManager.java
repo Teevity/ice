@@ -18,6 +18,7 @@
 package com.netflix.ice.reader;
 
 import com.netflix.ice.tag.*;
+import com.netflix.ice.common.IceSession;
 import org.joda.time.Interval;
 
 import java.util.Collection;
@@ -33,7 +34,7 @@ public interface TagGroupManager {
      * @param tagLists
      * @return collection of accounts
      */
-    Collection<Account> getAccounts(TagLists tagLists);
+    Collection<Account> getAccounts(TagLists tagLists, IceSession session);
 
     /**
      * Get all regions that meet query in tagLists.
@@ -83,7 +84,7 @@ public interface TagGroupManager {
      * @param tagLists
      * @return collection of accounts
      */
-    Collection<Account> getAccounts(Interval interval, TagLists tagLists);
+    Collection<Account> getAccounts(Interval interval, TagLists tagLists, IceSession session);
 
     /**
      * Get all regions that meet query in tagLists and in specifed interval.
@@ -129,9 +130,10 @@ public interface TagGroupManager {
      * Get all resource groups that meet query in tagLists and in specifed interval.
      * @param interval
      * @param tagLists
+     * @param session 
      * @return collection of resource groups
      */
-    Collection<ResourceGroup> getResourceGroups(Interval interval, TagLists tagLists);
+    Collection<ResourceGroup> getResourceGroups(Interval interval, TagLists tagLists, IceSession session);
 
     /**
      * Get overlapping interval
