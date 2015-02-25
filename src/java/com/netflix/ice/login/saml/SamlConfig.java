@@ -39,47 +39,25 @@ import java.io.IOException;
 public class SamlConfig implements BaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(SamlConfig.class);
 
-    public final List<String> trustedSigningCerts = new ArrayList<String>();
-    public final List<String> trustedMetadata = new ArrayList<String>();
-
-    private final String keystore;
-    private final String keystorePassword;
-    private final String keyAlias;
-    private final String keyPassword;
-    public final String organizationName;
-    public final String organizationDisplayName;
-    public final String organizationUrl;
+    public final String keystore;
+    public final String keystorePassword;
+    public final String keyAlias;
+    public final String keyPassword;
     public final String signInUrl;
-    public final String serviceName;
     public final String allAccounts;
     public final String singleSignOnUrl;
+    public final String serviceIdentifier;
+    public final String idpMetadataPath;
 
     public SamlConfig(Properties properties) {
-        loadSigningCerts(properties);
         keystore = properties.getProperty(SamlOptions.KEYSTORE);
         keystorePassword = properties.getProperty(SamlOptions.KEYSTORE_PASSWORD);
         keyAlias = properties.getProperty(SamlOptions.KEY_ALIAS);
         keyPassword = properties.getProperty(SamlOptions.KEY_PASSWORD);
-        organizationName = properties.getProperty(SamlOptions.ORGANIZATION_NAME);
-        organizationDisplayName = properties.getProperty(SamlOptions.ORGANIZATION_DISPLAY_NAME);
-        organizationUrl = properties.getProperty(SamlOptions.ORGANIZATION_URL);
+        serviceIdentifier = properties.getProperty(SamlOptions.SERVICE_IDENTIFIER);
         signInUrl = properties.getProperty(SamlOptions.SIGNIN_URL);
-        serviceName = properties.getProperty(SamlOptions.SERVICE_NAME);
         allAccounts = properties.getProperty(SamlOptions.ALL_ACCOUNTS);
         singleSignOnUrl = properties.getProperty(SamlOptions.SINGLE_SIGN_ON_URL);
-        loadSigningCerts(properties);
-
-    }
-
-    private void loadSigningCerts(Properties properties) {
-        String trustedCerts = properties.getProperty(SamlOptions.TRUSTED_SIGNING_CERTS);
-        if (trustedCerts == null) {
-            logger.warn("No Trusted Certs found");
-            return;
-        } 
-        String[] certLocations = trustedCerts.split(",");
-        for(String certLocation : certLocations) {
-            trustedSigningCerts.add(certLocation);
-        }
+        idpMetadataPath = properties.getProperty(SamlOptions.IDP_METADATA_PATH);
     }
 }

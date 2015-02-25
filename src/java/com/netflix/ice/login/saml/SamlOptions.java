@@ -29,27 +29,12 @@ public class SamlOptions {
     /**
      * Signin-Url for our service
      */
-    public static final String SIGNIN_URL = SAML + ".signing_url";
+    public static final String SIGNIN_URL = SAML + ".signin_url";
 
     /**
-     * Property for Service Name
-     */
-    public static final String SERVICE_NAME = SAML + ".service_name";
-
-    /**
-     * Property for organization name. 
-     */
-    public static final String ORGANIZATION_NAME = SAML + ".organization_name";
-
-    /**
-     * Property for organization display name. 
-     */
-    public static final String ORGANIZATION_DISPLAY_NAME = SAML + ".organization_display_name";
-
-    /**
-     * Property for organization url
-     */
-    public static final String ORGANIZATION_URL = SAML + ".organization_url";
+    * Service/Entity Identifier
+    */
+    public static final String SERVICE_IDENTIFIER = SAML + ".service_identifier";
 
     /**
      * Property for Keystore where we can find certificates
@@ -87,5 +72,9 @@ public class SamlOptions {
     * SAML creds
     */
     public static final String SINGLE_SIGN_ON_URL = SAML + ".single_sign_on_url";
+    /**
+    * Path to IDP Metdata
+    */
+    public static final String IDP_METADATA_PATH = SAML + ".idp_metadata_path";
 
 }
