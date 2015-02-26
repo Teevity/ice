@@ -178,7 +178,7 @@ public class BasicReservationService extends Poller implements ReservationServic
 
                         logger.info("Setting RI price for " + zone.region + " " + utilization + " " + usageType + " " + offer.getFixedPrice() + " " + hourly);
                     } else {
-                        logger.warn("Not able to setting RI price for: zone=" + offer.getAvailabilityZone() + " - utilization=" + utilization + " - usageType=" + usageType + " - fixedPrice=" + offer.getFixedPrice() + " - hourly=" + hourly);
+                        logger.warn("Not able to set RI price for: zone=" + offer.getAvailabilityZone() + " - utilization=" + utilization + " - usageType=" + usageType + " - fixedPrice=" + offer.getFixedPrice() + " - hourly=" + hourly);
                     }
                 }
             } while (!StringUtils.isEmpty(token));
