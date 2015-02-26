@@ -743,8 +743,21 @@ ice.factory('usage_db', function($window, $http, $filter) {
             showsps: $scope.showsps ? true : false,
             factorsps: $scope.factorsps ? true : false
           }, params);
-
-      this.addParams(params, "account", $scope.accounts, $scope.selected_accounts, $scope.filter_accounts);
+      this.addParams(params, "account", $scope.accounts, $scope.selected__accounts, $scope.filter_accounts);
+      if ($scope.showZones)
+        this.addParams(params, "zone", $scope.zones, $scope.selected_zones, $scope.selected__zones, $scope.filter_zones);
+      else
+        this.addParams(params, "region", $scope.regions, $scope.selected_regions, $scope.selected__regions, $scope.filter_regions);
+      this.addParams(params, "product", $scope.products, $scope.selected_products, $scope.selected__products, $scope.filter_products);
+      this.addParams(params, "operation", $scope.operations, $scope.selected_operations, $scope.selected__operations, $scope.filter_operations);
+      this.addParams(params, "usageType", $scope.usageTypes, $scope.selected_usageTypes, $scope.selected__usageTypes, $scope.filter_usageTypes);
+      if ($scope.showResourceGroups && !params.breakdown) {
+        params.showResourceGroups = true;
+        this.addParams(params, "resourceGroup", $scope.resourceGroups, $scope.selected_resourceGroups, $scope.selected__resourceGroups, $scope.filter_resourceGroups);
+      }
+      if ($scope.appgroup) {
+        params.appgroup = $scope.appgroup;
+      }
 
       if (!download) {
         $http({
