@@ -111,11 +111,11 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         if (StringUtils.isEmpty(items[accountIdIndex])) {
             logger.debug("Ignoring Record due to missing Account Id - " + Arrays.toString(items));
             return Result.ignore;
-        } else if (StringUtils.isEmpty(items[productIndex])) {
+        } 
+        if (StringUtils.isEmpty(items[productIndex])) {
             logger.debug("Ignoring Record due to missing Product - " + Arrays.toString(items));
             return Result.ignore;
         }
-
         if (StringUtils.isEmpty(items[usageTypeIndex])) {
             logger.debug("Ignoring Record due to missing Usage Type - " + Arrays.toString(items));
             return Result.ignore;
@@ -125,7 +125,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.ignore;
         }
         if (StringUtils.isEmpty(items[usageQuantityIndex])) {
-            items[usageQuantityIndex]="1";
             logger.debug("Ignoring Record due to missing Usage Quantity - " + Arrays.toString(items));
             return Result.ignore;
         }
