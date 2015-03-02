@@ -59,7 +59,6 @@ ice.factory('highchart', function() {
     plotOptions: {
       area: {lineWidth: 1, stacking: 'normal'},
       column: {lineWidth: 1, stacking: 'normal'},
-      line: {lineWidth: 1, stacking: null},
       series: {
         states: {
             hover: {
@@ -93,11 +92,11 @@ ice.factory('highchart', function() {
         var precision = currencySign === "" ? 0 : (currencySign === "¢" ? 4 : 2);
         for (var i = 0; i < this.points.length - (showsps ? 1 : 0); i++) {
           var point = this.points[i];
-          if (i == 0  && point.total!=undefined) {
+          if (i == 0) {
               s += '<br/><span>aggregated : ' + currencySign + Highcharts.numberFormat(showsps ? total : point.total, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate);
           }
           var perc = showsps ? point.y * 100 / total : point.percentage;
-      	  s += '<br/><span style="color: ' + point.series.color + '">' + point.series.name + '</span> : ' + currencySign + Highcharts.numberFormat(point.y, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate) + ' (' + Highcharts.numberFormat(perc, 1) + '%)';
+          s += '<br/><span style="color: ' + point.series.color + '">' + point.series.name + '</span> : ' + currencySign + Highcharts.numberFormat(point.y, precision, '.') + ' / ' + (factorsps ? metricunitname : consolidate) + ' (' + Highcharts.numberFormat(perc, 1) + '%)';
           if (i > 40 && point)
             break;
         }
@@ -107,55 +106,7 @@ ice.factory('highchart', function() {
     }
   };
 
-  var setupHcEstimate = function(result, plotType, cumulative) {
-    plotType = "line";
-    Highcharts.setOptions({
-        global: {
-            useUTC: true
-        }
-    });
-
-    var hadEstimate = false;
-
-    for (i in result.estimates) {
-        var estimates = result.estimates[i].data;
-        var hasEstimate = false;
-        for (j in estimates) {
-            if (cumulative && cumulative == "true" && j > 0) {
-                estimates[j] = estimates[j-1] + parseFloat(estimates[j].toFixed(2));
-                //aggregateEstimates[j] += estimates[j];
-            } else {
-                estimates[j] = parseFloat(estimates[j].toFixed(2));
-                //aggregateEstimates[j] += estimates[j];
-            }
-            if (estimates[j] !== 0)
-                hasEstimate = true;
-        }
-
-        if (hasEstimate) {
-            hadEstimate = true;
-            if (!result.interval && result.time) {
-                for (j in estimates) {
-                    estimates[j] = [result.time[j], estimates[j]];
-                }
-            }
-
-            var serie = {
-                name: result.estimates[i].name + " Estimate",
-                data: estimates,
-                pointStart: result.start,
-                pointInterval: result.interval,
-                //step: true,
-                type: "line",
-                Index: -1
-            };
-
-            hc_options.series.push(serie);
-        }
-    }
-  }
-
-  var setupHcData = function(result, plotType, showsps, cumulative) {
+  var setupHcData = function(result, plotType, showsps) {
 
     Highcharts.setOptions({
         global: {
@@ -169,10 +120,7 @@ ice.factory('highchart', function() {
       var data = result.data[i].data;
       var hasData = false;
       for (j in data) {
-        if (cumulative && cumulative == "true" && j > 0)
-            data[j] = data[j-1] + parseFloat(data[j].toFixed(2));
-        else
-            data[j] = parseFloat(data[j].toFixed(2));
+        data[j] = parseFloat(data[j].toFixed(2));
         if (data[j] !== 0)
           hasData = true;
       }
@@ -247,8 +195,7 @@ ice.factory('highchart', function() {
       currencySign = $scope.usage_cost === 'cost' ? ($scope.factorsps ? factoredCostCurrencySign : global_currencySign) : "";
       hc_options.legend.enabled = legendEnabled;
 
-      setupHcData(result, $scope.plotType, $scope.showsps, $scope.cumulative);
-      setupHcEstimate(result, $scope.plotType, $scope.cumulative);
+      setupHcData(result, $scope.plotType, $scope.showsps);
       setupYAxis($scope.usage_cost === 'cost', $scope.showsps, $scope.factorsps);
       showsps = $scope.showsps;
       factorsps = $scope.factorsps;
@@ -263,7 +210,7 @@ ice.factory('highchart', function() {
         var i = 0;
         for (i = 0; i < chart.series.length - ($scope.showsps ? 2 : 1); i++) {
           if ($scope && $scope.legends) {
-           var legend = {
+            var legend = {
               name: chart.series[i].name,
               style: "color: " + chart.series[i].color,
               iconStyle: "background-color: " + chart.series[i].color,
@@ -418,7 +365,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
       }
 
       $location.hash(result);
-      
+
       if (time) {
         timeParams = time;
       }
@@ -433,9 +380,9 @@ ice.factory('usage_db', function($window, $http, $filter) {
       if (hash) {
         var params = hash.split("&");
         for (i = 0; i < params.length; i++) {
-            if (params[i].indexOf("=") < 0 && i > 0 && (params[i-1].indexOf("appgroup=") == 0 || params[i-1].indexOf("resourceGroup=") == 0))
-              params[i-1] = params[i-1] + "&"  + params[i];
-          }
+          if (params[i].indexOf("=") < 0 && i > 0 && (params[i-1].indexOf("appgroup=") == 0 || params[i-1].indexOf("resourceGroup=") == 0))
+            params[i-1] = params[i-1] + "&"  + params[i];
+        }
         var i, j, time = "";
         for (i = 0; i < params.length; i++) {
 
@@ -510,9 +457,6 @@ ice.factory('usage_db', function($window, $http, $filter) {
           }
           else if (params[i].indexOf("resourceGroup=") === 0) {
             $scope.selected__resourceGroups = params[i].substr(14).split(",");
-          }
-          else if (params[i].indexOf("includeEstimates=") === 0) {
-            $scope.includeEstimates = "true" === params[i].substr(17);
           }
         }
       }
@@ -743,7 +687,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
             showsps: $scope.showsps ? true : false,
             factorsps: $scope.factorsps ? true : false
           }, params);
-      this.addParams(params, "account", $scope.accounts, $scope.selected__accounts, $scope.filter_accounts);
+      this.addParams(params, "account", $scope.accounts, $scope.selected_accounts, $scope.selected__accounts, $scope.filter_accounts);
       if ($scope.showZones)
         this.addParams(params, "zone", $scope.zones, $scope.selected_zones, $scope.selected__zones, $scope.filter_zones);
       else
@@ -1226,135 +1170,6 @@ function detailCtrl($scope, $location, $http, usage_db, highchart) {
     fn();
 }
 
-function  estimateCtrl($scope, $location, $http, usage_db, highchart) {
-
-	$scope.graphType = "aggregate";
-	$scope.legends = [];
-	$scope.usage_cost = "cost";
-	$scope.includeEstimates=true;
-	$scope.cumulative="true";
-	$scope.dailyEstimate=500;
-	$scope.groupBy={ name: "Account" }
-	$scope.consolidate = "daily";
-    $scope.end = new Date();
-    $scope.start = new Date();
-    $scope.plotType = "area";
-
-    var startMonth = $scope.end.getUTCMonth() - 1;
-    var startYear = $scope.end.getUTCFullYear();
-    if (startMonth < 0) {
-        startMonth += 12;
-        startYear -= 1;
-    }
-    $scope.start.setUTCFullYear(startYear);
-    $scope.start.setUTCMonth(startMonth);
-    $scope.start.setUTCDate(1);
-    $scope.start.setUTCHours(0);
-
-    $scope.end = highchart.dateFormat($scope.end); //$filter('date')($scope.end, "y-MM-dd hha");
-    $scope.start = highchart.dateFormat($scope.start); //$filter('date')($scope.start, "y-MM-dd hha");
-
-
-	$scope.updateUrl = function() {
-        $scope.end = jQuery('#end').datetimepicker().val();
-        $scope.start = jQuery('#start').datetimepicker().val();
-
-	    var params = {
-	        account: {selected: $scope.selected_accounts, from: $scope.accounts},
-	        usage_cost: $scope.usage_cost,
-	        start: $scope.start,
-	        end: $scope.end,
-	        groupBy: "Account",
-	        plotType: "area",
-            aggregate: "none",
-            consolidate: $scope.consolidate,
-	        graphType: $scope.graphType,
-	        includeEstimates: "" + $scope.includeEstimates
-	    };
-	    usage_db.updateUrl($location, params);
-	}
-
-	$scope.download = function() {
-	  usage_db.getData($scope, null, null, true);
-	}
-
-	$scope.getData = function() {
-        $scope.loading = true;
-        usage_db.getData($scope, function(result){
-            var hourlydata = [];
-            var estimatedata = [];
-            for (var key in result.data) {
-                hourlydata.push({name: key, data: result.data[key]});
-            }
-            for (var key in result.estimates) {
-                estimatedata.push({name: key, data: result.estimates[key]});
-            }
-            result.data = hourlydata;
-            result.estimates = estimatedata;
-            $scope.legends = [];
-            $scope.stats = result.stats;
-            highchart.drawGraph(result, $scope);
-
-            $scope.legendName = $scope.groupBy.name;
-            $scope.legend_usage_cost = $scope.usage_cost;
-        }, { includeEstimates: "" + $scope.includeEstimates});
-    }
-
-	$scope.accountsChanged = function() {
-	    $scope.updateEstimates();
-	}
-
-	$scope.updateEstimates = function() {
-	    usage_db.getDailyEstimate($scope);
-	}
-
-	$scope.updateUsageTypes = function() {
-	  usage_db.getUsageTypes($scope, function(data){
-	  });
-	}
-
-	$scope.removeEstimatesFilter = function(legend) {
-        return legend.name.indexOf("Estimate") == -1;
-    };
-
-
-	var fn = function() {
-	  usage_db.getAccounts($scope, function(data){
-        //while (! $scope.selected_account) {
-          //we need to have these!
-       // }
-	  });
-	  $scope.getData();
-
-	  jQuery("#start, #end" ).datetimepicker({
-	        showTime: false,
-	        showMinute: false,
-	        ampm: true,
-	        timeFormat: 'hhTT',
-	        dateFormat: 'yy-mm-dd'
-	      });
-	  jQuery('#end').datetimepicker().val($scope.end);
-	  jQuery('#start').datetimepicker().val($scope.start);
-	}
-
-	usage_db.getParams($location.hash(), $scope);
-
-	if ($scope.spans) {
-	  $http({
-	    method: "GET",
-	    url: "getTimeSpan",
-	    params: {spans: $scope.spans, end: $scope.end, consolidate: $scope.consolidate}
-	  }).success(function(result) {
-	    $scope.end = result.end;
-	    $scope.start = result.start;
-	    fn();
-	  });
-	} else {
-	  fn();
-	}
-}
-
-
 function appgroupCtrl($scope, $location, $http, usage_db, highchart) {
 
 //  var predefinedQuery = {product: "ebs,ec2,ec2_instance,monitor,rds,s3"};
@@ -1681,7 +1496,7 @@ function summaryCtrl($scope, $location, usage_db, highchart) {
         {name: "UsageType"}
     ],
   $scope.groupBy = $scope.groupBys[2];
-  $scope.consolidate = "monthly";
+  $scope.consolidate = "hourly";
   $scope.plotType = "area";
   $scope.end = new Date();
   $scope.start = new Date();
@@ -1711,7 +1526,7 @@ function summaryCtrl($scope, $location, usage_db, highchart) {
   $scope.order = function(index) {
 
     if ($scope.predicate != index) {
-      $scope.reserve = index === 'name';
+      $scope.reservse = index === 'name';
       $scope.predicate = index;
     }
     else {
@@ -1989,3 +1804,4 @@ function editCtrl($scope, $location, $http) {
     }
   });
 }
+
