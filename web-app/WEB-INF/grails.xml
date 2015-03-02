@@ -33,6 +33,7 @@
     <resource>TrackingFilters</resource>
     <resource>UrlMappings</resource>
     <resource>com.netflix.ice.DashboardController</resource>
+    <resource>com.netflix.ice.LoginController</resource>
   </resources>
   <plugins>
     <plugin>HibernateGrailsPlugin</plugin>
