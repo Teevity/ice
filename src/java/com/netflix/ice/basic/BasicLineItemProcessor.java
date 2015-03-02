@@ -103,7 +103,11 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             credit = true;
         }
 
-        //fail-fast on records we can't process
+        if (credit) {
+            if (! reformCredit(startMilli, items))
+                return Result.ignore;
+        }
+        // fail-fast on records we can't process
         if (StringUtils.isEmpty(items[accountIdIndex])) {
             logger.debug("Ignoring Record due to missing Account Id - " + Arrays.toString(items));
             return Result.ignore;
@@ -112,49 +116,32 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.ignore;
         }
 
-        // check other records.  We might have to help some credit rows to show up properly
         if (StringUtils.isEmpty(items[usageTypeIndex])) {
-            if (credit) {
-                items[usageTypeIndex]="credit";
-            } else {
-                logger.debug("Ignoring Record due to missing Usage Type - " + Arrays.toString(items));
-                return Result.ignore;
-            }
+            logger.debug("Ignoring Record due to missing Usage Type - " + Arrays.toString(items));
+            return Result.ignore;
         }
         if (StringUtils.isEmpty(items[operationIndex])) {
-            if (credit) {
-                items[operationIndex]="credit";
-            } else {
-                logger.debug("Ignoring Record due to missing Operation - " + Arrays.toString(items));
-                return Result.ignore;
-            }
+            logger.debug("Ignoring Record due to missing Operation - " + Arrays.toString(items));
+            return Result.ignore;
         }
         if (StringUtils.isEmpty(items[usageQuantityIndex])) {
-            if (credit) {
-                items[usageQuantityIndex]="1";
-            } else {
-                logger.debug("Ignoring Record due to missing Usage Quantity - " + Arrays.toString(items));
-                return Result.ignore;
-            }
+            items[usageQuantityIndex]="1";
+            logger.debug("Ignoring Record due to missing Usage Quantity - " + Arrays.toString(items));
+            return Result.ignore;
         }
 
         Account account = config.accountService.getAccountById(items[accountIdIndex]);
-        if (account == null)
+        if (account == null) {
+            logger.debug("Ignoring Record due to missing Account - " + Arrays.toString(items));
             return Result.ignore;
+        }
 
         double usageValue = Double.parseDouble(items[usageQuantityIndex]);
 
         long millisStart;
         long millisEnd;
 
-        boolean monthlyCredit=false;
         Result result = Result.hourly;
-        if (credit && items[startTimeIndex].isEmpty()) {
-            items[startTimeIndex]=new DateTime(startMilli, DateTimeZone.UTC).toString(amazonBillingDateFormat);
-            int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
-            items[endTimeIndex]=new DateTime(startMilli, DateTimeZone.UTC).plusHours(numHoursInMonth).toString(amazonBillingDateFormat);
-            monthlyCredit=true;
-        }
 
         try {
             millisStart = amazonBillingDateFormat.parseMillis(items[startTimeIndex]);
@@ -195,18 +182,15 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             result = processRds(usageType);
         }
 
-        // make sure credits for the month are distributed across month
-
-        if (result == Result.ignore || result == Result.delay)
+        if (result == Result.ignore || result == Result.delay) {
+            logger.debug("Record not processed  - " + result + " - " + Arrays.toString(items));
             return result;
+        }
 
         if (usageType.name.startsWith("TimedStorage-ByteHrs"))
             result = Result.daily;
 
-        if (monthlyCredit)
-            result = Result.monthly;
-
-        boolean monthlyCost = StringUtils.isEmpty(items[descriptionIndex]) ? false : ( items[descriptionIndex].toLowerCase().contains("-month") || monthlyCredit );
+        boolean monthlyCost = StringUtils.isEmpty(items[descriptionIndex]) ? false : ( items[descriptionIndex].toLowerCase().contains("-month") );
 
         ReadWriteData usageData = usageDataByProduct.get(null);
         ReadWriteData costData = costDataByProduct.get(null);
@@ -222,8 +206,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         else if (result == Result.monthly) {
             startIndex = 0;
             endIndex = usageData.getNum();
-            logger.debug("Start Index: " + startIndex);
-            logger.debug("End Index: " + endIndex);
             int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
             usageValue = usageValue * endIndex / numHoursInMonth;
             costValue = costValue * endIndex / numHoursInMonth;
@@ -291,10 +273,6 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return result;
 
         for (int i : indexes) {
-            if (credit) {
-               logger.debug("Index: " + i);
-            }
-
             if (config.randomizer != null) {
 
                 if (tagGroup.product != Product.rds && tagGroup.product != Product.s3 && usageData.getData(i).get(tagGroup) != null)
@@ -403,6 +381,37 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.daily;
         else
             return Result.hourly;
+    }
+
+    protected boolean reformCredit(long startMilli, String[] items) {
+
+        String[] split_description = items[descriptionIndex].split(":");
+
+        // If the credit doesn't have a start and end time then we... set to end to end of month
+        if (items[startTimeIndex].isEmpty()) {
+            int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
+            items[startTimeIndex]=new DateTime(startMilli, DateTimeZone.UTC).plusHours(numHoursInMonth-1).toString(amazonBillingDateFormat);
+            items[endTimeIndex]=new DateTime(startMilli, DateTimeZone.UTC).plusHours(numHoursInMonth).toString(amazonBillingDateFormat);
+            logger.debug("Credit did not have a Time - Set to " + items[startTimeIndex] + "-" + items[endTimeIndex]) ;
+        }
+
+        // try to use the description to fetch some info about the credit if we have nothing
+        if (items[operationIndex].isEmpty()) {
+            if (split_description.length > 0)
+                items[operationIndex]=split_description[0];
+            else
+                items[operationIndex]="credit";
+        }
+
+        if (items[usageTypeIndex].isEmpty()) {
+            items[usageTypeIndex]="credit";
+        }
+
+        if (items[usageQuantityIndex].isEmpty())
+            items[usageQuantityIndex]="1";
+
+        return true;
+
     }
 
     protected ReformedMetaData reform(long millisStart, ProcessorConfig config, Product product, boolean reservationUsage, String operationStr, String usageTypeStr, String description, double cost, boolean credit) {
