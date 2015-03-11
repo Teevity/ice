@@ -27,7 +27,8 @@ public class SamlOptions {
     public static final String SAML = LoginOptions.LOGIN + ".saml";
 
     /**
-     * Signin-Url for our service
+     * The iDP Signin-Url for our service.  Use this if the SAML Redirect doesn't work
+     * ADFS URL looks like this:  https://sso.it.here.com/adfs/ls/wia?LoginToRP=service name
      */
     public static final String SIGNIN_URL = SAML + ".signin_url";
 
@@ -76,5 +77,11 @@ public class SamlOptions {
     * Path to IDP Metdata
     */
     public static final String IDP_METADATA_PATH = SAML + ".idp_metadata_path";
+
+    /**
+     * Maximum amount of time that we accept a SAML Assertion
+     * ADFS defaults to 8 hours -
+     */
+    public static final String MAXIMUM_AUTHENTICATION_LIFETIME = SAML + ".maximum_authentication_lifetime";
 
 }

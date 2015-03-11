@@ -18,6 +18,7 @@ import com.netflix.ice.common.IceOptions;
 import com.netflix.ice.common.IceSession;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class Passphrase extends LoginMethod {
        return PASSPHRASE_PREFIX + "." + name;
     }
 
-    public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
+    public LoginResponse processLogin(HttpServletRequest request, HttpServletResponse response) throws LoginMethodException {
 
         LoginResponse lr = new LoginResponse();
         String userPassphrase = (String)request.getParameter("passphrase");
@@ -68,12 +69,6 @@ public class Passphrase extends LoginMethod {
             whitelistAllAccounts(iceSession);
             // allow user
             lr.loginSuccess=true;
-            Date now = new Date();
-            lr.loginStart=now;
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(now);
-            cal.add(Calendar.DATE, 1); //valid for one day
-            lr.loginEnd=cal.getTime();
         } else {
             lr.loginFailed=true;
         }

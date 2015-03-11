@@ -48,6 +48,7 @@ public class SamlConfig implements BaseConfig {
     public final String singleSignOnUrl;
     public final String serviceIdentifier;
     public final String idpMetadataPath;
+    public final String maximumAuthenticationLifetime;
 
     public SamlConfig(Properties properties) {
         keystore = properties.getProperty(SamlOptions.KEYSTORE);
@@ -59,5 +60,6 @@ public class SamlConfig implements BaseConfig {
         allAccounts = properties.getProperty(SamlOptions.ALL_ACCOUNTS);
         singleSignOnUrl = properties.getProperty(SamlOptions.SINGLE_SIGN_ON_URL);
         idpMetadataPath = properties.getProperty(SamlOptions.IDP_METADATA_PATH);
+        maximumAuthenticationLifetime = properties.getProperty(SamlOptions.MAXIMUM_AUTHENTICATION_LIFETIME,"28800");
     }
 }

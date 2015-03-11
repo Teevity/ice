@@ -13,25 +13,14 @@
  *
  */
 package com.netflix.ice.login.saml;
+
 import com.netflix.ice.login.*;
-import com.netflix.ice.common.IceOptions;
 import com.netflix.ice.common.IceSession;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Properties;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import org.joda.time.DateTime;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.io.StringReader;
-import org.apache.commons.io.FileUtils;
+import javax.servlet.http.HttpServletRequestWrapper;
+import org.opensaml.ws.message.decoder.MessageDecodingException;
 
 import org.pac4j.saml.credentials.Saml2Credentials;
 import org.pac4j.saml.profile.Saml2Profile;
@@ -43,6 +32,8 @@ import org.pac4j.core.context.J2ERequestContext;
 import org.pac4j.core.context.J2EContext;
 import org.pac4j.core.context.WebContext;
 import org.opensaml.common.xml.SAMLConstants;
+import org.opensaml.saml2.core.Attribute;
+import org.opensaml.xml.XMLObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +42,23 @@ import org.slf4j.LoggerFactory;
  * SAML Plugin
  */
 public class Saml extends LoginMethod {
+
+    // Grails getRequestUrl is an internal dispatch url which isn't
+    // very friendly to the user
+    private class SamlHttpServletRequest extends HttpServletRequestWrapper {
+        private final String requestUrl;
+        SamlHttpServletRequest(HttpServletRequest request, String requestUrl) {
+            super(request);
+            this.requestUrl=requestUrl;
+        }
+
+        @Override
+        public StringBuffer getRequestURL() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(requestUrl);
+            return sb;
+        }
+    }
 
     public final String SAML_PREFIX=propertyPrefix("saml");
 
@@ -74,30 +82,50 @@ public class Saml extends LoginMethod {
         client.setKeystorePath(config.keystore);
         client.setKeystorePassword(config.keystorePassword);
         client.setPrivateKeyPassword(config.keyPassword);
+        client.setMaximumAuthenticationLifetime(Integer.parseInt(config.maximumAuthenticationLifetime));
     }
 
-    public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
+    public LoginResponse processLogin(HttpServletRequest request, HttpServletResponse response) throws LoginMethodException {
         IceSession iceSession = new IceSession(request.getSession());
         iceSession.voidSession(); //a second login request voids anything previous
         logger.info("Saml::processLogin");
         LoginResponse lr = new LoginResponse();
-        //String assertion = (String)request.getParameter("SAMLResponse");
-        final WebContext context = new J2ERequestContext(request);
-        client.setCallbackUrl(config.signInUrl);
 
-        //logger.trace("Received SAML Assertion: " + assertion);
-        // get SAML2 credentials
+        SamlHttpServletRequest shsr = new SamlHttpServletRequest(request, config.signInUrl);
+        final WebContext context = new J2ERequestContext(shsr);
+        client.setCallbackUrl(config.signInUrl);
+        boolean redirect = false;
         try {
             Saml2Credentials credentials = client.getCredentials(context);
             Saml2Profile saml2Profile = client.getUserProfile(credentials, context);
-            logger.info("Credentials: " + credentials.toString());
-        } catch (RequiresHttpAction rha) { 
-            try {
-                lr.redirectTo=client.getRedirectAction(context, false, false).getLocation();
-                return lr;
-            } catch (RequiresHttpAction rhae) { }
-
+            processAssertion(iceSession, credentials, lr);
+        } catch (NullPointerException npe) {
+            redirect = true;
+        } catch (RequiresHttpAction rha) {
+            redirect = true;
+        } catch (Exception e) {
+            redirect = true;
         }
+        if (redirect) {
+            try {
+                logger.info("Redirect user to SSO");
+                if (config.singleSignOnUrl != null) {
+                    //redirect to SSO using a static URL
+                    lr.redirectTo=config.singleSignOnUrl;
+                } else {
+                    //try redirect using Pac4j library.  Not sure if this will work.
+                    final WebContext redirect_context = new J2EContext(shsr, response);
+                    client.redirect(redirect_context, false, false);
+                    lr.responded = true;
+                }
+            } catch (RequiresHttpAction rhae) {
+                logger.error(rhae.toString());
+            }
+            catch (NullPointerException npe) {
+                logger.error(npe.toString());
+            }
+        }
+        logger.debug("Login Response: " + lr.toString());
         return lr;
     }
 
@@ -105,35 +133,32 @@ public class Saml extends LoginMethod {
     /**
      * Process an assertion and setup our session attributes
      */
-/*
-    private void processAssertion(IceSession iceSession, Assertion assertion, LoginResponse lr) throws LoginMethodException {
+    private void processAssertion(IceSession iceSession, Saml2Credentials credentials, LoginResponse lr) throws LoginMethodException {
         boolean foundAnAccount=false;
         iceSession.voidSession();
-        for(AttributeStatement as : assertion.getAttributeStatements()) {
-            // iterate once to assure we set the username first
-            for(Attribute attr : as.getAttributes()) {
-                if (attr.getName().equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")) {
-                    for(XMLObject groupXMLObj : attr.getAttributeValues()) {
-                        String username = groupXMLObj.getDOM().getTextContent();
-                        iceSession.setUsername(username);
-                    }
+
+        for(Attribute attr : credentials.getAttributes()) {
+            if (attr.getName().equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")) {
+                for (XMLObject groupXMLObj : attr.getAttributeValues()) {
+                    String username = groupXMLObj.getDOM().getTextContent();
+                    iceSession.setUsername(username);
                 }
             }
-            // iterate again for everything else
-            for(Attribute attr : as.getAttributes()) {
-                if (attr.getName().equals("com.netflix.ice.account")) {
-                    for(XMLObject groupXMLObj : attr.getAttributeValues()) {
-                        String allowedAccount = groupXMLObj.getDOM().getTextContent();
-                        if (allowedAccount.equals(config.allAccounts) ) {
-                            whitelistAllAccounts(iceSession);
+        }
+        // iterate again for everything else
+        for(Attribute attr : credentials.getAttributes()) {
+            if (attr.getName().equals("com.netflix.ice.account")) {
+                for(XMLObject groupXMLObj : attr.getAttributeValues()) {
+                    String allowedAccount = groupXMLObj.getDOM().getTextContent();
+                    if (allowedAccount.equals(config.allAccounts) ) {
+                        whitelistAllAccounts(iceSession);
+                        foundAnAccount=true;
+                        logger.info("Found Allow All Accounts: " + allowedAccount);
+                        break;
+                    } else {
+                        if (whitelistAccount(iceSession, allowedAccount)) {
                             foundAnAccount=true;
-                            logger.info("Found Allow All Accounts: " + allowedAccount);
-                            break;
-                        } else {
-                            if (whitelistAccount(iceSession, allowedAccount)) {
-                                foundAnAccount=true;
-                                logger.info("Found Account: " + allowedAccount);
-                            }
+                            logger.info("Found Account: " + allowedAccount);
                         }
                     }
                 }
@@ -143,24 +168,11 @@ public class Saml extends LoginMethod {
         //require at least one account
         if (! foundAnAccount) {
             lr.loginFailed=true;
-            //throw new LoginMethodException("SAML Assertion must give at least one Account as part of the Assertion");
             return;
+        } else {
+            lr.loginSuccess=true;
         }
 
-        //set expiration date
-        DateTime startDate = assertion.getConditions().getNotBefore();
-        DateTime endDate = assertion.getConditions().getNotOnOrAfter();
-        if (startDate == null || endDate == null) {
-            throw new LoginMethodException("Assertion must state an expiration date");
-        }
-        // Clocks may not be synchronized.
-        startDate = startDate.minusMinutes(2);
-        endDate = endDate.plusMinutes(2);
-        logger.info(startDate.toCalendar(null).getTime().toString()); 
-        logger.info(endDate.toCalendar(null).getTime().toString()); 
-        lr.loginStart = startDate.toCalendar(null).getTime();
-        lr.loginEnd = endDate.toCalendar(null).getTime();
     }
-*/
-} 
+}
 

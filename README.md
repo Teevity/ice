@@ -251,19 +251,61 @@ A Framework exists for supplying authentication plugins.  The following properti
 	ice.login.classes=com.netflix.ice.login.Passphrase
 	
 	# Logging Names, comma delmited.  These map to a handler above
-        # The name here will expose an http endpoint.
+    # The name here will expose an http endpoint.
 	# http://.../ice/login/handler/passphrase
 	ice.login.endpoints=passphrase
 	
-	# Passphrase for the Passphrase Implementation
+	# Passphrase for the Passphrase Implementation.  This would grant access
+	# to all data
 	ice.login.passphrase=rar
 	
 	# Default Endpoint(where /login/ takes us)
 	ice.login.default_endpoint=passphrase
+	
 	# Login Log file(audit log)
 	ice.login.log=/some/path
+	
+	# Message to be displayed if the user has no access
+	ice.login.no_access_message=You do not have access to view any billing data.  Please see <a href=some useful linke</a>
 
 Passphrase is simply a reference implementation that guards your ice data with a passphrase(ice.login.passphrase).  To create your own login handler, you can extend the LoginMethod.
+
+### SAML Plugin
+
+A SAML Plugin was written that has been verified against ADFS.  The SAML Assertion needs a custom attribute/claim which is named "com.netflix.ice.account" which is a list of account ids to grant access to.  You can utilize the *ice.login.saml.all_accounts* to select a value that will give access to all billing data. 
+
+Configuration Properties:
+
+
+	# SAML Login Classes.
+	ice.login.classes=com.netflix.ice.login.saml.Saml,com.netflix.ice.login.saml.SamlMetaData
+	
+	# Map Handlers 
+	ice.login.endpoints=saml,metadata.xml
+	
+	# Ensure that we use SAML by default
+	ice.login.default_endpoint=saml
+	
+	# Path to your IDP metadata.  We do not support http
+	ice.login.saml.idp_metadata_path=/path/to/idp_metadata
+	
+	# Our Certificate to use for Signing
+	ice.login.saml.keystore=/path/to/keystore
+	ice.login.saml.keystore_password=pac4j-demo-passwd
+	ice.login.saml.key_alias=pac4j-demo
+	ice.login.saml.key_password=pac4j-demo-passwd
+	
+	# com.netflix.ice.account attribute value that will give the user access
+	# to all billing data 
+	ice.login.saml.all_accounts=ADMIN
+	
+	# Local URL for SAML sign-in.
+	ice.login.saml.signin_url=https://ice.domain.com/ice/login/handler/saml
+	
+	# Our service identifier.  Typically the web address of the service
+	ice.login.saml.service_identifier=https://ice.domain.com
+	
+A SAML attribute(com.netflix.ice.account) should contain a list of Account Ids that the user has access to.  If no accounts are given then the user will be denied.  If you don't wish to filter the accounts that the user has access to then you can simply issue "com.netflix.ice.account":"ADMIN" for the SAML Assertion.
 
 ##Support
 

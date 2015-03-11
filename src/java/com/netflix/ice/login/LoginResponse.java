@@ -24,6 +24,9 @@ import java.util.Date;
 */
 public class LoginResponse
 {
+    /**Did the handler respond to this(no action from the Controller) */
+    public boolean responded=false;
+
     /** Was the Login Successful */
     public boolean loginSuccess=false;
 
@@ -48,9 +51,16 @@ public class LoginResponse
     /** Variables to pass to templateFile or renderData */
     public Map<String,String> templateBindings;
 
-    /** When to allow this login(required) */
-    public Date loginStart;
-
-    /** When to end this login(required) */
-    public Date loginEnd;
+    public String toString() {
+        return "LoginResponse [" +
+                "responseHandled: " + responded + ", " +
+                "loginSuccess: " + loginSuccess + ", " +
+                "loginFailed: " + loginFailed + ", " +
+                "loggedOut: " + loggedOut + ", " +
+                "redirectTo: " + redirectTo + ", " +
+                "renderData: " + renderData + ", " +
+                "contentType: " + contentType + ", " +
+                "TemplateFile: " + templateFile + ", " +
+                "]";
+    }
 }

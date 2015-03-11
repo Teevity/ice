@@ -53,16 +53,18 @@ class LoginController {
         if (loginMethod == null) {
              redirect(action: "error");
         }
-        LoginResponse loginResponse = loginMethod.processLogin(request);
+        LoginResponse loginResponse = loginMethod.processLogin(request, response);
 
-        if (loginResponse.redirectTo != null) {
+        if (loginResponse.responded) {
+            // no-op
+            return null;
+        } else if (loginResponse.redirectTo != null) {
             redirect(url: loginResponse.redirectTo);    
         } else if (loginResponse.loggedOut) {
             redirect(action: "logout");
         } else if (loginResponse.loginSuccess) {
             IceSession iceSession = new IceSession(session);
             iceSession.authenticate(new Boolean(true));
-            iceSession.setAllowTime(loginResponse.loginStart, loginResponse.loginEnd);
             if (iceSession.authenticated) { //ensure we are good
                 redirect(controller: "dashboard");
             } else {

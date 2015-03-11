@@ -15,6 +15,7 @@
 package com.netflix.ice.login;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Map;
@@ -44,7 +45,7 @@ public abstract class LoginMethod {
          this.properties = properties;
     }
 
-    public abstract LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException;
+    public abstract LoginResponse processLogin(HttpServletRequest request, HttpServletResponse response) throws LoginMethodException;
 
     public String propertyPrefix(String name) {
        return LoginOptions.LOGIN_PREFIX + "." + name;

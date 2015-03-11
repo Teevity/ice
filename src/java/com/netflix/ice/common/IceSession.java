@@ -35,8 +35,6 @@ public class IceSession {
     private final String ADMIN_SESSION_KEY = "admin";
     private final String ALLOWED_ACCOUNT_SESSION_PREFIX_KEY = "allowed_account";
     private final String ALLOWED_ACCOUNTS = "allowed_accounts";
-    private final String START_DATE = "start_date";
-    private final String END_DATE = "end_date";
     private final HttpSession session;
 
     public IceSession(HttpSession session) {
@@ -73,47 +71,9 @@ public class IceSession {
        } else if (! authd.booleanValue()) {
           logger.error("User has been explicitly denied - " + authd);
           return false;
-       } else if (! withinAllowTime()) {
-          logger.error("User's allow time has expired");
-          return false;
        }
        return true;
     }
-
-    /**
-    * Set the time at which this session is valid.  This is required.
-    * @param notBefore
-    * @param notAfter
-    */
-    public void setAllowTime(Date notBefore, Date notAfter) {
-        if (notBefore != null && notAfter != null) {
-            logger.info("Allow Time: " + notBefore.toString() + " to " + notAfter.toString());
-        } else {
-            logger.info("Set Allow Time to null");
-        }
-        session.setAttribute(START_DATE, notBefore);
-        session.setAttribute(END_DATE, notAfter);
-    }
-
-    /*
-    * Has this Session expired?
-    */
-    public boolean withinAllowTime() {
-        logger.debug("Within Allow Time?");
-        Date notBefore = (Date)session.getAttribute(START_DATE);
-        Date notAfter = (Date)session.getAttribute(END_DATE);
-        if (notBefore == null || notAfter == null) {
-            logger.error("Session has no allow time");
-            return false;
-        }
-        Date now = new Date();
-        if ((now.after(notBefore)) && (now.before(notAfter))) {
-            return true;
-        }
-        logger.info(now.toString() + " is not between " + notBefore.toString() + " - " + notAfter.toString());
-        return false;
-    }
-
 
     /**
      * 100% invalidate this session so it cannot be used for login.
@@ -131,8 +91,6 @@ public class IceSession {
                 iter.remove();
             }
         }
-
-        setAllowTime(null,null);
     }
 
     /**
