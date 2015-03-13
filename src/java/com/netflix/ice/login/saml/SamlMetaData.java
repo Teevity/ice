@@ -18,6 +18,7 @@ import com.netflix.ice.login.*;
 import com.netflix.ice.common.IceOptions;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class SamlMetaData extends LoginMethod {
         client.setPrivateKeyPassword(config.keyPassword);
     }
 
-    public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
+    public LoginResponse processLogin(HttpServletRequest request, HttpServletResponse response) throws LoginMethodException {
         LoginResponse lr = new LoginResponse();
         lr.renderData = client.printClientMetadata();
 ;
