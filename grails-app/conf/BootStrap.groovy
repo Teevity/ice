@@ -108,9 +108,8 @@ class BootStrap {
                 System.out.println(name);
                 if (name.startsWith("ice.account.dailyestimate.")) {
                     String propertyValue = prop.getProperty(name);
-                    Long propertyLongValue = Long.parseLong(propertyValue);
+                    Double propertyDoubleValue = Double.parseDouble(propertyValue);
 
-                    System.out.println("Found an estimate:" + name);
                     String propertyNameNoPrefix = name.substring("ice.account.dailyestimate.".length());
                     String accountName=propertyNameNoPrefix;
                     String[] propertySections = propertyNameNoPrefix.split("\\.");
@@ -131,8 +130,8 @@ class BootStrap {
                         account = new Account(accountId, accountName);
                         accounts.put(accountName, account);
                     }
-                    System.out.println("Set Daily Estimate for " + account + " - " + propertyLongValue.toString());
-                    account.dailyEstimates.put(estimateDate, propertyLongValue);
+                    System.out.println("Set Daily Estimate for " + account + " - " + propertyDoubleValue.toString());
+                    account.dailyEstimates.put(estimateDate, propertyDoubleValue);
                 } else if (name.startsWith("ice.account.") ) {
                     String accountName = name.substring("ice.account.".length());
                     System.out.println(accountName);
