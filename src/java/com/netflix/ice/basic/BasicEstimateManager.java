@@ -80,7 +80,7 @@ public class BasicEstimateManager extends Poller implements DataManager {
 
         DateTime start = interval.getStart();
         DateTime end = interval.getEnd();
-        Map<DateTime, Long> accountEstimates = account.dailyEstimates;
+        Map<DateTime, Double> accountEstimates = account.dailyEstimates;
 
         if (accountEstimates == null) {
             return new double[0];
@@ -120,7 +120,7 @@ public class BasicEstimateManager extends Poller implements DataManager {
         double[] accountResults = new double[num];
         DateTime currentEstimateDate=start;
         DateTime estimateChangeAt=null;
-        long currentEstimate=0;
+        double currentEstimate=0;
 
 
         //we have start, num of items and a ConsolidateType
@@ -138,11 +138,11 @@ public class BasicEstimateManager extends Poller implements DataManager {
                     boolean foundNext = false;
 
                     // accountEstimates is a sorted TreeMap
-                    for (Map.Entry<DateTime, Long> accountEstimate : accountEstimates.entrySet()) {
+                    for (Map.Entry<DateTime, Double> accountEstimate : accountEstimates.entrySet()) {
 
                         // This might be our only option
                         if  (accountEstimates.size() == 1) {
-                            currentEstimate = accountEstimate.getValue().longValue();
+                            currentEstimate = accountEstimate.getValue().doubleValue();
                             estimateChangeAt = new DateTime(2042); // No further estimates
                             break;
                         }
@@ -159,7 +159,7 @@ public class BasicEstimateManager extends Poller implements DataManager {
 
                         if (foundCurrent) {
                             foundNext = true;
-                            currentEstimate = accountEstimate.getValue().longValue();
+                            currentEstimate = accountEstimate.getValue().doubleValue();
                             estimateChangeAt = null;
                             continue;
                         }

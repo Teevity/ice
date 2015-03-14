@@ -23,14 +23,14 @@ import java.util.Map;
 
 public class Account extends Tag {
     public final String id;
-    public Map<DateTime, Long> dailyEstimates=new TreeMap<DateTime, Long>();
+    public Map<DateTime, Double> dailyEstimates=new TreeMap<DateTime, Double>();
 
     public Account(String accountId, String accountName) {
         super(accountName);
         this.id = accountId;
     }
 
-    public Account(String accountId, String accountName, Map<DateTime, Long> dailyEstimates) {
+    public Account(String accountId, String accountName, Map<DateTime, Double> dailyEstimates) {
         super(accountName);
         this.id = accountId;
         this.dailyEstimates=dailyEstimates;
