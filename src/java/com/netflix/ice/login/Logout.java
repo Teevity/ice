@@ -18,6 +18,7 @@ import com.netflix.ice.common.IceOptions;
 import com.netflix.ice.common.IceSession;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class Logout extends LoginMethod {
         return null;
     }
 
-    public LoginResponse processLogin(HttpServletRequest request) throws LoginMethodException {
+    public LoginResponse processLogin(HttpServletRequest request, HttpServletResponse response) throws LoginMethodException {
         IceSession session = new IceSession(request.getSession());
         session.voidSession();
         LoginResponse lr = new LoginResponse();
