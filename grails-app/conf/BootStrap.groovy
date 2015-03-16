@@ -105,7 +105,6 @@ class BootStrap {
 
             Map<String, Account> accounts = Maps.newHashMap();
             for (String name: prop.stringPropertyNames()) {
-                System.out.println(name);
                 if (name.startsWith("ice.account.dailyestimate.")) {
                     String propertyValue = prop.getProperty(name);
                     Double propertyDoubleValue = Double.parseDouble(propertyValue);
