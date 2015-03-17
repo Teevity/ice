@@ -743,7 +743,7 @@ ice.factory('usage_db', function($window, $http, $filter) {
             showsps: $scope.showsps ? true : false,
             factorsps: $scope.factorsps ? true : false
           }, params);
-      this.addParams(params, "account", $scope.accounts, $scope.selected__accounts, $scope.filter_accounts);
+      this.addParams(params, "account", $scope.accounts, $scope.selected_accounts, $scope.selected__accounts, $scope.filter_accounts);
       if ($scope.showZones)
         this.addParams(params, "zone", $scope.zones, $scope.selected_zones, $scope.selected__zones, $scope.filter_zones);
       else
