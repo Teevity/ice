@@ -73,6 +73,8 @@ class DashboardController {
         {
             request["iceSession"] = new IceSession(session);
             if (! request["iceSession"].isAuthenticated()) {
+                // TODO: would be nice to save the URL here
+                // request["iceSession"].setUrl(...) exists 
                 redirect(controller: "login")      
             }
         }

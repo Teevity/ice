@@ -33,6 +33,7 @@ import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.google.common.collect.Maps
 import org.json.JSONObject
+import grails.util.Holders
 
 
 class LoginController {
@@ -47,7 +48,7 @@ class LoginController {
 
     def handler = {
         if (config.loginEnable == false) {
-            redirect(controller: "dashboard")
+            redirect(controller: "dashboard", absolute: true)
         }
         LoginMethod loginMethod = config.loginMethods.get(params.login_action);
         if (loginMethod == null) {
@@ -66,7 +67,12 @@ class LoginController {
             IceSession iceSession = new IceSession(session);
             iceSession.authenticate(new Boolean(true));
             if (iceSession.authenticated) { //ensure we are good
-                redirect(controller: "dashboard");
+                if (iceSession.url != null) {
+                    String redirectURL = "" + iceSession.url
+                    redirect(url: redirectURL, absolute: true);
+                } else {
+                    redirect(controller: "dashboard");
+                }
             } else {
                 redirect(action: "failure");
             }

@@ -83,11 +83,11 @@ public abstract class LoginMethod {
     public void log(IceSession session, String message) throws RuntimeException {
         initLogging();
         if (loginLogger != null) { 
-            String username = session.username();
+            String username = session.getUsername();
             if (username == null) {
                 throw new RuntimeException("Username not set on session, unable to properly log");
             } 
-            loginLogger.info(this.getClass().getSimpleName() + ":" + session.username() + ":" + message);
+            loginLogger.info(this.getClass().getSimpleName() + ":" + session.getUsername() + ":" + message);
         }
     }
    

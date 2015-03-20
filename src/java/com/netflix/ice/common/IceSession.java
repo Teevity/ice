@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 */
 public class IceSession {
     private static final Logger logger = LoggerFactory.getLogger(IceSession.class);
+    private final String URL = "url";
     private final String USER_NAME = "user_name";
     private final String AUTHENTICATED_SESSION_KEY = "authenticated";
     private final String ADMIN_SESSION_KEY = "admin";
@@ -50,7 +51,21 @@ public class IceSession {
        session.setAttribute(AUTHENTICATED_SESSION_KEY, authd);
     }
 
-    public String username() { 
+    /**
+    * URL to redirect user to after login
+    */
+    public String getUrl() {
+       return (String)session.getAttribute(URL);
+    }
+
+    /**
+    * URL to redirect user to after login
+    */
+    public void setUrl(String url) {
+       session.setAttribute(URL, url);
+    }
+
+    public String getUsername() { 
        return (String)session.getAttribute(USER_NAME);
     }
 
