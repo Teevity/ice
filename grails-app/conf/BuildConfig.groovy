@@ -113,6 +113,6 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        build ":tomcat:$grailsVersion"
+        build ":tomcat:8.0.15"
     }
 }
