@@ -40,6 +40,11 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
+     * Property for enabling the Estimate Cost Report
+     */
+    public static final String ESTIMATE_REPORT = "ice.report.estimate";
+
+    /**
      * The URL of highstock.js. The default value is the Highcharts CDN; change this if you need to
      * serve it from somewhere else (for example, if you need HTTPS).
      */

@@ -32,6 +32,9 @@ When representing the cost profile for individual resources, Ice will factor the
 5. Breakdown page of Application Groups
 ![Breakdown page of Application Groups](https://github.com/Netflix/ice/blob/master/screenshots/ss_breakdown_appgroup.png?raw=true)
 
+6. Estimate page with cumulative values
+![Estimate page using cumulative values](./screenshots/ss_estimate.png?raw=true)
+
 ##Prerequisite:
 
 1. First sign up for Amazon's programmatic billing access [here](http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/detailed-billing-reports.html) to receive detailed billing(hourly) reports. Verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`.
@@ -169,7 +172,7 @@ Options with * require writing your own code.
           ice.reservationPeriod=threeyear
           # reservation utilization, possible values are LIGHT, HEAVY
           ice.reservationUtilization=HEAVY
-
+          
 2. Reservation capacity poller
 
   To use BasicReservationService, you should also run reservation capacity poller, which will call ec2 API (describeReservedInstances) to poll reservation capacities for each reservation owner account defined in ice.properties. The reservation capacities history is stored in a file in s3 bucket. To run reservation capacity poller, following steps below:
@@ -239,6 +242,19 @@ Options with * require writing your own code.
 8. Throughput metric service (*)
    
   You may also want to show your organization's throughput metric alongside usage and cost. You can choose to implement interface ThroughputMetricService, or you can simply use the existing BasicThroughputMetricService. Using BasicThroughputMetricService requires the throughput metric data to be stores monthly in files with names like <filePrefix>_2013_04, <filePrefix>_2013_05. Data in files should be delimited by new lines. <filePrefix> is specified when you create BasicThroughputMetricService instance.
+
+9. Estimate Page
+
+  You may want to use the estimate page to visualize estimated velocity against actual spending velocity.  To enable:
+  
+  	ice.report.estimate=true
+  	
+  For each account, you can set the estimate in the ice.properties:
+  
+  	ice.account.dailyestimate.account1=500
+	ice.account.dailyestimate.account2=505
+
+
 
 ##Support
 

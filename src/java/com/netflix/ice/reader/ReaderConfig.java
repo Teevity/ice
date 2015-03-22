@@ -54,6 +54,7 @@ public class ReaderConfig extends Config {
     public final Managers managers;
     public final int monthlyCacheSize;
     public final Map<String,Map<DateTime,Long>> accountDailyEstimates = new HashMap<String,Map<DateTime,Long>>();
+    public final boolean estimateReport;
 
     /**
      *
@@ -81,7 +82,7 @@ public class ReaderConfig extends Config {
         currencySign = properties.getProperty(IceOptions.CURRENCY_SIGN, "$");
         currencyRate = Double.parseDouble(properties.getProperty(IceOptions.CURRENCY_RATE, "1"));
         highstockUrl = properties.getProperty(IceOptions.HIGHSTOCK_URL, "http://code.highcharts.com/stock/highstock.js");
-
+        estimateReport = Boolean.parseBoolean(properties.getProperty(IceOptions.ESTIMATE_REPORT, "false"));
         this.managers = managers;
         this.applicationGroupService = applicationGroupService;
         this.throughputMetricService = throughputMetricService;
