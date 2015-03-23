@@ -350,15 +350,27 @@ class DashboardController {
             IceSession sess = request["iceSession"];
             String accounts = (String)query.opt("account");
             if (accounts == null || accounts.length() == 0) {
-               StringBuilder csvString = new StringBuilder();
-               String delim="";
-               for (String allowedAccount : sess.allowedAccounts()) {
-                   csvString.append(delim);
-                   String allowedAccountName = accountService.getAccountById(allowedAccount);
-                   csvString.append(allowedAccountName);
-                   delim=","; 
-               }
-               query.put("account", csvString.toString());
+                StringBuilder csvString = new StringBuilder();
+                String delim="";
+                // login requires explicit accounts to be defined
+                if (! sess.isAdmin()) {
+                    for (String allowedAccount : sess.allowedAccounts()) {
+                        csvString.append(delim);
+                        String allowedAccountName = accountService.getAccountById(allowedAccount);
+                        csvString.append(allowedAccountName);
+                        delim = ",";
+                    }
+                } else {
+                    TagGroupManager tagGroupManager = getManagers().getTagGroupManager(null);
+                    Collection<Account> accts = tagGroupManager == null ? [] : tagGroupManager.getAccounts(new TagLists(), sess);
+                    for (Account account : accts) {
+                        csvString.append(delim);
+                        csvString.append(account.id);
+                        delim = ",";
+                    }
+
+                }
+                query.put("account", csvString.toString());
             }
             
         }
