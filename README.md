@@ -35,7 +35,7 @@ When representing the cost profile for individual resources, Ice will factor the
 ##Prerequisite:
 
 1. First sign up for Amazon's programmatic billing access [here](http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/detailed-billing-reports.html) to receive detailed billing(hourly) reports. Verify you receive monthly billing file in the following format: `<accountid>-aws-billing-detailed-line-items-<year>-<month>.csv.zip`.
-2. Install Grails 2.2.1 and set GRAILS_HOME and JAVA_HOME
+2. Install Grails 2.4.4 and set GRAILS_HOME and JAVA_HOME
 3. Ice uses [highstock](http://www.highcharts.com/) to generate interactive graphs. Please make sure you acquire the proper license before using it.
   
 
