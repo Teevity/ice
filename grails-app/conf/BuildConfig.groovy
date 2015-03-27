@@ -22,6 +22,8 @@ grails.project.test.class.dir = 'target/test-classes'
 grails.project.test.reports.dir = 'target/test-reports'
 grails.project.war.file = "target/${appName}.war"
 
+grails.project.dependency.resolver = "maven"
+
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
@@ -64,19 +66,12 @@ grails.project.dependency.resolution = {
 
         compile(
                 // Amazon Web Services programmatic interface
-                'com.amazonaws:aws-java-sdk:1.4.4.1',
-        ) {
-            // AWS defines their dependencies as open-ended, which causes problems when resolving.
-            // See http://stackoverflow.com/a/7990573/869
-            transitive = false
-        }
-
-        compile(
+                'com.amazonaws:aws-java-sdk:1.9.12',
                 // Transitive dependencies of aws-java-sdk, but also used directly.
                 // It would be great if we could upgrade httpcore and httpclient, but we can't until the AWS Java SDK
                 // upgrades its dependencies. If we simply upgrade these, then some Amazon calls fail.
-                'org.apache.httpcomponents:httpcore:4.1',
-                'org.apache.httpcomponents:httpclient:4.1.1',
+                'org.apache.httpcomponents:httpcore:4.2',
+                'org.apache.httpcomponents:httpclient:4.2',
 
                 // Explicitly including aws-java-sdk transitive dependencies
                 'org.codehaus.jackson:jackson-core-asl:1.8.9',
@@ -87,6 +82,9 @@ grails.project.dependency.resolution = {
 
                 // Easier Java from of the Apache Foundation
                 'commons-lang:commons-lang:2.4',
+     
+                // Better Zip Support
+                'org.apache.commons:commons-compress:1.8',
 
                 // Easier Java from Joshua Bloch and Google
                 'com.google.guava:guava:14.0',
@@ -117,6 +115,7 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        build ":tomcat:$grailsVersion"
+		//runtime ":hibernate4:4.3.6.1"
+		build ":tomcat:8.0.20"
     }
 }

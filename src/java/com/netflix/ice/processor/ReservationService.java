@@ -34,31 +34,28 @@ public interface ReservationService {
 
     /**
      * Get all tag groups with reservations
+     * @param utilization
      * @return
      */
-    Collection<TagGroup> getTaGroups();
+    Collection<TagGroup> getTagGroups(Ec2InstanceReservationPrice.ReservationUtilization utilization);
 
     /**
      *
      * @return
      */
-    Ec2InstanceReservationPrice.ReservationPeriod getReservationPeriod();
-
-    /**
-     *
-     * @return
-     */
-    Ec2InstanceReservationPrice.ReservationUtilization getReservationUtilization();
+    Ec2InstanceReservationPrice.ReservationUtilization getDefaultReservationUtilization(long time);
 
     /**
      * Get reservation info.
      * @param time
      * @param tagGroup
+     * @param utilization
      * @return
      */
     ReservationInfo getReservation(
             long time,
-            TagGroup tagGroup);
+            TagGroup tagGroup,
+            Ec2InstanceReservationPrice.ReservationUtilization utilization);
 
     /**
      * Some companies may get different price tiers at different times depending on reservation cost.
@@ -66,12 +63,14 @@ public interface ReservationService {
      * @param time
      * @param region
      * @param usageType
+     * @param utilization
      * @return
      */
     double getLatestHourlyTotalPrice(
             long time,
             Region region,
-            UsageType usageType);
+            UsageType usageType,
+            Ec2InstanceReservationPrice.ReservationUtilization utilization);
 
     /**
      * Called by ReservationCapacityPoller to update reservations.

@@ -81,6 +81,9 @@ public class ReservationCapacityPoller extends Poller {
                     int instanceCount = Integer.parseInt(tokens[8]);
                     String offeringType = tokens[9];
                     String state = tokens[10];
+                    Long end = tokens.length > 11 ? Long.parseLong(tokens[11]) : null;
+                    float fixedPrice = tokens.length > 12 ? Float.parseFloat(tokens[12]) : 0;
+                    float usagePrice = tokens.length > 13 ? Float.parseFloat(tokens[13]) : 0;
 
                     ReservedInstances reservation = new ReservedInstances()
                             .withAvailabilityZone(zone)
@@ -90,7 +93,13 @@ public class ReservationCapacityPoller extends Poller {
                             .withProductDescription(productDescription)
                             .withInstanceCount(instanceCount)
                             .withOfferingType(offeringType)
-                            .withState(state);
+                            .withState(state)
+                            .withFixedPrice(fixedPrice)
+                            .withUsagePrice(usagePrice);
+                    if (end != null)
+                        reservation.setEnd(new Date(end));
+                    else
+                        reservation.setEnd(new Date(start + duration * 1000));
 
                     reservations.put(accountId + "," + region + "," + reservationId, reservation);
                 }
@@ -104,9 +113,6 @@ public class ReservationCapacityPoller extends Poller {
             }
         }
         logger.info("read " + reservations.size() + " reservations.");
-
-        // poll each account and update map
-        boolean hasNewReservations = false;
 
         for (Account account: config.accountService.getReservationAccounts().keySet()) {
             try {
@@ -130,7 +136,7 @@ public class ReservationCapacityPoller extends Poller {
                     });
                 }
                 else
-                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials());
+                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials(), AwsUtils.clientConfig);
 
                 for (Region region: Region.getAllRegions()) {
 
@@ -140,26 +146,13 @@ public class ReservationCapacityPoller extends Poller {
                         DescribeReservedInstancesResult result = ec2Client.describeReservedInstances();
                         for (ReservedInstances reservation: result.getReservedInstances()) {
                             String key = account.id + "," + region.name + "," + reservation.getReservedInstancesId();
-                            if (!reservations.containsKey(key)) {
-                                if (reservation.getState().equals("active")) {
-                                    hasNewReservations = true;
-                                    reservations.put(key, reservation);
-                                }
-                            }
-                            else if (reservation.getState().equals("retired") && reservations.get(key).getState().equals("active")) {
-                                ReservedInstances existingOne = reservations.get(key);
-                                existingOne.setDuration((new Date().getTime() - existingOne.getStart().getTime())/1000);
-                                existingOne.setState("retired");
-                                hasNewReservations = true;
-                                logger.info("retiring " + key);
-                            }
-                            else if (reservation.getState().equals("active") && reservations.get(key).getState().equals("retired")) {
-                                ReservedInstances existingOne = reservations.get(key);
-                                reservations.put(key, reservation);
-                                reservations.put(key + new Date().getTime(), existingOne);
-                                hasNewReservations = true;
-                                logger.info("reusing reservation key " + key);
-                            }
+                            reservations.put(key, reservation);
+                            if (reservation.getEnd() == null)
+                                reservation.setEnd(new Date(reservation.getStart().getTime() + reservation.getDuration() * 1000L));
+                            if (reservation.getFixedPrice() == null)
+                                reservation.setFixedPrice(0f);
+                            if (reservation.getUsagePrice() == null)
+                                reservation.setUsagePrice(0f);
                         }
                     }
                     catch (Exception e) {
@@ -174,48 +167,44 @@ public class ReservationCapacityPoller extends Poller {
             }
         }
 
-        if (hasNewReservations || !updatedConfig) {
-            config.reservationService.updateEc2Reservations(reservations);
-            updatedConfig = true;
-        }
+        config.reservationService.updateEc2Reservations(reservations);
+        updatedConfig = true;
 
-        if (hasNewReservations) {
-            // archive to disk
-            BufferedWriter writer = null;
-            try {
-                writer = new BufferedWriter(new FileWriter(file));
-                for (String key: reservations.keySet()) {
-                    ReservedInstances reservation = reservations.get(key);
-                    String[] line = new String[] {key,
-                            reservation.getAvailabilityZone(),
-                            reservation.getStart().getTime() + "",
-                            reservation.getDuration().toString(),
-                            reservation.getInstanceType(),
-                            reservation.getProductDescription(),
-                            reservation.getInstanceCount().toString(),
-                            reservation.getOfferingType(),
-                            reservation.getState()
-                    };
-                    writer.write(StringUtils.join(line, ","));
-                    writer.newLine();
-                }
+        // archive to disk
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file));
+            for (String key: reservations.keySet()) {
+                ReservedInstances reservation = reservations.get(key);
+                String[] line = new String[] {key,
+                        reservation.getAvailabilityZone(),
+                        reservation.getStart().getTime() + "",
+                        reservation.getDuration().toString(),
+                        reservation.getInstanceType(),
+                        reservation.getProductDescription(),
+                        reservation.getInstanceCount().toString(),
+                        reservation.getOfferingType(),
+                        reservation.getState(),
+                        reservation.getEnd().getTime() + "",
+                        reservation.getFixedPrice() + "",
+                        reservation.getUsagePrice() + "",
+                };
+                writer.write(StringUtils.join(line, ","));
+                writer.newLine();
             }
-            catch (Exception e) {
-                logger.error("",  e);
-            }
-            finally {
-                if (writer != null)
-                    try {writer.close();} catch (Exception e) {}
-            }
-            logger.info("archived " + reservations.size() + " reservations.");
+        }
+        catch (Exception e) {
+            logger.error("",  e);
+        }
+        finally {
+            if (writer != null)
+                try {writer.close();} catch (Exception e) {}
+        }
+        logger.info("archived " + reservations.size() + " reservations.");
 
-            // archive to s3
-            logger.info("uploading " + file + "...");
-            AwsUtils.upload(config.workS3BucketName, config.workS3BucketPrefix, config.localDir, file.getName());
-            logger.info("uploaded " + file);
-        }
-        else {
-            logger.info("no new reservations found");
-        }
+        // archive to s3
+        logger.info("uploading " + file + "...");
+        AwsUtils.upload(config.workS3BucketName, config.workS3BucketPrefix, config.localDir, file.getName());
+        logger.info("uploaded " + file);
     }
 }

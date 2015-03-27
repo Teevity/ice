@@ -18,6 +18,7 @@
 package com.netflix.ice.processor;
 
 import com.netflix.ice.tag.Product;
+import java.util.List;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -32,6 +33,7 @@ public interface LineItemProcessor {
     public static final DateTimeFormatter amazonBillingDateFormat2 = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").withZone(DateTimeZone.UTC);
 
     void initIndexes(boolean withTags, String[] header);
+    List<String> getHeader();
     int getUserTagStartIndex();
     long getEndMillis(String[] items);
     Result process(long startMilli, boolean processAll, ProcessorConfig config, String[] items, Map<Product, ReadWriteData> usageDataByProduct, Map<Product, ReadWriteData> costDataByProduct, Map<String, Double> ondemandRate);

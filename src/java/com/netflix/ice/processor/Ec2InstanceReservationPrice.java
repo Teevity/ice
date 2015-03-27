@@ -27,6 +27,7 @@ import org.joda.time.Hours;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -231,7 +232,33 @@ public class Ec2InstanceReservationPrice {
     public static enum ReservationUtilization {
         LIGHT,
         MEDIUM,
-        HEAVY;
+        HEAVY,
+        FIXED;
+
+        static final Map<String, String> reservationTypeMap = new HashMap<String, String>();
+        static {
+            reservationTypeMap.put("ALL", "HEAVY");
+            reservationTypeMap.put("PARTIAL", "HEAVY");
+            reservationTypeMap.put("NO", "HEAVY");
+        }
+
+        public static ReservationUtilization get(String offeringType) {
+            int idx = offeringType.indexOf(" ");
+            if (idx > 0) {
+                offeringType = offeringType.substring(0, idx).toUpperCase();
+                String mappedValue = reservationTypeMap.get(offeringType);
+                if (mappedValue != null)
+                    offeringType = mappedValue;
+                return valueOf(offeringType);
+            }
+            else {
+                for (ReservationUtilization utilization: values()) {
+                    if (offeringType.toUpperCase().startsWith(utilization.name()))
+                        return utilization;
+                }
+                throw new RuntimeException("Unknown ReservationUtilization " + offeringType);
+            }
+        }
     }
 }
 

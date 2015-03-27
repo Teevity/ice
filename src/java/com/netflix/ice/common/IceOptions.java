@@ -40,6 +40,12 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
+     * The URL of highstock.js. The default value is the Highcharts CDN; change this if you need to
+     * serve it from somewhere else (for example, if you need HTTPS).
+     */
+    public static final String HIGHSTOCK_URL = "ice.highstockUrl";
+
+    /**
      * s3 bucket name where billing files are located. For multiple payer accounts, multiple bucket names can be specified delimited by comma ",".
      * Only read permission is needed. It must be specified in Config.
      */
@@ -68,6 +74,11 @@ public class IceOptions {
      * For multiple payer accounts, external ids can be specified delimited by comma ",".
      */
     public static final String BILLING_ACCESS_EXTERNALID = "ice.billing_accessExternalId";
+
+    /**
+     * User can configure their custom tags.
+     */
+    public static final String CUSTOM_TAGS = "ice.customTags";
 
     /**
      * s3 bucket name where output files are to be store. Both read and write permissions are needed. It must be specified in Config.
@@ -113,4 +124,34 @@ public class IceOptions {
      * ec2 ondemand hourly cost alert emails, separated by ","
      */
     public static final String ONDEMAND_COST_ALERT_EMAILS = "ice.ondemandCostAlertEmails";
+
+    /**
+    * What pricing data ice should use when calculating usage costs for resource groups
+    */
+    public static final String RESOURCE_GROUP_COST = "ice.resourceGroupCost";
+
+    /**
+    * Enable weekly cost email per application groups
+    */
+    public static final String WEEKLYEMAILS = "ice.weeklyCostEmails";
+
+    /**
+    * from email address for weekly cost emails. Must be registered in aws ses.
+    */
+    public static final String WEEKLYFROM = "ice.weeklyCostEmails_fromEmail";
+
+    /**
+    * bcc email address for weekly cost emails.
+    */
+    public static final String WEEKLYBCC = "ice.weeklyCostEmails_bccEmail";
+
+    /**
+    * from email to use when test flag is enabled.
+    */
+    public static final String WEEKLYTEST = "ice.weeklyCostEmails_testEmail";
+
+    /**
+    * from email to use when test flag is enabled.
+    */
+    public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
 }

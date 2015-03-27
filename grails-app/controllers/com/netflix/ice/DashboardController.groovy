@@ -219,7 +219,8 @@ class DashboardController {
         }
 
         if (!forReservation) {
-            data.remove(Operation.lentInstances);
+            for (Operation.ReservationOperation lentOp: Operation.getLentInstances())
+                data.remove(lentOp);
         }
 
         def result = [status: 200, data: data]
@@ -284,6 +285,7 @@ class DashboardController {
         bwriter.write(StringUtils.join(record, ","));
         bwriter.newLine();
 
+        ConsolidateType consolidateType = ConsolidateType.valueOf(query.getString("consolidate"));
         for (int timeIndex = 0; timeIndex < num; timeIndex++) {
             record[0] = dateFormatter.print(start);
             index = 1;
@@ -293,7 +295,10 @@ class DashboardController {
             }
             bwriter.write(StringUtils.join(record, ","));
             bwriter.newLine();
-            start += AwsUtils.hourMillis;
+            if (consolidateType != ConsolidateType.monthly)
+                start += result.interval;
+            else
+                start = new DateTime(start, DateTimeZone.UTC).plusMonths(1).getMillis()
         }
         bwriter.close();
 
@@ -526,8 +531,12 @@ class DashboardController {
                     aggregate,
                     forReservation
                 );
-                if (groupBy == TagType.Product && dataOfProduct.size() > 0)
-                    dataOfProduct.put(Tag.aggregated, dataOfProduct.get(dataOfProduct.keySet().iterator().next()));
+                
+                if (groupBy == TagType.Product && dataOfProduct.size() > 0) {
+                    double[] currentProductValues = dataOfProduct.get(dataOfProduct.keySet().iterator().next());
+                    dataOfProduct.put(Tag.aggregated, Arrays.copyOf(currentProductValues, currentProductValues.size()));
+                } 
+                
                 merge(dataOfProduct, data);
                 System.out.println(product);
             }
@@ -598,8 +607,11 @@ class DashboardController {
             for (Tag tag: result.data.keySet()) {
                 double[] values = result.data.get(tag);
                 for (int i = 0; i < values.length; i++) {
-                    double sps = i < consolidatedSps.length ? consolidatedSps[i] : 0;
-                    values[i] = sps == 0 ? 0 : values[i] / sps * multiply;
+                    double sps = i < consolidatedSps.length ? consolidatedSps[i] : 0.0;
+                    if (sps == 0.0)
+                        values[i] = 0.0;
+                    else
+                        values[i] = values[i] / sps * multiply;
                 }
             }
         }

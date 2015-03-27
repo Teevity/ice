@@ -59,14 +59,24 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
 :init
 
-for %%x in ("%HOMEPATH%") do set SHORTHOME=%%~fsx
-if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.grails/2.2.1/
+for %%x in ("%USERPROFILE%") do set SHORTHOME=%%~fsx
+if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.grails/2.4.4/
 set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
 
-set AGENT_STRING=-javaagent:wrapper/springloaded-core-1.1.1.jar -noverify -Dspringloaded=\"%SPRINGLOADED_PARAMS%\"
+if "%GRAILS_NO_PERMGEN%" == "" (
+	type "%JAVA_HOME%\include\classfile_constants.h" 2>nul | findstr /R /C:"#define JVM_CLASSFILE_MAJOR_VERSION 5[23]" >nul
+	if not errorlevel 1 set GRAILS_NO_PERMGEN=1
+)
+
+set AGENT_STRING=-javaagent:wrapper/springloaded-1.2.1.RELEASE.jar -Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true -Dspringloaded=\"%SPRINGLOADED_PARAMS%\"
 set DISABLE_RELOADING=
-if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
+if "%GRAILS_OPTS%" == "" (
+	set GRAILS_OPTS=-server -Xmx768M -Xms64M -Dfile.encoding=UTF-8
+	if not "%GRAILS_NO_PERMGEN%" == "1" (
+		set GRAILS_OPTS=-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
+	)
+)
 
 @rem Get command-line arguments, handling Windows variants
 if "%@eval[2+2]" == "4" goto 4NT_args
@@ -80,7 +90,7 @@ set INTERACTIVE=true
 if "x%~1" == "x" goto execute
 set CURR_ARG=%~1
 if "%CURR_ARG:~0,2%" == "-D" (
-	set GRAILS_OPTS=%GRAILS_OPTS% %~1=%~2
+	set CMD_LINE_ARGS=%CMD_LINE_ARGS% %~1=%~2
 	shift
 	shift
 	goto win9xME_args_slurp
@@ -130,7 +140,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=wrapper/grails-wrapper-runtime-2.2.1.jar;wrapper;.
+set STARTER_CLASSPATH=wrapper/grails-wrapper-runtime-2.4.4.jar;wrapper;.
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
@@ -159,7 +169,7 @@ set JAVA_OPTS=%GRAILS_OPTS% %JAVA_OPTS% %AGENT%
 
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
-set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version=2.2.1
+set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version=2.4.4
 set JAVA_OPTS=%JAVA_OPTS% -Dbase.dir=.
 set JAVA_OPTS=%JAVA_OPTS% -Dtools.jar="%TOOLS_JAR%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"

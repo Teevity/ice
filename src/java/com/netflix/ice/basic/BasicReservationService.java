@@ -17,42 +17,36 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.ec2.model.ReservedInstances;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.common.Poller;
 import com.netflix.ice.common.TagGroup;
 import com.netflix.ice.processor.Ec2InstanceReservationPrice;
+import com.netflix.ice.processor.Ec2InstanceReservationPrice.*;
 import com.netflix.ice.processor.ProcessorConfig;
 import com.netflix.ice.processor.ReservationService;
 import com.netflix.ice.tag.*;
-import org.apache.commons.io.IOUtils;
+import com.netflix.ice.tag.Region;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateMidnight;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class BasicReservationService extends Poller implements ReservationService {
     protected Logger logger = LoggerFactory.getLogger(BasicReservationService.class);
     protected ProcessorConfig config;
-    protected Map<Ec2InstanceReservationPrice.Key, Ec2InstanceReservationPrice> ec2InstanceReservationPrices =
-            new ConcurrentSkipListMap<Ec2InstanceReservationPrice.Key, Ec2InstanceReservationPrice>();
-    protected Map<TagGroup, List<Reservation>> reservations = Maps.newHashMap();
-    protected Ec2InstanceReservationPrice.ReservationPeriod reservationPeriod;
-    protected Ec2InstanceReservationPrice.ReservationUtilization reservationUtilization;
-    protected File file;
-    protected String linuxUrl;
-    protected String windowsUrl;
+    protected Map<ReservationUtilization, Map<Ec2InstanceReservationPrice.Key, Ec2InstanceReservationPrice>> ec2InstanceReservationPrices;
+    protected Map<ReservationUtilization, Map<TagGroup, List<Reservation>>> reservations;
+    protected ReservationPeriod term;
+    protected ReservationUtilization defaultUtilization;
+    protected Map<ReservationUtilization, File> files;
     protected Long futureMillis = new DateMidnight().withYearOfCentury(99).getMillis();
 
     protected static Map<String, String> instanceTypes = Maps.newHashMap();
@@ -79,133 +73,143 @@ public class BasicReservationService extends Poller implements ReservationServic
         instanceSizes.put("u", "micro");
     }
 
-    public BasicReservationService(Ec2InstanceReservationPrice.ReservationPeriod reservationPeriod, Ec2InstanceReservationPrice.ReservationUtilization reservationUtilization) {
-        this.reservationPeriod = reservationPeriod;
-        this.reservationUtilization = reservationUtilization;
+    public BasicReservationService(ReservationPeriod term, ReservationUtilization defaultUtilization) {
+        this.term = term;
+        this.defaultUtilization = defaultUtilization;
+
+        ec2InstanceReservationPrices = Maps.newHashMap();
+        for (ReservationUtilization utilization: ReservationUtilization.values()) {
+            ec2InstanceReservationPrices.put(utilization, new ConcurrentSkipListMap<Ec2InstanceReservationPrice.Key, Ec2InstanceReservationPrice>());
+        }
+
+        reservations = Maps.newHashMap();
+        for (ReservationUtilization utilization: ReservationUtilization.values()) {
+            reservations.put(utilization, Maps.<TagGroup, List<Reservation>>newHashMap());
+        }
     }
 
     public void init() {
         this.config = ProcessorConfig.getInstance();
-        file = new File(config.localDir, "reservation_prices." + reservationPeriod.name() + "." + reservationUtilization.name());
-        linuxUrl = "http://aws.amazon.com/ec2/pricing/ri-" + reservationUtilization.name().toLowerCase() + "-linux.json";
-        windowsUrl = "http://aws.amazon.com/ec2/pricing/ri-" + reservationUtilization.name().toLowerCase() + "-mswin.json";
+        files = Maps.newHashMap();
+        for (ReservationUtilization utilization: ReservationUtilization.values()) {
+            files.put(utilization,  new File(config.localDir, "reservation_prices." + term.name() + "." + utilization.name()));
+        }
 
-        AwsUtils.downloadFileIfNotExist(config.workS3BucketName, config.workS3BucketPrefix, file);
-        if (!file.exists()) {
+        boolean fileExisted = false;
+        for (ReservationUtilization utilization: ReservationUtilization.values()) {
+            File file = files.get(utilization);
+            AwsUtils.downloadFileIfNotExist(config.workS3BucketName, config.workS3BucketPrefix, file);
+            fileExisted = file.exists();
+        }
+        if (!fileExisted) {
             try {
-                poll();
+                pollAPI();
             }
             catch (Exception e) {
-                throw new RuntimeException("failed to poll reservation prices " + e.getMessage());
+                logger.error("failed to poll reservation prices", e);
+                throw new RuntimeException("failed to poll reservation prices for " + e.getMessage());
             }
-            start(3600*24, 3600*24, true);
         }
         else {
-            try {
-                DataInputStream in = new DataInputStream(new FileInputStream(file));
-                ec2InstanceReservationPrices = Serializer.deserialize(in);
-                in.close();
-            }
-            catch (Exception e) {
-                throw new RuntimeException("failed to load reservation prices " + e.getMessage());
-            }
-            start(10, 3600*24, true);
-        }
-    }
-
-    @Override
-    protected void poll() throws Exception {
-        logger.info("start polling reservation prices...");
-
-        long currentTime = new DateMidnight().getMillis();
-
-        URL url = new URL(linuxUrl);
-        URLConnection urlConnection = url.openConnection();
-        InputStream input = urlConnection.getInputStream();
-        String linuxJsonStr = IOUtils.toString(input).trim();
-        input.close();
-
-        url = new URL(windowsUrl);
-        urlConnection = url.openConnection();
-        input = urlConnection.getInputStream();
-        String windowsJsonStr = IOUtils.toString(input).trim();
-        input.close();
-
-        JSONObject linuxJsonObject = new JSONObject(new JSONTokener(linuxJsonStr));
-        JSONObject windowsJsonObject = new JSONObject(new JSONTokener(windowsJsonStr));
-
-        boolean hasNewPrice = readPrices(currentTime, false, linuxJsonObject);
-        hasNewPrice = readPrices(currentTime, true, windowsJsonObject) || hasNewPrice;
-
-        if (hasNewPrice) {
-            DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
-            try {
-                Serializer.serialize(out, this.ec2InstanceReservationPrices);
-                AwsUtils.upload(config.workS3BucketName, config.workS3BucketPrefix, file);
-            }
-            finally {
-                out.close();
-            }
-        }
-    }
-
-    private boolean readPrices(long currentTime, boolean isWindows, JSONObject jsonObject) throws JSONException {
-        boolean hasNewPrice = false;
-
-        jsonObject = jsonObject.getJSONObject("config");
-        JSONArray regions = jsonObject.getJSONArray("regions");
-        for (int i = 0; i < regions.length(); i++) {
-            JSONObject regionJson = regions.getJSONObject(i);
-
-            String regionStr = regionJson.getString("region");
-            if (regionStr.equals("us-east"))
-                regionStr = "us-east-1";
-            Region region = Region.getRegionByName(regionStr);
-
-            JSONArray instanceTypes = regionJson.getJSONArray("instanceTypes");
-            for (int j = 0; j < instanceTypes.length(); j++) {
-                JSONObject instanceType = instanceTypes.getJSONObject(j);
-                String type = instanceType.getString("type");
-
-                JSONArray sizes = instanceType.getJSONArray("sizes");
-                for (int k = 0; k < sizes.length(); k++) {
-                    JSONObject size = sizes.getJSONObject(k);
-                    UsageType usageType = getUsageType(type, size.getString("size"), isWindows);
-
-                    JSONArray valueColumns = size.getJSONArray("valueColumns");
-                    Double hourly = null;
-                    Double upfront = null;
-
-                    for (int l = 0; l < valueColumns.length(); l++) {
-                        JSONObject valueColumn = valueColumns.getJSONObject(l);
-
-                        String name = valueColumn.getString("name");
-                        String price = valueColumn.getJSONObject("prices").getString("USD");
-                        if (name.equals(reservationPeriod.jsonTag) && !price.equals("N/A")) {
-                            upfront = Double.parseDouble(price);
-                        }
-                        else if (name.startsWith(reservationPeriod.jsonTag) && !price.equals("N/A")) {
-                            hourly = Double.parseDouble(price);
-                        }
-
+            for (ReservationUtilization utilization: ReservationUtilization.values()) {
+                try {
+                    File file = files.get(utilization);
+                    if (file.exists()) {
+                        DataInputStream in = new DataInputStream(new FileInputStream(file));
+                        ec2InstanceReservationPrices.put(utilization, Serializer.deserialize(in));
+                        in.close();
                     }
-                    if (upfront != null && hourly != null)
-                        hasNewPrice = setPrice(currentTime, region, usageType, upfront, hourly) || hasNewPrice;
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("failed to load reservation prices " + e.getMessage());
                 }
             }
         }
 
-        return hasNewPrice;
+        start(3600, 3600*24, true);
     }
 
-    private UsageType getUsageType(String type, String size, boolean isWindows) {
-        type = instanceTypes.get(type);
-        size = instanceSizes.get(size);
-
-        if (type.equals("cc1") && size.equals("8xlarge"))
-            type = "cc2";
-        return UsageType.getUsageType(type + "." + size + (isWindows ? "." + InstanceOs.windows : ""), Operation.reservedInstances, "");
+    @Override
+    protected void poll() throws Exception {
+        logger.info("start polling reservation prices. it might take a while...");
+        pollAPI();
     }
+
+    private void pollAPI() throws Exception {
+        long currentTime = new DateMidnight().getMillis();
+
+        DescribeReservedInstancesOfferingsRequest req =  new DescribeReservedInstancesOfferingsRequest()
+                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"));
+        String token = null;
+        boolean hasNewPrice = false;
+        AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
+
+        for (Region region: Region.getAllRegions()) {
+            ec2Client.setEndpoint("ec2." + region.name + ".amazonaws.com");
+            do {
+                if (!StringUtils.isEmpty(token))
+                    req.setNextToken(token);
+                DescribeReservedInstancesOfferingsResult offers = ec2Client.describeReservedInstancesOfferings(req);
+                token = offers.getNextToken();
+
+                for (ReservedInstancesOffering offer: offers.getReservedInstancesOfferings()) {
+                    if (offer.getProductDescription().indexOf("Amazon VPC") >= 0)
+                        continue;
+                    ReservationUtilization utilization = ReservationUtilization.get(offer.getOfferingType());
+                    Ec2InstanceReservationPrice.ReservationPeriod term = offer.getDuration() / 24 / 3600 > 366 ?
+                            Ec2InstanceReservationPrice.ReservationPeriod.threeyear : Ec2InstanceReservationPrice.ReservationPeriod.oneyear;
+                    if (term != this.term)
+                        continue;
+
+                    double hourly = offer.getUsagePrice();
+                    if (hourly <= 0) {
+                        for (RecurringCharge recurringCharge: offer.getRecurringCharges()) {
+                            if (recurringCharge.getFrequency().equals("Hourly")) {
+                                hourly = recurringCharge.getAmount();
+                                break;
+                            }
+                        }
+                    }
+                    UsageType usageType = getUsageType(offer.getInstanceType(), offer.getProductDescription());
+                    // Unknown Zone
+                    if (Zone.getZone(offer.getAvailabilityZone()) == null) 
+                        logger.error("No Zone for " + offer.getAvailabilityZone());
+                    hasNewPrice = setPrice(utilization, currentTime, Zone.getZone(offer.getAvailabilityZone()).region, usageType,
+                            offer.getFixedPrice(), hourly) || hasNewPrice;
+
+                    logger.info("Setting RI price for " + Zone.getZone(offer.getAvailabilityZone()).region + " " + utilization + " " + usageType + " " + offer.getFixedPrice() + " " + hourly);
+                }
+            } while (!StringUtils.isEmpty(token));
+        }
+
+        ec2Client.shutdown();
+        if (hasNewPrice) {
+            for (ReservationUtilization utilization: files.keySet()) {
+                File file = files.get(utilization);
+                DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
+                try {
+                    Serializer.serialize(out, this.ec2InstanceReservationPrices.get(utilization));
+                    AwsUtils.upload(config.workS3BucketName, config.workS3BucketPrefix, file);
+                }
+                finally {
+                    out.close();
+                }
+            }
+        }
+    }
+
+    private UsageType getUsageType(String type, String productDescription) {
+        return UsageType.getUsageType(type + InstanceOs.withDescription(productDescription).usageType, Operation.reservedInstancesHeavy, "");
+    }
+
+//    private UsageType getUsageType(String type, String size, boolean isWindows) {
+//        type = instanceTypes.get(type);
+//        size = instanceSizes.get(size);
+//
+//        if (type.equals("cc1") && size.equals("8xlarge"))
+//            type = "cc2";
+//        return UsageType.getUsageType(type + "." + size + (isWindows ? "." + InstanceOs.windows : ""), Operation.reservedInstances, "");
+//    }
 
     public static class Serializer {
         public static void serialize(DataOutput out,
@@ -235,14 +239,14 @@ public class BasicReservationService extends Poller implements ReservationServic
         }
     }
 
-    private boolean setPrice(long currentTime, Region region, UsageType usageType, double upfront, double hourly) {
+    private boolean setPrice(ReservationUtilization utilization, long currentTime, Region region, UsageType usageType, double upfront, double hourly) {
 
         Ec2InstanceReservationPrice.Key key = new Ec2InstanceReservationPrice.Key(region, usageType);
-        Ec2InstanceReservationPrice reservationPrice = ec2InstanceReservationPrices.get(key);
+        Ec2InstanceReservationPrice reservationPrice = ec2InstanceReservationPrices.get(utilization).get(key);
 
         if (reservationPrice == null)  {
             reservationPrice = new Ec2InstanceReservationPrice();
-            ec2InstanceReservationPrices.put(key, reservationPrice);
+            ec2InstanceReservationPrices.get(utilization).put(key, reservationPrice);
         }
 
         Ec2InstanceReservationPrice.Price latestHourly = reservationPrice.hourlyPrice.getCreatePrice(futureMillis);
@@ -252,7 +256,7 @@ public class BasicReservationService extends Poller implements ReservationServic
             latestHourly.setListPrice(hourly);
             latestUpfront.setListPrice(upfront);
 
-            logger.info("setting reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
+            //logger.info("setting reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
             return true;
         }
         else if (latestHourly.getListPrice() != hourly || latestUpfront.getListPrice() != upfront) {
@@ -264,11 +268,11 @@ public class BasicReservationService extends Poller implements ReservationServic
             latestHourly.setListPrice(hourly);
             latestUpfront.setListPrice(upfront);
 
-            logger.info("changing reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
+            //logger.info("changing reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
             return true;
         }
         else {
-            logger.info("exisitng reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
+            //logger.info("exisitng reservation price for " + usageType + " in " + region + ": " + upfront + " "  + hourly);
             return false;
         }
     }
@@ -277,14 +281,23 @@ public class BasicReservationService extends Poller implements ReservationServic
         final int count;
         final long start;
         final long end;
+        final ReservationUtilization utilization;
+        final float fixedPrice;
+        final float usagePrice;
 
         public Reservation(
                 int count,
                 long start,
-                long end) {
+                long end,
+                ReservationUtilization utilization,
+                float fixedPrice,
+                float usagePrice) {
             this.count = count;
             this.start = start;
             this.end = end;
+            this.utilization = utilization;
+            this.fixedPrice = fixedPrice;
+            this.usagePrice = usagePrice;
         }
     }
 
@@ -292,36 +305,34 @@ public class BasicReservationService extends Poller implements ReservationServic
         return 0;
     }
 
-    public Collection<TagGroup> getTaGroups() {
-        return reservations.keySet();
+    public Collection<TagGroup> getTagGroups(ReservationUtilization utilization) {
+        return reservations.get(utilization).keySet();
     }
 
-    public Ec2InstanceReservationPrice.ReservationPeriod getReservationPeriod() {
-        return reservationPeriod;
-    }
-
-    public Ec2InstanceReservationPrice.ReservationUtilization getReservationUtilization() {
-        return reservationUtilization;
+    public ReservationUtilization getDefaultReservationUtilization(long time) {
+        return defaultUtilization;
     }
 
     public double getLatestHourlyTotalPrice(
             long time,
             Region region,
-            UsageType usageType) {
+            UsageType usageType,
+            ReservationUtilization utilization) {
         Ec2InstanceReservationPrice ec2Price =
-            ec2InstanceReservationPrices.get(new Ec2InstanceReservationPrice.Key(region, usageType));
+            ec2InstanceReservationPrices.get(utilization).get(new Ec2InstanceReservationPrice.Key(region, usageType));
 
         double tier = getEc2Tier(time);
         return ec2Price.hourlyPrice.getPrice(null).getPrice(tier) +
-               ec2Price.upfrontPrice.getPrice(null).getUpfrontAmortized(time, reservationPeriod, tier);
+               ec2Price.upfrontPrice.getPrice(null).getUpfrontAmortized(time, term, tier);
     }
 
     public ReservationInfo getReservation(
             long time,
-            TagGroup tagGroup) {
+            TagGroup tagGroup,
+            ReservationUtilization utilization) {
 
-        Ec2InstanceReservationPrice ec2Price =
-            ec2InstanceReservationPrices.get(new Ec2InstanceReservationPrice.Key(tagGroup.region, tagGroup.usageType));
+        if (utilization == ReservationUtilization.FIXED)
+            return getFixedReservation(time, tagGroup);
 
         double tier = getEc2Tier(time);
 
@@ -329,22 +340,29 @@ public class BasicReservationService extends Poller implements ReservationServic
         double houlyCost = 0;
 
         int count = 0;
-        if (this.reservations.containsKey(tagGroup)) {
-            for (Reservation reservation : this.reservations.get(tagGroup)) {
+        if (this.reservations.get(utilization).containsKey(tagGroup)) {
+            for (Reservation reservation : this.reservations.get(utilization).get(tagGroup)) {
                 if (time >= reservation.start && time < reservation.end) {
                     count += reservation.count;
+                    Ec2InstanceReservationPrice.Key key = new Ec2InstanceReservationPrice.Key(tagGroup.region, tagGroup.usageType);
+                    Ec2InstanceReservationPrice ec2Price = ec2InstanceReservationPrices.get(utilization).get(key);
                     if (ec2Price != null) { // remove this...
-                    upfrontAmortized += reservation.count * ec2Price.upfrontPrice.getPrice(reservation.start).getUpfrontAmortized(reservation.start, reservationPeriod, tier);
-                    houlyCost += reservation.count * ec2Price.hourlyPrice.getPrice(reservation.start).getPrice(tier);
+                        upfrontAmortized += reservation.count * ec2Price.upfrontPrice.getPrice(reservation.start).getUpfrontAmortized(reservation.start, term, tier);
+                        houlyCost += reservation.count * ec2Price.hourlyPrice.getPrice(reservation.start).getPrice(tier);
+                    }
+                    else {
+                        logger.error("Not able to find reservation price for " + key);
                     }
                 }
             }
         }
 
         if (count == 0) {
+            Ec2InstanceReservationPrice.Key key = new Ec2InstanceReservationPrice.Key(tagGroup.region, tagGroup.usageType);
+            Ec2InstanceReservationPrice ec2Price = ec2InstanceReservationPrices.get(utilization).get(key);
             if (ec2Price != null) { // remove this...
-            upfrontAmortized = ec2Price.upfrontPrice.getPrice(null).getUpfrontAmortized(time, reservationPeriod, tier);
-            houlyCost = ec2Price.hourlyPrice.getPrice(null).getPrice(tier);
+                upfrontAmortized = ec2Price.upfrontPrice.getPrice(null).getUpfrontAmortized(time, term, tier);
+                houlyCost = ec2Price.hourlyPrice.getPrice(null).getPrice(tier);
             }
         }
         else {
@@ -355,8 +373,37 @@ public class BasicReservationService extends Poller implements ReservationServic
         return new ReservationInfo(count, upfrontAmortized, houlyCost);
     }
 
+    private ReservationInfo getFixedReservation(
+            long time,
+            TagGroup tagGroup) {
+
+        double upfrontAmortized = 0;
+        double houlyCost = 0;
+
+        int count = 0;
+        if (this.reservations.get(ReservationUtilization.FIXED).containsKey(tagGroup)) {
+            for (Reservation reservation : this.reservations.get(ReservationUtilization.FIXED).get(tagGroup)) {
+                if (time >= reservation.start && time < reservation.end) {
+                    count += reservation.count;
+                    upfrontAmortized += reservation.count * reservation.fixedPrice / ((reservation.end - reservation.start) / AwsUtils.hourMillis);
+                    houlyCost += reservation.count * reservation.usagePrice;
+                }
+            }
+        }
+
+        if (count > 0) {
+            upfrontAmortized = upfrontAmortized / count;
+            houlyCost = houlyCost / count;
+        }
+
+        return new ReservationInfo(count, upfrontAmortized, houlyCost);
+    }
+
     public void updateEc2Reservations(Map<String, ReservedInstances> reservationsFromApi) {
-        Map<TagGroup, List<Reservation>> reservationMap = Maps.newTreeMap();
+        Map<ReservationUtilization, Map<TagGroup, List<Reservation>>> reservationMap = Maps.newTreeMap();
+        for (ReservationUtilization utilization: ReservationUtilization.values()) {
+            reservationMap.put(utilization, Maps.<TagGroup, List<Reservation>>newHashMap());
+        }
 
         for (String key: reservationsFromApi.keySet()) {
             ReservedInstances reservedInstances = reservationsFromApi.get(key);
@@ -369,22 +416,22 @@ public class BasicReservationService extends Poller implements ReservationServic
             if (zone == null)
                 logger.error("Not able to find zone for reserved instances " + reservedInstances.getAvailabilityZone());
 
-            String offeringType = reservedInstances.getOfferingType();
-            if (offeringType.indexOf(" ") > 0)
-                offeringType = offeringType.substring(0, offeringType.indexOf(" "));
-            Reservation reservation = new Reservation(
-                    reservedInstances.getInstanceCount(), reservedInstances.getStart().getTime(), reservedInstances.getStart().getTime() + reservedInstances.getDuration() * 1000);
+            ReservationUtilization utilization = ReservationUtilization.get(reservedInstances.getOfferingType());
+            long endTime = Math.min(reservedInstances.getEnd().getTime(), reservedInstances.getStart().getTime() + reservedInstances.getDuration() * 1000);
+            if (endTime <= config.startDate.getMillis())
+                continue;
+            Reservation reservation = new Reservation(reservedInstances.getInstanceCount(), reservedInstances.getStart().getTime(), endTime, utilization, reservedInstances.getFixedPrice(), reservedInstances.getUsagePrice());
 
-            String osStr = reservedInstances.getProductDescription().toLowerCase();
-            InstanceOs os = osStr.contains("linux") ? InstanceOs.linux : InstanceOs.windows;
+            String osStr = reservedInstances.getProductDescription();
+            InstanceOs os = InstanceOs.withDescription(osStr);
 
-            UsageType usageType = UsageType.getUsageType(reservedInstances.getInstanceType() + (os == InstanceOs.windows ? "." + InstanceOs.windows : ""), "hours");
+            UsageType usageType = UsageType.getUsageType(reservedInstances.getInstanceType() + os.usageType, "hours");
 
-            TagGroup reservationKey = new TagGroup(account, zone.region, zone, Product.ec2_instance, Operation.reservedInstances, usageType, null);
+            TagGroup reservationKey = new TagGroup(account, zone.region, zone, Product.ec2_instance, Operation.getReservedInstances(utilization), usageType, null);
 
-            List<Reservation> reservations = reservationMap.get(reservationKey);
+            List<Reservation> reservations = reservationMap.get(utilization).get(reservationKey);
             if (reservations == null) {
-                reservationMap.put(reservationKey, Lists.<Reservation>newArrayList(reservation));
+                reservationMap.get(utilization).put(reservationKey, Lists.<Reservation>newArrayList(reservation));
             }
             else {
                 reservations.add(reservation);

@@ -379,6 +379,10 @@ ice.factory('usage_db', function($window, $http, $filter) {
       var result = {};
       if (hash) {
         var params = hash.split("&");
+        for (i = 0; i < params.length; i++) {
+          if (params[i].indexOf("=") < 0 && i > 0 && (params[i-1].indexOf("appgroup=") == 0 || params[i-1].indexOf("resourceGroup=") == 0))
+            params[i-1] = params[i-1] + "&"  + params[i];
+        }
         var i, j, time = "";
         for (i = 0; i < params.length; i++) {
 
@@ -840,10 +844,30 @@ function reservationCtrl($scope, $location, usage_db, highchart) {
   var reservationOps = [
     "OndemandInstances",
     "ReservedInstances",
-    "BorrowedInstances",
-    "LentInstances",
-    "UnusedInstances",
-    "UpfrontAmortized"];
+    "ReservedInstancesFixed",
+    "BonusReservedInstancesFixed",
+    "BorrowedInstancesFixed",
+    "LentInstancesFixed",
+    "UnusedInstancesFixed",
+    "UpfrontAmortizedFixed",
+    "ReservedInstancesHeavy",
+    "BonusReservedInstancesHeavy",
+    "BorrowedInstancesHeavy",
+    "LentInstancesHeavy",
+    "UnusedInstancesHeavy",
+    "UpfrontAmortizedHeavy",
+    "ReservedInstancesMedium",
+    "BonusReservedInstancesMedium",
+    "BorrowedInstancesMedium",
+    "LentInstancesMedium",
+    "UnusedInstancesMedium",
+    "UpfrontAmortizedMedium",
+    "ReservedInstancesLight",
+    "BonusReservedInstancesLight",
+    "BorrowedInstancesLight",
+    "LentInstancesLight",
+    "UnusedInstancesLight",
+    "UpfrontAmortizedLight"];
 
   var predefinedQuery = {operation: reservationOps.join(",")};
   $scope.legends = [];
@@ -1677,8 +1701,9 @@ function editCtrl($scope, $location, $http) {
   $scope.isDisabled = function() {
     var disabled = !$scope.appgroup.name || !emailRegex.test($scope.appgroup.owner) || jQuery.isEmptyObject($scope.appgroup.data);
     if (!disabled) {
+      disabled = true;
       for (var key in $scope.appgroup.data) {
-        disabled = $scope.appgroup.data[key].length == 0;
+        disabled = disabled && $scope.appgroup.data[key].length == 0;
       }
     }
 

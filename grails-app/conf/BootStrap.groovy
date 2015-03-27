@@ -29,6 +29,7 @@ import com.amazonaws.auth.InstanceProfileCredentialsProvider
 import com.netflix.ice.basic.BasicAccountService
 import com.google.common.collect.Lists
 import com.netflix.ice.tag.Account
+import com.netflix.ice.tag.Region
 import com.google.common.collect.Maps
 import com.netflix.ice.basic.BasicProductService
 import com.netflix.ice.basic.BasicReservationService
@@ -41,6 +42,11 @@ import org.joda.time.DateTimeZone
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.BasicSessionCredentials
 import org.apache.commons.io.IOUtils
+import com.netflix.ice.common.ResourceService
+import com.netflix.ice.common.ProductService
+import com.netflix.ice.basic.BasicResourceService
+import com.netflix.ice.basic.BasicWeeklyCostEmailService
+import com.netflix.ice.reader.ApplicationGroupService
 
 class BootStrap {
     private static boolean initialized = false;
@@ -135,6 +141,7 @@ class BootStrap {
                 properties.setProperty(IceOptions.START_MILLIS, "" + new DateTime(DateTimeZone.UTC).withMillisOfDay(0).withDayOfMonth(1).getMillis());
             properties.setProperty(IceOptions.WORK_S3_BUCKET_NAME, prop.getProperty(IceOptions.WORK_S3_BUCKET_NAME));
             properties.setProperty(IceOptions.WORK_S3_BUCKET_PREFIX, prop.getProperty(IceOptions.WORK_S3_BUCKET_PREFIX));
+            properties.setProperty(IceOptions.CUSTOM_TAGS, prop.getProperty(IceOptions.CUSTOM_TAGS, ""));
 
             if ("true".equals(prop.getProperty("ice.processor"))) {
 
@@ -166,6 +173,11 @@ class BootStrap {
                     Ec2InstanceReservationPrice.ReservationPeriod.valueOf(prop.getProperty("ice.reservationPeriod", "threeyear"));
                 Ec2InstanceReservationPrice.ReservationUtilization reservationUtilization =
                     Ec2InstanceReservationPrice.ReservationUtilization.valueOf(prop.getProperty("ice.reservationUtilization", "HEAVY"));
+
+                ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
+
+                properties.setProperty(IceOptions.RESOURCE_GROUP_COST, prop.getProperty(IceOptions.RESOURCE_GROUP_COST, "modeled"));
+
                 processorConfig = new ProcessorConfig(
                         properties,
                         credentialsProvider,
@@ -186,17 +198,40 @@ class BootStrap {
                     properties.setProperty(IceOptions.CURRENCY_RATE, prop.getProperty(IceOptions.CURRENCY_RATE));
                 if (prop.getProperty(IceOptions.CURRENCY_SIGN) != null)
                     properties.setProperty(IceOptions.CURRENCY_SIGN, prop.getProperty(IceOptions.CURRENCY_SIGN));
+                if (prop.getProperty(IceOptions.HIGHSTOCK_URL) != null)
+                    properties.setProperty(IceOptions.HIGHSTOCK_URL, prop.getProperty(IceOptions.HIGHSTOCK_URL));
+
+                ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
+                ApplicationGroupService applicationGroupService = new BasicS3ApplicationGroupService();
+                ProductService productService = new BasicProductService();
+                BasicWeeklyCostEmailService weeklyEmailService = null;
+
+                if ("true".equals(prop.getProperty(IceOptions.WEEKLYEMAILS))) {
+                    weeklyEmailService = new BasicWeeklyCostEmailService (
+                            Lists.newArrayList(accounts.values()),
+                            Region.getAllRegions(),
+                            Lists.newArrayList(productService.getProducts()),
+                            10,
+                            Integer.parseInt(prop.getProperty(IceOptions.NUM_WEEKS_FOR_WEEKLYEMAILS, "2")),
+                            prop.getProperty(IceOptions.URL_PREFIX),
+                            applicationGroupService,
+                            prop.getProperty(IceOptions.WEEKLYFROM),
+                            prop.getProperty(IceOptions.WEEKLYBCC, ""),
+                            prop.getProperty(IceOptions.WEEKLYTEST, "")
+                        )
+                }
 
                 readerConfig = new ReaderConfig(
                         properties,
                         credentialsProvider,
                         new BasicManagers(),
                         accountService,
-                        new BasicProductService(),
+                        productService,
                         new AppnetaMapDbResourceService(),
-                        new BasicS3ApplicationGroupService(),
+                        applicationGroupService,
                         null,
-                        null)
+                        weeklyEmailService
+                );
                 readerConfig.start();
             }
 
