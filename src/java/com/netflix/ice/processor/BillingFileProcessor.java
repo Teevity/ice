@@ -428,7 +428,7 @@ public class BillingFileProcessor extends Poller {
     private void archiveHourly(Map<Product, ReadWriteData> dataMap, String prefix) throws Exception {
         DateTime monthDateTime = new DateTime(startMilli, DateTimeZone.UTC);
         for (Product product: dataMap.keySet()) {
-            String prodName = product == null ? "all" : product.name;
+            String prodName = product == null ? "all" : product.s3Name;
             DataWriter writer = new DataWriter(prefix + "hourly_" + prodName + "_" + AwsUtils.monthDateFormat.print(monthDateTime), false);
             writer.archive(dataMap.get(product));
         }
@@ -447,7 +447,7 @@ public class BillingFileProcessor extends Poller {
 
         for (Product product: dataMap.keySet()) {
 
-            String prodName = product == null ? "all" : product.name;
+            String prodName = product == null ? "all" : product.s3Name;
             ReadWriteData data = dataMap.get(product);
             Collection<TagGroup> tagGroups = data.getTagGroups();
 
