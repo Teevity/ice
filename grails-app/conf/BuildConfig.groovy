@@ -67,11 +67,9 @@ grails.project.dependency.resolution = {
         compile(
                 // Amazon Web Services programmatic interface
                 'com.amazonaws:aws-java-sdk:1.9.26',
-                // Transitive dependencies of aws-java-sdk, but also used directly.
-                // It would be great if we could upgrade httpcore and httpclient, but we can't until the AWS Java SDK
-                // upgrades its dependencies. If we simply upgrade these, then some Amazon calls fail.
-                'org.apache.httpcomponents:httpcore:4.2',
-                'org.apache.httpcomponents:httpclient:4.2',
+
+                // Used by common-logging
+                'org.apache.httpcomponents:httpclient:4.4',
 
                 // Extra collection types and utilities
                 'commons-collections:commons-collections:3.2.1',
@@ -89,7 +87,7 @@ grails.project.dependency.resolution = {
                 'javax.mail:javax.mail-api:1.5.2',
 
                 // Better date API
-                'joda-time:joda-time:2.0',
+                'joda-time:joda-time:2.7',
 
                 'net.sourceforge.javacsv:javacsv:2.0',
 
