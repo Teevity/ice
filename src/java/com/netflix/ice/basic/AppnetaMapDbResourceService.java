@@ -62,13 +62,13 @@ public class AppnetaMapDbResourceService extends ResourceService {
     public String getResource(Account account, Region region, Product product, String resourceId, String[] lineItem, long millisStart) {
 
         if (product == Product.ec2 || product == Product.ec2_instance || product == Product.ebs || product == Product.cloudwatch) {
-            return getEc2Resource(account, region, resourceId, lineItem, millisStart);
+            return getEc2Resource(account, region, product, resourceId, lineItem, millisStart);
         }
         else if (product == Product.rds) {
-            return getRdsResource(account, region, resourceId, lineItem, millisStart);
+            return getRdsResource(account, region, product, resourceId, lineItem, millisStart);
         }
         else if (product == Product.s3) {
-            return getS3Resource(account, region, resourceId, lineItem, millisStart);
+            return getS3Resource(account, region, product, resourceId, lineItem, millisStart);
         }
         else if (product == Product.eip) {
             return null;
@@ -78,47 +78,46 @@ public class AppnetaMapDbResourceService extends ResourceService {
         }
     }
 
-    protected String getEc2Resource(Account account, Region region, String resourceId, String[] lineItem, long millisStart) {
-        // custom tags to AppNeta, adjust as necessary if more tags are added
+    protected String getEc2Resource(Account account, Region region, Product product, String resourceId,
+                                    String[] lineItem, long millisStart) {
         // Creator, Name, Role are predefined tags in AWS, we use creator, Name, role
-        // TODO: move to Creator/Name/Role
-        int userTagIndex = config.lineItemProcessor.getUserTagStartIndex();
-        int autoScalingGroupNameTagIndex = userTagIndex;
-        int originalCreatorTagIndex = userTagIndex + 1;
-        int nameTagIndex = userTagIndex + 2;
-        int originalRoleTagIndex = userTagIndex + 3;
-        int amiTagIndex = userTagIndex + 4;
-        int amiNameTagIndex = userTagIndex + 5;
-        int archTagIndex = userTagIndex + 6;
-        int creatorTagIndex = userTagIndex + 7;
-        int duplicatedNameTagIndex = userTagIndex + 8;
-        int ownerTagIndex = userTagIndex + 9;
-        int purposeTagIndex = userTagIndex + 10;
-        int roleTagIndex = userTagIndex + 11;
-        int statusTagIndex = userTagIndex + 12;
-
-        if (lineItem.length < roleTagIndex) {
+        // guard against old files that don't have our tags, or tags defined (basically, pre July 2013)
+        if (lineItem.length <= config.lineItemProcessor.getUserTagStartIndex()) {
             return UNKNOWN;
         }
+        // use customTags to make tag collection easier
+        // TODO: this could be smarter, if we have more than one tag defined on a line item, it'll end up
+        //       producint value1_value2
 
-        final String roleName = lineItem[roleTagIndex];
-        if (StringUtils.isEmpty(roleName)) {
+        // copied from BasicResourceService.getResource()
+        List<String> header = config.lineItemProcessor.getHeader();
+
+        String result = "";
+        for (String tag: config.customTags) {
+            int index = header.indexOf(tag);
+            if (index > 0 && lineItem.length > index && !StringUtils.isEmpty(lineItem[index]))
+                result = StringUtils.isEmpty(result) ? lineItem[index] : result + "_" + lineItem[index];
+        }
+
+        if (StringUtils.isEmpty(result)) {
             return UNKNOWN;
         } else {
-            instanceDb.SetResource(account, region, resourceId, roleName, millisStart);
-            logger.debug("resource set, role name added. resourceId: {}, roleName: {}", resourceId, roleName);
-            return roleName;
+            instanceDb.SetResource(account, region, resourceId, result, millisStart);
+            logger.debug("resource set, result added, probably role name. resourceId: {}, result: {}", resourceId, result);
+            return result;
         }
     }
 
-    protected String getRdsResource(Account account, Region region, String resourceId, String[] lineItem, long millisStart) {
+    protected String getRdsResource(Account account, Region region, Product product, String resourceId,
+                                    String[] lineItem, long millisStart) {
         if (resourceId.indexOf(":db:") > 0)
             return resourceId.substring(resourceId.indexOf(":db:") + 4);
         else
             return resourceId;
     }
 
-    protected String getS3Resource(Account account, Region region, String resourceId, String[] lineItem, long millisStart) {
+    protected String getS3Resource(Account account, Region region, Product product, String resourceId,
+                                   String[] lineItem, long millisStart) {
         return resourceId;
     }
 }
