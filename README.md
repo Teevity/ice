@@ -247,12 +247,18 @@ Options with * require writing your own code.
 
   You may want to use the estimate page to visualize estimated velocity against actual spending velocity.  To enable:
   
-  	ice.report.estimate=true
-  	
+	ice.report.estimate=true
+
   For each account, you can set the estimate in the ice.properties:
   
-  	ice.account.dailyestimate.account1=500
+	ice.account.dailyestimate.account1=500
 	ice.account.dailyestimate.account2=505
+
+  Also supports historical estimates:
+  
+	ice.account.dailyestimate.accountname.2015-01-26=500
+	ice.account.dailyestimate.accountname.2015-01-30=550
+	ice.account.dailyestimate.accountname.2015-02-15=650
 
 
 

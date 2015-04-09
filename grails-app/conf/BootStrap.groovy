@@ -133,10 +133,8 @@ class BootStrap {
                     account.dailyEstimates.put(estimateDate, propertyDoubleValue);
                 } else if (name.startsWith("ice.account.") ) {
                     String accountName = name.substring("ice.account.".length());
-                    System.out.println(accountName);
                     Account account = accounts.get(accountName);
                     if (account == null) {
-                        System.out.println("make it");
                         accounts.put(accountName, new Account(prop.getProperty(name), accountName));
                     } else {
                         //loaded above
