@@ -86,7 +86,7 @@ public class ProcessorConfig extends Config {
         billingAccessExternalIds = properties.getProperty(IceOptions.BILLING_ACCESS_EXTERNALID, "").split(",");
 
         customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
-        useBlended = properties.getProperty(IceOptions.USE_BLENDED) == null ? true : Boolean.parseBoolean(properties.getProperty(IceOptions.USE_BLENDED));
+        useBlended = properties.getProperty(IceOptions.USE_BLENDED) == null ? false : Boolean.parseBoolean(properties.getProperty(IceOptions.USE_BLENDED));
 
         useCostForResourceGroup = properties.getProperty(IceOptions.RESOURCE_GROUP_COST, "modeled");
 

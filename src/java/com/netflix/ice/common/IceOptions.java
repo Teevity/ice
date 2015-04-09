@@ -81,7 +81,7 @@ public class IceOptions {
     public static final String CUSTOM_TAGS = "ice.customTags";
 
     /**
-     * Boolean Flag whether to use blended or Unblended Costs.  Default is Blended Cost(true)
+     * Boolean Flag whether to use blended or Unblended Costs.  Default is UnBlended Cost(false)
      */
     public static final String USE_BLENDED = "ice.use_blended";
 

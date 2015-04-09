@@ -69,10 +69,13 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         usageQuantityIndex = 16 + (withTags ? 0 : -1);
         startTimeIndex = 14 + (withTags ? 0 : -1);
         endTimeIndex = 15 + (withTags ? 0 : -1);
-        rateIndex = 19 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
-        costIndex = 20 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
-        rateIndex = 19 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost) ? 0 : -2);
-        costIndex = 20 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost) ? 0 : -2);
+        // When blended vales are present, the rows look like this
+        //    ..., UsageQuantity, BlendedRate, BlendedCost, UnBlended Rate, UnBlended Cost
+        // Without Blended Rates
+        //    ..., UsageQuantity, UnBlendedRate, UnBlendedCost
+        // We want to always reference the UnBlended Cost unless useBlendedCost is true.
+        rateIndex = 19 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost == false) ? 0 : -2);
+        costIndex = 20 + (withTags ? 0 : -1) + ((hasBlendedCost && useBlendedCost == false) ? 0 : -2);
         resourceIndex = 21 + (withTags ? 0 : -1) + (hasBlendedCost ? 0 : -2);
 
         this.header = Lists.newArrayList(header);
