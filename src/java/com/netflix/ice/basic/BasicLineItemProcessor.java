@@ -101,12 +101,12 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         // make sure we don't ignore credits
         if (costValue < 0) {
             credit = true;
+            if (! reformCredit(startMilli, items)) {
+                return Result.ignore;
+            }
+            logger.debug("Found Credit - " + Arrays.toString(items));
         }
 
-        if (credit) {
-            if (! reformCredit(startMilli, items))
-                return Result.ignore;
-        }
         // fail-fast on records we can't process
         if (StringUtils.isEmpty(items[accountIdIndex])) {
             logger.debug("Ignoring Record due to missing Account Id - " + Arrays.toString(items));
@@ -251,7 +251,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 }
                 catch (Exception e) {
                     logger.error("failed to get RI price for " + tagGroup.region + " " + usageTypeForPrice);
-                    resourceCostValue = -1;
+                    resourceCostValue = Double.MIN_VALUE;
                 }
             }
 
@@ -272,6 +272,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return result;
 
         for (int i : indexes) {
+            if (credit) {
+                logger.debug("Handled Credit Index " + i + " - " + costValue);
+            }
             if (config.randomizer != null) {
 
                 if (tagGroup.product != Product.rds && tagGroup.product != Product.s3 && usageData.getData(i).get(tagGroup) != null)
@@ -285,8 +288,8 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 Map<TagGroup, Double> usages = usageData.getData(i);
                 Map<TagGroup, Double> costs = costData.getData(i);
 
-                addValue(usages, tagGroup, usageValue,  config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3);
-                addValue(costs, tagGroup, costValue, config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3);
+                addValue(usages, tagGroup, usageValue,  config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3 || credit == true);
+                addValue(costs, tagGroup, costValue, config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3 || credit == true);
             }
             else {
                 resourceCostValue = usageValue * config.costPerMonitorMetricPerHour;
@@ -296,9 +299,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
                 Map<TagGroup, Double> usagesOfResource = usageDataOfProduct.getData(i);
                 Map<TagGroup, Double> costsOfResource = costDataOfProduct.getData(i);
 
-                if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3) {
+                if (config.randomizer == null || tagGroup.product == Product.rds || tagGroup.product == Product.s3 || credit == true) {
                     addValue(usagesOfResource, resourceTagGroup, usageValue, product != Product.monitor);
-                    if (!config.useCostForResourceGroup.equals("modeled") || resourceCostValue < 0) {
+                    if (!config.useCostForResourceGroup.equals("modeled") || resourceCostValue == Double.MIN_VALUE) {
                         addValue(costsOfResource, resourceTagGroup, costValue, product != Product.monitor);
                     } else {
                         addValue(costsOfResource, resourceTagGroup, resourceCostValue, product != Product.monitor);
@@ -394,6 +397,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             logger.debug("Credit did not have a Time - Set to " + items[startTimeIndex] + "-" + items[endTimeIndex]) ;
         }
 
+        // seperate credits into their own product for easy filtering/aggregation
+        items[productIndex]+=" credit";
+
         // try to use the description to fetch some info about the credit if we have nothing
         if (items[operationIndex].isEmpty()) {
             if (split_description.length > 0)
@@ -406,8 +412,9 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             items[usageTypeIndex]="credit";
         }
 
-        if (items[usageQuantityIndex].isEmpty())
-            items[usageQuantityIndex]="1";
+        if (items[usageQuantityIndex].isEmpty()) {
+            items[usageQuantityIndex] = "1";
+        }
 
         return true;
 
@@ -500,9 +507,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             usageType = UsageType.getUsageType(usageTypeStr, operation, description);
         }
 
-        if (credit) {
+        // This method resets product.  Make sure we seperated out our credits
+        if (credit && ! product.name.endsWith("credit"))
             product = new Product(product.name + " credit");
-        }
+
         return new ReformedMetaData(region, product, operation, usageType);
     }
 
