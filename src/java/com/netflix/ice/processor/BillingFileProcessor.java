@@ -568,7 +568,7 @@ public class BillingFileProcessor extends Poller {
             reader.readRecord();
             String[] headers = reader.getValues();
 
-            config.lineItemProcessor.initIndexes(withTags, headers);
+            config.lineItemProcessor.initIndexes(config, withTags, headers);
 
             while (reader.readRecord()) {
                 String[] items = reader.getValues();
