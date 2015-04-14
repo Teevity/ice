@@ -40,6 +40,11 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
+     * Property for enabling the Estimate Cost Report
+     */
+    public static final String ESTIMATE_REPORT = "ice.report.estimate";
+
+    /**
      * The URL of highstock.js. The default value is the Highcharts CDN; change this if you need to
      * serve it from somewhere else (for example, if you need HTTPS).
      */
@@ -154,4 +159,16 @@ public class IceOptions {
     * from email to use when test flag is enabled.
     */
     public static final String NUM_WEEKS_FOR_WEEKLYEMAILS = "ice.weeklyCostEmails_numWeeks";
+
+    /**
+     * Daily Estimates per each account.  Can be appended with a ISO8601 Date stamp to
+     * keep a history of estimates.  The no datetime is the default
+     * ice.account.dailyestimate.accountname=100
+     * ice.account.dailyestimate.accountname.2015-01-26=500
+     * ice.account.dailyestimate.accountname.2015-01-30=550
+     * ice.account.dailyestimate.accountname.2015-02-15=650
+     *
+     */
+    public static final String ACCOUNT_DAILY_ESTIMATES = "ice.account.dailyestimate";
+
 }

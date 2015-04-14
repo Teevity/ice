@@ -59,6 +59,13 @@ public interface Managers {
     DataManager getUsageManager(Product product, ConsolidateType consolidateType);
 
     /**
+     *
+     * @param consolidateType
+     * @return estimates DataManager instance for specified consolidateType
+     */
+    DataManager getEstimateManager(ConsolidateType consolidateType);
+
+    /**
      * shutdown all manager instances
      */
     void shutdown();

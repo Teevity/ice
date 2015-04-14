@@ -45,6 +45,9 @@ import com.netflix.ice.common.ProductService
 import com.netflix.ice.basic.BasicResourceService
 import com.netflix.ice.basic.BasicWeeklyCostEmailService
 import com.netflix.ice.reader.ApplicationGroupService
+import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+
 
 class BootStrap {
     private static boolean initialized = false;
@@ -102,11 +105,43 @@ class BootStrap {
 
             Map<String, Account> accounts = Maps.newHashMap();
             for (String name: prop.stringPropertyNames()) {
-                if (name.startsWith("ice.account.")) {
+                if (name.startsWith("ice.account.dailyestimate.")) {
+                    String propertyValue = prop.getProperty(name);
+                    Double propertyDoubleValue = Double.parseDouble(propertyValue);
+
+                    String propertyNameNoPrefix = name.substring("ice.account.dailyestimate.".length());
+                    String accountName=propertyNameNoPrefix;
+                    String[] propertySections = propertyNameNoPrefix.split("\\.");
+                    DateTime estimateDate = new DateTime(0);
+                    if (propertySections.length == 2) {
+                        DateTimeFormatter dtf = ISODateTimeFormat.date();
+                        accountName = propertySections[0];
+                        estimateDate = dtf.parseDateTime(propertySections[1]);
+                    }
+
+                    Account account = accounts.get(accountName);
+                    if (account == null) {
+                        String accountId = prop.getProperty("ice.account." + accountName);
+                        if (accountId == null) {
+                            System.err.println(accountName + " does not have an ice.account entry");
+                            continue;
+                        }
+                        account = new Account(accountId, accountName);
+                        accounts.put(accountName, account);
+                    }
+                    System.out.println("Set Daily Estimate for " + account + " - " + propertyDoubleValue.toString());
+                    account.dailyEstimates.put(estimateDate, propertyDoubleValue);
+                } else if (name.startsWith("ice.account.") ) {
                     String accountName = name.substring("ice.account.".length());
-                    accounts.put(accountName, new Account(prop.getProperty(name), accountName));
+                    Account account = accounts.get(accountName);
+                    if (account == null) {
+                        accounts.put(accountName, new Account(prop.getProperty(name), accountName));
+                    } else {
+                        //loaded above
+                    }
                 }
             }
+
             Map<Account, List<Account>> reservationAccounts = Maps.newHashMap();
             Map<Account, String> reservationAccessRoles = Maps.newHashMap();
             Map<Account, String> reservationAccessExternalIds = Maps.newHashMap();
@@ -198,6 +233,8 @@ class BootStrap {
                     properties.setProperty(IceOptions.CURRENCY_SIGN, prop.getProperty(IceOptions.CURRENCY_SIGN));
                 if (prop.getProperty(IceOptions.HIGHSTOCK_URL) != null)
                     properties.setProperty(IceOptions.HIGHSTOCK_URL, prop.getProperty(IceOptions.HIGHSTOCK_URL));
+                if (prop.getProperty(IceOptions.ESTIMATE_REPORT) != null)
+                    properties.setProperty(IceOptions.ESTIMATE_REPORT, prop.getProperty(IceOptions.ESTIMATE_REPORT));
 
                 ResourceService resourceService = StringUtils.isEmpty(properties.getProperty(IceOptions.CUSTOM_TAGS)) ? null : new BasicResourceService();
                 ApplicationGroupService applicationGroupService = new BasicS3ApplicationGroupService();

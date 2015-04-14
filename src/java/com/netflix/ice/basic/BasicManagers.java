@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+
 /**
  * This class manages all BasicTagGroupManager and BasicDataManager instances.
  */
@@ -41,8 +42,10 @@ public class BasicManagers extends Poller implements Managers {
     private Map<Product, BasicTagGroupManager> tagGroupManagers = Maps.newHashMap();
     private TreeMap<Key, BasicDataManager> costManagers = Maps.newTreeMap();
     private TreeMap<Key, BasicDataManager> usageManagers = Maps.newTreeMap();
+    private Map<ConsolidateType, BasicEstimateManager> estimateManagers = Maps.newHashMap();
 
     public void shutdown() {
+
         for (BasicTagGroupManager tagGroupManager: tagGroupManagers.values()) {
             tagGroupManager.shutdown();
         }
@@ -76,6 +79,10 @@ public class BasicManagers extends Poller implements Managers {
         return usageManagers.get(new Key(product, consolidateType));
     }
 
+    public DataManager getEstimateManager(ConsolidateType consolidateType) {
+        return estimateManagers.get(consolidateType);
+    }
+
     @Override
     protected void poll() throws Exception {
         doWork();
@@ -87,7 +94,12 @@ public class BasicManagers extends Poller implements Managers {
         Set<Product> products = Sets.newHashSet(this.products);
         Map<Product, BasicTagGroupManager> tagGroupManagers = Maps.newHashMap(this.tagGroupManagers);
         TreeMap<Key, BasicDataManager> costManagers = Maps.newTreeMap(this.costManagers);
-        TreeMap<Key, BasicDataManager> usageManagers = Maps.newTreeMap(this.usageManagers);
+
+        for (ConsolidateType consolidateType: ConsolidateType.values()) {
+            estimateManagers.put(consolidateType, new BasicEstimateManager(consolidateType));
+        }
+
+
 
         Set<Product> newProducts = Sets.newHashSet();
         AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
