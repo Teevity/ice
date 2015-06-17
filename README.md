@@ -157,6 +157,10 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
 1. A community cookbook is available for deploying Ice via Chef here https://github.com/mdsol/ice_cookbook.
 
+##Ice Docker Image:
+
+1. A community image is available for deploying Ice via Docker here https://github.com/jonbrouse/docker-ice
+
   
 ##Advanced options:
 Options with * require writing your own code.
