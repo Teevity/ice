@@ -159,7 +159,7 @@ ice.factory('highchart', function() {
   }
 
   var setupYAxis = function(isCost, showsps, factorsps) {
-    var yAxis = {title:{text: (isCost ? 'Cost' : 'Usage') + " per " + (factorsps ? metricunitname : consolidate)}, min: 0, lineWidth: 2};
+    var yAxis = {title:{text: (isCost ? 'Cost' : 'Usage') + " per " + (factorsps ? metricunitname : consolidate)}, lineWidth: 2};
     if (isCost)
       yAxis.labels = {
         formatter: function() {
@@ -169,7 +169,7 @@ ice.factory('highchart', function() {
     hc_options.yAxis = [yAxis];
 
     if (showsps) {
-      hc_options.yAxis.push({title:{text:metricname}, height: 100, min: 0, lineWidth: 2, offset: 0});
+      hc_options.yAxis.push({title:{text:metricname}, height: 100, lineWidth: 2, offset: 0});
       hc_options.yAxis[0].top = 150;
       hc_options.yAxis[0].height = 350;
     }
