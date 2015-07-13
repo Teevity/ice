@@ -101,6 +101,11 @@ public class IceOptions {
     public static final String MONTHLY_CACHE_SIZE = "ice.monthlycachesize";
 
     /**
+     * Should we ignore credits or not?
+     */
+    public static final String IGNORE_CREDITS = "ice.ignore_credits";
+
+    /**
      * Cost per monitor metric per hour, It's optional.
      */
     public static final String COST_PER_MONITORMETRIC_PER_HOUR = "ice.cost_per_monitormetric_per_hour";

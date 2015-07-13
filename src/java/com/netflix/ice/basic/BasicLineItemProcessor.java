@@ -101,7 +101,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         // make sure we don't ignore credits
         if (costValue < 0) {
             credit = true;
-            if (! reformCredit(startMilli, items)) {
+            if (config.ignoreCredits || ! reformCredit(startMilli, items)) {
                 return Result.ignore;
             }
             logger.debug("Found Credit - " + Arrays.toString(items));

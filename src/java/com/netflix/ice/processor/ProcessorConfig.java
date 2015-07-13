@@ -41,6 +41,7 @@ public class ProcessorConfig extends Config {
     public final LineItemProcessor lineItemProcessor;
     public final Randomizer randomizer;
     public final double costPerMonitorMetricPerHour;
+    public final boolean ignoreCredits; 
 
     public final String useCostForResourceGroup;
 
@@ -87,6 +88,7 @@ public class ProcessorConfig extends Config {
         customTags = properties.getProperty(IceOptions.CUSTOM_TAGS, "").split(",");
 
         useCostForResourceGroup = properties.getProperty(IceOptions.RESOURCE_GROUP_COST, "modeled");
+        ignoreCredits = Boolean.parseBoolean(properties.getProperty(IceOptions.IGNORE_CREDITS, "true"));
 
         ProcessorConfig.instance = this;
 
