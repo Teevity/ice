@@ -91,7 +91,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
     public Result process(long startMilli, boolean processDelayed, ProcessorConfig config, String[] items, Map<Product, ReadWriteData> usageDataByProduct, Map<Product, ReadWriteData> costDataByProduct, Map<String, Double> ondemandRate) {
 
         if (StringUtils.isEmpty(items[costIndex])) {
-            logger.debug("Ignoring Record due to missing Cost - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Cost - " + Arrays.toString(items));
             return Result.ignore;
         }
 
@@ -104,34 +104,34 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             if (config.ignoreCredits || ! reformCredit(startMilli, items)) {
                 return Result.ignore;
             }
-            logger.debug("Found Credit - " + Arrays.toString(items));
+            logger.info("Found Credit - " + Arrays.toString(items));
         }
 
         // fail-fast on records we can't process
         if (StringUtils.isEmpty(items[accountIdIndex])) {
-            logger.debug("Ignoring Record due to missing Account Id - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Account Id - " + Arrays.toString(items));
             return Result.ignore;
         } 
         if (StringUtils.isEmpty(items[productIndex])) {
-            logger.debug("Ignoring Record due to missing Product - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Product - " + Arrays.toString(items));
             return Result.ignore;
         }
         if (StringUtils.isEmpty(items[usageTypeIndex])) {
-            logger.debug("Ignoring Record due to missing Usage Type - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Usage Type - " + Arrays.toString(items));
             return Result.ignore;
         }
         if (StringUtils.isEmpty(items[operationIndex])) {
-            logger.debug("Ignoring Record due to missing Operation - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Operation - " + Arrays.toString(items));
             return Result.ignore;
         }
         if (StringUtils.isEmpty(items[usageQuantityIndex])) {
-            logger.debug("Ignoring Record due to missing Usage Quantity - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Usage Quantity - " + Arrays.toString(items));
             return Result.ignore;
         }
 
         Account account = config.accountService.getAccountById(items[accountIdIndex]);
         if (account == null) {
-            logger.debug("Ignoring Record due to missing Account - " + Arrays.toString(items));
+            logger.info("Ignoring Record due to missing Account - " + Arrays.toString(items));
             return Result.ignore;
         }
 
@@ -182,7 +182,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         }
 
         if (result == Result.ignore || result == Result.delay) {
-            logger.debug("Record not processed  - " + result + " - " + Arrays.toString(items));
+            logger.info("Record not processed  - " + result + " - " + Arrays.toString(items));
             return result;
         }
 
