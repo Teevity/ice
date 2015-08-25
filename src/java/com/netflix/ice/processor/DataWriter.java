@@ -19,6 +19,7 @@ package com.netflix.ice.processor;
 
 import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.common.TagGroup;
+import com.netflix.ice.tag.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ public class DataWriter {
 
     DataWriter(String name, boolean loadData) throws Exception {
 
+        name = Tag.toS3(name);
         dbName = name;
         file = new File(config.localDir, dbName);
         if (loadData) {
@@ -81,4 +83,3 @@ public class DataWriter {
         logger.info(this.dbName + " uploading done.");
     }
 }
-
