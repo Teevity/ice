@@ -103,7 +103,7 @@ public class IceOptions {
     /**
      * Should we ignore credits or not?
      */
-    public static final String IGNORE_CREDITS = "ice.ignore_credits";
+    public static final String IGNORE_CREDITS = "ice.ignoreCredits";
 
     /**
      * Cost per monitor metric per hour, It's optional.

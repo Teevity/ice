@@ -162,6 +162,8 @@ class BootStrap {
                     properties.setProperty(IceOptions.ONDEMAND_COST_ALERT_THRESHOLD, prop.getProperty(IceOptions.ONDEMAND_COST_ALERT_THRESHOLD));
                 if (prop.getProperty(IceOptions.URL_PREFIX) != null)
                     properties.setProperty(IceOptions.URL_PREFIX, prop.getProperty(IceOptions.URL_PREFIX));
+                if (prop.getProperty(IceOptions.IGNORE_CREDITS) != null)
+                    properties.setProperty(IceOptions.IGNORE_CREDITS, prop.getProperty(IceOptions.IGNORE_CREDITS));
 
                 ReservationCapacityPoller reservationCapacityPoller = null;
                 if ("true".equals(prop.getProperty("ice.reservationCapacityPoller"))) {

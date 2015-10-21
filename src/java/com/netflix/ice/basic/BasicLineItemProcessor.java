@@ -102,6 +102,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         if (costValue < 0) {
             credit = true;
             if (config.ignoreCredits || ! reformCredit(startMilli, items)) {
+                logger.info("Ignoring Credit - " + config.ignoreCredits);
                 return Result.ignore;
             }
             logger.info("Found Credit - " + Arrays.toString(items));
@@ -208,6 +209,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             int numHoursInMonth = new DateTime(startMilli, DateTimeZone.UTC).dayOfMonth().getMaximumValue() * 24;
             usageValue = usageValue * endIndex / numHoursInMonth;
             costValue = costValue * endIndex / numHoursInMonth;
+        } else {
+            int maxEndIndex = usageData.getNum();
+            if (endIndex > maxEndIndex)
+                endIndex = maxEndIndex;
         }
 
         if (monthlyCost) {
