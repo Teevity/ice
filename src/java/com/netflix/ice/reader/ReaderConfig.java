@@ -73,7 +73,7 @@ public class ReaderConfig extends Config {
         companyName = properties.getProperty(IceOptions.COMPANY_NAME, "");
         currencySign = properties.getProperty(IceOptions.CURRENCY_SIGN, "$");
         currencyRate = Double.parseDouble(properties.getProperty(IceOptions.CURRENCY_RATE, "1"));
-        highstockUrl = properties.getProperty(IceOptions.HIGHSTOCK_URL, "http://code.highcharts.com/stock/highstock.js");
+        highstockUrl = properties.getProperty(IceOptions.HIGHSTOCK_URL, "https://code.highcharts.com/stock/highstock.js");
 
         this.managers = managers;
         this.applicationGroupService = applicationGroupService;

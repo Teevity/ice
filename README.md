@@ -121,7 +121,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
           # Specify your currency conversion rate here. The default value is 1. If 1 pound = 1.5 dollar, then the rate is 0.6666667.
           ice.currencyRate=0.6666667
 
-  2.8 By default, Ice pulls in [Highstock](http://www.highcharts.com/) from its CDN. This CDN, unfortunately, does not (at present) support HTTPS. If you're serving Ice over HTTPS, your browser shouldn't or won't download Highstock from there. To fix this, you can serve Highstock somewhere else, and set this property:
+  2.8 By default, Ice pulls in [Highstock](https://www.highcharts.com/) from its CDN.
 
           ice.highstockUrl=https://example.com/js/highstock.js
 
