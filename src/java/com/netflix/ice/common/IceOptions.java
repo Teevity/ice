@@ -52,6 +52,12 @@ public class IceOptions {
     public static final String BILLING_S3_BUCKET_NAME = "ice.billing_s3bucketname";
 
     /**
+     * Region for billing s3 bucket. It should be specified for buckets using v4 validation ",".
+     * It must be specified in Config.
+     */
+    public static final String BILLING_S3_BUCKET_REGION = "ice.billing_s3bucketregion";
+
+    /**
      * Prefix of billing files in billing s3 bucket. For multiple payer accounts, multiple bucket prefixes can be specified delimited by comma ",".
      * It must be specified in Config.
      */
