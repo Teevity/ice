@@ -57,13 +57,13 @@ Using basic setup, you don't need any extra code change and you will use the pro
           ice.work_s3bucketname=work_s3bucketname
           ice.work_s3bucketprefix=work_s3bucketprefix/
   
-  1.4 If running locally, set the following system properties at runtime. ice.s3AccessToken is optional.
+  1.4 If running from locally - "./grailsw runApp" or a .war in local Tomcat instance, set the following properties in ice.properties OR define them on the command line with "-Dice.s3AccessKey=accessKey", etc. Command-line definitions take precedence over the ice.properties definitions.
      
           ice.s3AccessKeyId=<accessKeyId>
           ice.s3SecretKey=<secretKey>
           ice.s3AccessToken=<accessToken>
   
-  If running on a ec2 instance and you want to use the credentials in the instance metadata, you can leave the above properties unset.
+  If running on a ec2 instance and you want to use the credentials in the instance metadata, you must leave the above properties unset.
 
   1.5 In ice.properties, specify the start time in millis for the processor to start processing billing files. For example, if you want to start processing billing files from April 1, 2013. If this property is not set, Ice will set startmillis to be the beginning of current month.
       
