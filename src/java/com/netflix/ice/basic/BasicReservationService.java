@@ -172,12 +172,14 @@ public class BasicReservationService extends Poller implements ReservationServic
                     }
                     UsageType usageType = getUsageType(offer.getInstanceType(), offer.getProductDescription());
                     // Unknown Zone
-                    if (Zone.getZone(offer.getAvailabilityZone()) == null) 
+                    if (Zone.getZone(offer.getAvailabilityZone()) == null) {
                         logger.error("No Zone for " + offer.getAvailabilityZone());
-                    hasNewPrice = setPrice(utilization, currentTime, Zone.getZone(offer.getAvailabilityZone()).region, usageType,
-                            offer.getFixedPrice(), hourly) || hasNewPrice;
+                    } else {
+                        hasNewPrice = setPrice(utilization, currentTime, Zone.getZone(offer.getAvailabilityZone()).region, usageType,
+                                offer.getFixedPrice(), hourly) || hasNewPrice;
 
-                    logger.info("Setting RI price for " + Zone.getZone(offer.getAvailabilityZone()).region + " " + utilization + " " + usageType + " " + offer.getFixedPrice() + " " + hourly);
+                        logger.info("Setting RI price for " + Zone.getZone(offer.getAvailabilityZone()).region + " " + utilization + " " + usageType + " " + offer.getFixedPrice() + " " + hourly);
+                    }
                 }
             } while (!StringUtils.isEmpty(token));
         }
