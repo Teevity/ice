@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 public class Region extends Tag {
 
     public static final Region US_EAST_1 = new Region("us-east-1", "USE1");
-    public static final Region US_EAST_2 = new Region("us-east-1", "USE2");
+    public static final Region US_EAST_2 = new Region("us-east-2", "USE2");
     public static final Region US_WEST_1 = new Region("us-west-1", "USW1");
     public static final Region US_WEST_2 = new Region("us-west-2", "USW2");
     public static final Region EU_WEST_1 = new Region("eu-west-1", "EU");
