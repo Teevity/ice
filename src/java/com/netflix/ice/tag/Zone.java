@@ -65,6 +65,7 @@ public class Zone extends Tag {
 
     public static final Zone AP_SOUTHEAST_1A = new Zone(Region.AP_SOUTHEAST_1, "ap-southeast-1a");
     public static final Zone AP_SOUTHEAST_1B = new Zone(Region.AP_SOUTHEAST_1, "ap-southeast-1b");
+    public static final Zone AP_SOUTHEAST_1C = new Zone(Region.AP_SOUTHEAST_1, "ap-southeast-1c");
 
     public static final Zone AP_SOUTHEAST_2A = new Zone(Region.AP_SOUTHEAST_2, "ap-southeast-2a");
     public static final Zone AP_SOUTHEAST_2B = new Zone(Region.AP_SOUTHEAST_2, "ap-southeast-2b");
