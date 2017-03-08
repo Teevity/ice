@@ -217,7 +217,7 @@ Options with * require writing your own code.
   If reserved instances are shared among accounts, please specify them in ice.properties. For example:
 
           # set reservation owner accounts. In the example below, account1, account2, account3 and account4 are linked under the same payer account. account5, account6 are linked under the same payer account.
-          # if reservation capacity poller is enabled, the poller will try to poll reservation capacity through ec2 API (desribeReservedInstances) for each reservation owner account.
+          # if reservation capacity poller is enabled, the poller will try to poll reservation capacity through ec2 API (describeReservedInstances) for each reservation owner account.
           ice.owneraccount.account1_name=account2_name,account3_name,account4_name
           ice.owneraccount.account2_name=account1_name,account3_name,account4_name
           ice.owneraccount.account5_name=account6_name
