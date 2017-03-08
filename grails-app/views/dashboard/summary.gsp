@@ -20,7 +20,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="layout" content="main"/>
-  <title>Aws Usage Summary</title>
+  <title>AWS Usage Summary</title>
 </head>
 <body>
 <div class="" style="margin: auto; width: 1200px; padding: 20px 30px" ng-controller="summaryCtrl">
