@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import com.amazonaws.util.json.JSONArray;
+import org.json.JSONArray;
 import com.netflix.ice.tag.Product;
 
 
