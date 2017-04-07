@@ -139,7 +139,8 @@ public class BasicReservationService extends Poller implements ReservationServic
         long currentTime = new DateMidnight().getMillis();
 
         DescribeReservedInstancesOfferingsRequest req =  new DescribeReservedInstancesOfferingsRequest()
-                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"));
+                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"))
+                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("scope").withValues("Availability Zone"));
         String token = null;
         boolean hasNewPrice = false;
         AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
