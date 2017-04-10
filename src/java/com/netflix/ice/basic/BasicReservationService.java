@@ -154,7 +154,9 @@ public class BasicReservationService extends Poller implements ReservationServic
                 token = offers.getNextToken();
 
                 for (ReservedInstancesOffering offer: offers.getReservedInstancesOfferings()) {
-                    if (offer.getProductDescription().indexOf("Amazon VPC") >= 0)
+                    if (offer.getProductDescription().indexOf("Amazon VPC") < 0)
+                        continue;
+                    if (offer.getInstanceTenancy().indexOf("default") == -1)
                         continue;
                     ReservationUtilization utilization = ReservationUtilization.get(offer.getOfferingType());
                     Ec2InstanceReservationPrice.ReservationPeriod term = offer.getDuration() / 24 / 3600 > 366 ?
