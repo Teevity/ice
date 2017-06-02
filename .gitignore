@@ -38,9 +38,17 @@
 
 # "temporary" build files
 /target
+/target-eclipse
+/work
 
 # other
 *.iws
 
 #project specific:
 /src/java/ice.properties
+
+# OSX
+.DS_Store
+
+# FUSE files
+.fuse_hidden*
