@@ -391,7 +391,23 @@ class DashboardController {
             return [status: 200, start: 0, data: [:], stats: [:], groupBy: "None"];
         }
 
-        TagType groupBy = query.getString("groupBy").equals("None") ? null : TagType.valueOf(query.getString("groupBy"));
+        TagType groupBy = null;
+        String groupByParam = query.getString("groupBy");
+        switch(groupByParam) {
+            case getConfig().resourceGroup:
+                groupBy = TagType.valueOf("ResourceGroup");
+                break;
+            case getConfig().applicationGroup:
+                groupBy = TagType.valueOf("ApplicationGroup");
+                break;
+            case "None":
+                break;
+            default:
+                groupBy = TagType.valueOf(query.getString("groupBy"));
+                break;
+        }
+
+        //TagType groupBy = query.getString("groupBy").equals("None") ? null : TagType.valueOf(query.getString("groupBy"));
         boolean isCost = query.getBoolean("isCost");
         boolean breakdown = query.getBoolean("breakdown");
         boolean showsps = query.getBoolean("showsps");

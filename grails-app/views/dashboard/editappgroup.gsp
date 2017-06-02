@@ -16,23 +16,25 @@
 
 --%>
 
+<%@ page import="com.netflix.ice.reader.ReaderConfig" %>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="layout" content="main"/>
-  <title>Edit Application Group</title>
+  <title>Edit ${ReaderConfig.getInstance().applicationGroup}</title>
 </head>
 <body>
 <div class="" style="margin: auto; width: 1024px; padding: 20px 30px" ng-controller="editCtrl">
 
   <div class="message" ng-show="message">{{message}}</div>
 
-  <h1><span ng-show="isCreate">Create</span><span ng-show="!isCreate">Edit</span> Application Group <b>{{appgroup.name}}</b></h1>
+  <h1><span ng-show="isCreate">Create</span><span ng-show="!isCreate">Edit</span> ${ReaderConfig.getInstance().applicationGroup} <b>{{appgroup.name}}</b></h1>
 
   <div class="dialog">
     <table>
       <tr class="prop">
-        <td class="name">Group Name:</td>
+        <td class="name">Name:</td>
         <td class="name"><input ng-model="appgroup.name" class="required" type="text"/></td>
         <td></td>
       </tr>

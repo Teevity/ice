@@ -42,6 +42,8 @@ public class ReaderConfig extends Config {
     public final String currencySign;
     public final double currencyRate;
     public final String highstockUrl;
+    public final String resourceGroup;
+    public final String applicationGroup;
     public final ApplicationGroupService applicationGroupService;
     public final ThroughputMetricService throughputMetricService;
     public final BasicWeeklyCostEmailService costEmailService;
@@ -74,6 +76,8 @@ public class ReaderConfig extends Config {
         currencySign = properties.getProperty(IceOptions.CURRENCY_SIGN, "$");
         currencyRate = Double.parseDouble(properties.getProperty(IceOptions.CURRENCY_RATE, "1"));
         highstockUrl = properties.getProperty(IceOptions.HIGHSTOCK_URL, "http://code.highcharts.com/stock/highstock.js");
+        resourceGroup = properties.getProperty(IceOptions.RESOURCE_GROUP, "Resource Group");
+        applicationGroup = properties.getProperty(IceOptions.APPLICATION_GROUP, "Application Group");
 
         this.managers = managers;
         this.applicationGroupService = applicationGroupService;
