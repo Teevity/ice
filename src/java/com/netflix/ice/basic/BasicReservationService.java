@@ -106,8 +106,7 @@ public class BasicReservationService extends Poller implements ReservationServic
                 pollAPI();
             }
             catch (Exception e) {
-                logger.error("failed to poll reservation prices", e);
-                throw new RuntimeException("failed to poll reservation prices for " + e.getMessage());
+                throw new RuntimeException("failed to poll reservation prices", e);
             }
         }
         else {
@@ -323,6 +322,10 @@ public class BasicReservationService extends Poller implements ReservationServic
         Ec2InstanceReservationPrice ec2Price =
             ec2InstanceReservationPrices.get(utilization).get(new Ec2InstanceReservationPrice.Key(region, usageType));
 
+        if(ec2Price == null) {
+        	throw new IllegalStateException("Did not find an EC2 price for region " + region + ", type " + usageType + " and utilization " + utilization);
+        }
+
         double tier = getEc2Tier(time);
         return ec2Price.hourlyPrice.getPrice(null).getPrice(tier) +
                ec2Price.upfrontPrice.getPrice(null).getUpfrontAmortized(time, term, tier);
@@ -372,6 +375,10 @@ public class BasicReservationService extends Poller implements ReservationServic
             houlyCost = houlyCost / count;
         }
 
+        if(houlyCost == 0) {
+        	throw new IllegalStateException("Did not find an EC2 price for region " + tagGroup.region + ", type " + tagGroup.usageType + " and utilization " + utilization);
+        }
+        
         return new ReservationInfo(count, upfrontAmortized, houlyCost);
     }
 

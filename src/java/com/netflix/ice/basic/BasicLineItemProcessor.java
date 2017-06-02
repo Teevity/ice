@@ -103,8 +103,10 @@ public class BasicLineItemProcessor implements LineItemProcessor {
             return Result.ignore;
 
         Account account = config.accountService.getAccountById(items[accountIdIndex]);
-        if (account == null)
-            return Result.ignore;
+        if (account == null) {
+        	logger.warn("Could not find account: " + items[accountIdIndex] + " in AccountService");
+        	return Result.ignore;
+        }
 
         double usageValue = Double.parseDouble(items[usageQuantityIndex]);
         double costValue = Double.parseDouble(items[costIndex]);

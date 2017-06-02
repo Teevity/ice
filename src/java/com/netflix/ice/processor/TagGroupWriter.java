@@ -46,7 +46,12 @@ public class TagGroupWriter {
         if (file.exists()) {
             DataInputStream in = new DataInputStream(new FileInputStream(file));
             try {
-                tagGroups = TagGroup.Serializer.deserializeTagGroups(config, in);
+            	try {
+            		tagGroups = TagGroup.Serializer.deserializeTagGroups(config, in);
+            	} catch (EOFException e) {
+            		// how do we handle a corrupted file!
+            		throw new IllegalStateException("While handling file " + file, e);
+            	}
             }
             finally {
                 if (in != null)
@@ -69,7 +74,7 @@ public class TagGroupWriter {
             out.close();
         }
 
-        logger.info(dbName + " uploading to s3...");
+        logger.info(dbName + " uploading to s3 bucket " + config.workS3BucketName + " with prefix '" + config.workS3BucketPrefix + "'...");
         AwsUtils.upload(config.workS3BucketName, config.workS3BucketPrefix, config.localDir, dbName);
         logger.info(dbName + " uploading done.");
     }

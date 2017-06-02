@@ -48,8 +48,8 @@ public abstract class Config {
             AccountService accountService,
             ProductService productService,
             ResourceService resourceService) {
+    	if (properties == null) throw new IllegalArgumentException("properties must be specified");
         if (properties.getProperty(IceOptions.START_MILLIS) == null) throw new IllegalArgumentException("IceOptions.START_MILLIS must be specified");
-        if (properties == null) throw new IllegalArgumentException("properties must be specified");
         if (credentialsProvider == null) throw new IllegalArgumentException("credentialsProvider must be specified");
         if (accountService == null) throw new IllegalArgumentException("accountService must be specified");
         if (productService == null) throw new IllegalArgumentException("productService must be specified");

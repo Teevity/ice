@@ -44,10 +44,13 @@ public class DataWriter {
             AwsUtils.downloadFileIfNotExist(config.workS3BucketName, config.workS3BucketPrefix, file);
         }
 
-        if (file.exists()) {
+        if (file.exists() && file.length() > 0) {
             DataInputStream in = new DataInputStream(new FileInputStream(file));
             try {
                 data = ReadWriteData.Serializer.deserialize(in);
+            }
+            catch (EOFException e) {
+            	throw new IllegalStateException("While handling file: " + file, e);
             }
             finally {
                 in.close();
