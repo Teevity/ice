@@ -258,8 +258,8 @@ public class AwsUtils {
         }
     }
 
-    public static boolean downloadFileIfChangedSince(String bucketName, String bucketFilePrefix, File file, long milles, String accountId,
-                                                     String assumeRole, String externalId) {
+    public static boolean downloadFileIfChangedSince(String bucketName, String bucketFileRegion, String bucketFilePrefix, File file,
+                                                     long milles, String accountId, String assumeRole, String externalId) {
         AmazonS3Client s3Client = AwsUtils.s3Client;
 
         try {
@@ -270,6 +270,10 @@ public class AwsUtils {
                                 assumedCredentials.getSecretAccessKey(),
                                 assumedCredentials.getSessionToken()),
                                 clientConfig);
+            }
+
+            if(bucketFileRegion != null && !bucketFileRegion.isEmpty()) {
+                s3Client.setEndpoint("s3-" + bucketFileRegion + ".amazonaws.com");
             }
 
             ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, bucketFilePrefix + file.getName());
