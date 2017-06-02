@@ -137,7 +137,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
 
   3.3 Construct ice.properties for processor and make sure ice.properties is added to directory src/java
 
-  3.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working 3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
+  3.4 Run Ice processor. From project root directory, run `./grailsw run-app`. Note you may need to add system properties like `./grailsw -Dice.s3AccessKeyId=<s3AccessKeyId> -Dice.s3SecretKey=<s3SecretKey> run-app`. To verify Ice processor runs successfully, make sure you see un-empty output files in your working S3 bucket, e.g. tagdb_all, cost_weekly_all, cost_daily_all_2013, etc.
   
   3.5 Repeat steps 3.3 and 3.4 to run Ice reader.
 
