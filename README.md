@@ -226,7 +226,7 @@ Options with * require writing your own code.
    
 5. Customized reservation service (*)
 
-  Reserved instance prices in BasiicReservationService are copied from Amazon's ec2 price page as of Jun 1, 2013. Your accounts may have different reservation prices (e.g. Amazon may change prices in the future). In this case, you need to write a subclass of BasicReservationService to provide the correct pricing.
+  Reserved instance prices in BasicReservationService are copied from Amazon's ec2 price page as of Jun 1, 2013. Your accounts may have different reservation prices (e.g. Amazon may change prices in the future). In this case, you need to write a subclass of BasicReservationService to provide the correct pricing.
 
 6. Resource service (*)
 
