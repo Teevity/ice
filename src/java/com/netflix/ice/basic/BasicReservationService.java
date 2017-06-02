@@ -139,7 +139,8 @@ public class BasicReservationService extends Poller implements ReservationServic
         long currentTime = new DateMidnight().getMillis();
 
         DescribeReservedInstancesOfferingsRequest req =  new DescribeReservedInstancesOfferingsRequest()
-                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"));
+                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"))
+                .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("scope").withValues("Availability Zone"));
         String token = null;
         boolean hasNewPrice = false;
         AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
@@ -153,7 +154,9 @@ public class BasicReservationService extends Poller implements ReservationServic
                 token = offers.getNextToken();
 
                 for (ReservedInstancesOffering offer: offers.getReservedInstancesOfferings()) {
-                    if (offer.getProductDescription().indexOf("Amazon VPC") >= 0)
+                    if (offer.getProductDescription().indexOf("Amazon VPC") < 0)
+                        continue;
+                    if (offer.getInstanceTenancy().indexOf("default") == -1)
                         continue;
                     ReservationUtilization utilization = ReservationUtilization.get(offer.getOfferingType());
                     Ec2InstanceReservationPrice.ReservationPeriod term = offer.getDuration() / 24 / 3600 > 366 ?
