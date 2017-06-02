@@ -26,17 +26,18 @@ import com.netflix.ice.tag.Region;
 import org.apache.commons.lang.StringUtils;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.DB.HTreeMapMaker;
+import org.mapdb.HTreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Map;
 
 public class MapDb {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private DB db;
-    private Map<String, String> items;
+    private HTreeMap<String, String> items;
     private long numItemsToCommit = 0;
     private ProcessorConfig config;
     private String dbName;
@@ -55,7 +56,8 @@ public class MapDb {
         }
         this.db = DBMaker.newFileDB(new File(config.localDir, this.dbName)).make();
         try {
-            this.items = db.createHashMap(name, false, null, null);
+        	HTreeMapMaker htmm = db.createHashMap(name);
+            this.items = htmm.makeOrGet();
         }
         catch (IllegalArgumentException e) {
             this.items = db.getHashMap(name);
