@@ -252,11 +252,84 @@ Options with * require writing your own code.
 8. Throughput metric service (*)
    
   You may also want to show your organization's throughput metric alongside usage and cost. You can choose to implement interface ThroughputMetricService, or you can simply use the existing BasicThroughputMetricService. Using BasicThroughputMetricService requires the throughput metric data to be stores monthly in files with names like <filePrefix>_2013_04, <filePrefix>_2013_05. Data in files should be delimited by new lines. <filePrefix> is specified when you create BasicThroughputMetricService instance.
-
+  
 9. Blended Costs
   By default, unblended costs are shown. You can show Blended costs with the following configuration:
 
         ice.use_blended=true
+
+## Example IAM Permissions
+
+Grant the following permissions to either an instance role, or the user running the reports:
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1421551747000",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeReservedInstances",
+        "ec2:DescribeReservedInstancesOfferings"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Sid": "Stmt1418665415000",
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject",
+        "s3:GetBucketLocation",
+        "s3:GetObject",
+        "s3:ListAllMyBuckets",
+        "s3:ListBucket",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::work-bucket-name/*"
+      ]
+    },
+    {
+      "Sid": "Stmt1418665415001",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::work-bucket-name"
+      ]
+    },
+    {
+      "Sid": "Stmt1418665415000a",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetObject",
+        "s3:ListAllMyBuckets",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::billing-reports-bucket/*"
+      ]
+    },
+    {
+      "Sid": "Stmt1418665415001a",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::billing-reports-bucket"
+      ]
+    }
+  ]
+}
+```
+
 
 ## Support
 
