@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+import com.netflix.ice.basic.AppnetaMapDbResourceService
 import com.netflix.ice.reader.ReaderConfig
 import com.netflix.ice.processor.ProcessorConfig
 import com.netflix.ice.JSONConverter
@@ -183,7 +185,7 @@ class BootStrap {
                         accountService,
                         new BasicProductService(),
                         new BasicReservationService(reservationPeriod, reservationUtilization),
-                        resourceService,
+                        new AppnetaMapDbResourceService(),
                         new BasicLineItemProcessor(),
                         null)
                 processorConfig.start(reservationCapacityPoller);
@@ -226,7 +228,7 @@ class BootStrap {
                         new BasicManagers(),
                         accountService,
                         productService,
-                        resourceService,
+                        new AppnetaMapDbResourceService(),
                         applicationGroupService,
                         null,
                         weeklyEmailService
