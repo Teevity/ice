@@ -77,6 +77,7 @@ public class BillingFileProcessor extends Poller {
         // list the tar.gz file in billing file folder
         for (int i = 0; i < config.billingS3BucketNames.length; i++) {
             String billingS3BucketName = config.billingS3BucketNames[i];
+            String billingS3BucketRegion = config.billingS3BucketRegions.length > i ? config.billingS3BucketRegions[i] : "";
             String billingS3BucketPrefix = config.billingS3BucketPrefixes.length > i ? config.billingS3BucketPrefixes[i] : "";
             String accountId = config.billingAccountIds.length > i ? config.billingAccountIds[i] : "";
             String billingAccessRoleName = config.billingAccessRoleNames.length > i ? config.billingAccessRoleNames[i] : "";
@@ -128,7 +129,7 @@ public class BillingFileProcessor extends Poller {
                     list = Lists.newArrayList();
                     filesToProcess.put(key, list);
                 }
-                list.add(new BillingFile(filesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix));
+                list.add(new BillingFile(filesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix, billingS3BucketRegion));
             }
 
             for (DateTime key: monitorFilesToProcessInOneBucket.keySet()) {
@@ -137,7 +138,7 @@ public class BillingFileProcessor extends Poller {
                     list = Lists.newArrayList();
                     monitorFilesToProcess.put(key, list);
                 }
-                list.add(new BillingFile(monitorFilesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix));
+                list.add(new BillingFile(monitorFilesToProcessInOneBucket.get(key), accountId, billingAccessRoleName, billingAccessExternalId, billingS3BucketPrefix, billingS3BucketRegion));
             }
         }
 
@@ -172,7 +173,7 @@ public class BillingFileProcessor extends Poller {
 
                 File file = new File(config.localDir, fileKey.substring(billingFile.prefix.length()));
                 logger.info("trying to download " + fileKey + "...");
-                boolean downloaded = AwsUtils.downloadFileIfChangedSince(objectSummary.getBucketName(), billingFile.prefix, file, lastProcessed,
+                boolean downloaded = AwsUtils.downloadFileIfChangedSince(objectSummary.getBucketName(), billingFile.region, billingFile.prefix, file, lastProcessed,
                         billingFile.accountId, billingFile.accessRoleName, billingFile.externalId);
                 if (downloaded)
                     logger.info("downloaded " + fileKey);
@@ -197,8 +198,8 @@ public class BillingFileProcessor extends Poller {
                         logger.info("processing " + monitorFileKey + "...");
                         File monitorFile = new File(config.localDir, monitorFileKey.substring(monitorFileKey.lastIndexOf("/") + 1));
                         logger.info("trying to download " + monitorFileKey + "...");
-                        boolean downloaded = AwsUtils.downloadFileIfChangedSince(monitorObjectSummary.getBucketName(), monitorBillingFile.prefix, monitorFile, lastProcessed,
-                                monitorBillingFile.accountId, monitorBillingFile.accessRoleName, monitorBillingFile.externalId);
+                        boolean downloaded = AwsUtils.downloadFileIfChangedSince(monitorObjectSummary.getBucketName(), monitorBillingFile.region, monitorBillingFile.prefix,
+                                monitorFile, lastProcessed, monitorBillingFile.accountId, monitorBillingFile.accessRoleName, monitorBillingFile.externalId);
                         if (downloaded)
                             logger.info("downloaded " + monitorFile);
                         else
@@ -741,13 +742,15 @@ public class BillingFileProcessor extends Poller {
 
     private class BillingFile {
         final S3ObjectSummary s3ObjectSummary;
+        final String region;
         final String accountId;
         final String accessRoleName;
         final String externalId;
         final String prefix;
 
-        BillingFile(S3ObjectSummary s3ObjectSummary, String accountId, String accessRoleName, String externalId, String prefix) {
+        BillingFile(S3ObjectSummary s3ObjectSummary, String accountId, String accessRoleName, String externalId, String prefix, String region) {
             this.s3ObjectSummary = s3ObjectSummary;
+            this.region = region;
             this.accountId = accountId;
             this.accessRoleName = accessRoleName;
             this.externalId = externalId;
