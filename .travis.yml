@@ -1,0 +1,8 @@
+sudo: false
+
+language: groovy
+
+jdk:
+- oraclejdk7
+
+script: ./grailsw clean && yes | ./grailsw refresh-dependencies 
