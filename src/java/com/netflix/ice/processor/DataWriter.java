@@ -37,7 +37,7 @@ public class DataWriter {
     private ReadWriteData data;
 
     DataWriter(String name, boolean loadData) throws Exception {
-
+        name = name.replaceAll("/", "--");
         dbName = name;
         file = new File(config.localDir, dbName);
         if (loadData) {
