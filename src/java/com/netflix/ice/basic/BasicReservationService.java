@@ -145,6 +145,12 @@ public class BasicReservationService extends Poller implements ReservationServic
         AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
 
         for (Region region: Region.getAllRegions()) {
+            // GovCloud uses different credentials than standard AWS, so you would need two separate
+            // sets of credentials if you wanted to poll for RIs in both environments. For now, we
+            // just ignore GovCloud here in order to prevent AuthFailure errors.
+            if (region == Region.US_GOV_WEST_1) {
+                continue;
+            }
             ec2Client.setEndpoint("ec2." + region.name + ".amazonaws.com");
             do {
                 if (!StringUtils.isEmpty(token))
