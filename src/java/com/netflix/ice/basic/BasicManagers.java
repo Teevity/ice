@@ -25,6 +25,7 @@ import com.netflix.ice.common.*;
 import com.netflix.ice.processor.TagGroupWriter;
 import com.netflix.ice.reader.*;
 import com.netflix.ice.tag.Product;
+import com.netflix.ice.tag.Tag;
 
 import java.util.Collection;
 import java.util.Map;
@@ -99,6 +100,7 @@ public class BasicManagers extends Poller implements Managers {
             }
             else {
                 String name = key.substring((config.workS3BucketPrefix + TagGroupWriter.DB_PREFIX).length());
+                name = Tag.fromS3(name);
                 product = config.productService.getProductByName(name);
             }
             if (!products.contains(product)) {
