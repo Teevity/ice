@@ -39,6 +39,7 @@ public class Zone extends Tag {
     public static final Zone US_EAST_1C = new Zone(Region.US_EAST_1, "us-east-1c");
     public static final Zone US_EAST_1D = new Zone(Region.US_EAST_1, "us-east-1d");
     public static final Zone US_EAST_1E = new Zone(Region.US_EAST_1, "us-east-1e");
+    public static final Zone US_EAST_1F = new Zone(Region.US_EAST_1, "us-east-1f");
 
     public static final Zone US_EAST_2A = new Zone(Region.US_EAST_2, "us-east-2a");
     public static final Zone US_EAST_2B = new Zone(Region.US_EAST_2, "us-east-2b");
@@ -100,6 +101,7 @@ public class Zone extends Tag {
         zonesByName.put(US_EAST_1C.name, US_EAST_1C);
         zonesByName.put(US_EAST_1D.name, US_EAST_1D);
         zonesByName.put(US_EAST_1E.name, US_EAST_1E);
+        zonesByName.put(US_EAST_1F.name, US_EAST_1F);
 
         zonesByName.put(US_EAST_2A.name, US_EAST_2A);
         zonesByName.put(US_EAST_2B.name, US_EAST_2B);
