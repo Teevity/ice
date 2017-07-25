@@ -40,8 +40,7 @@ public class IceOptions {
     public static final String CURRENCY_RATE = "ice.currencyRate";
 
     /**
-     * The URL of highstock.js. The default value is the Highcharts CDN; change this if you need to
-     * serve it from somewhere else (for example, if you need HTTPS).
+     * The URL of highstock.js. The default value is the Highcharts CDN (HTTPS)
      */
     public static final String HIGHSTOCK_URL = "ice.highstockUrl";
 
