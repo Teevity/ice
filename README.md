@@ -263,6 +263,12 @@ Options with * require writing your own code.
 
         ice.use_blended=true
 
+10. Extra Grails configuration file
+
+  If you need to setup custom Grails settings, you can specify an additional configuration file to be loaded by Grails by setting the ``ice.config.location`` system property to the location of that file.
+
+  See http://docs.grails.org/2.3.7/guide/single.html#configExternalized for more information.
+
 ## Example IAM Permissions
 
 Grant the following permissions to either an instance role, or the user running the reports:
