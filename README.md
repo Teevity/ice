@@ -267,7 +267,7 @@ Options with * require writing your own code.
 
   If you need to setup custom Grails settings, you can specify an additional configuration file to be loaded by Grails by setting the ``ice.config.location`` system property to the location of that file.
 
-  See http://docs.grails.org/2.3.7/guide/single.html#configExternalized for more information.
+  See http://docs.grails.org/2.4.4/guide/single.html#configExternalized for more information.
 
 ## Example IAM Permissions
 
