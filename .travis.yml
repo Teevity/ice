@@ -11,4 +11,5 @@ install:
   - yes | ./grailsw refresh-dependencies
 
 script: 
+  - bash -n install.sh
   - ./grailsw compile
