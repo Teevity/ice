@@ -5,16 +5,20 @@
 GRAILS_VERSION=2.4.4
 
 # Install prerequisites
-
 if [ -f /etc/redhat-release ]; then
     echo "Installing redhat packages"
     sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
-elif [ -f /etc/debian-release ];then
+
+elif [[ -f /etc/debian-release || -f /etc/debian_version ]];then
     echo "Installing debian packages"
     sudo apt-get -y install git openjdk-7-jdk wget unzip
-else
+
+elif [[ -f /etc/issue && $(grep "Amazon Linux AMI" /etc/issue) ]]; then
     echo "Assuming AWS AMI, installing packages"
     sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
+
+else 
+    echo "Unknown operating system. You may have to install Java 7 manually."
 fi
 
 INSTALL_DIR=$(pwd)
