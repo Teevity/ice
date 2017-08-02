@@ -8,11 +8,13 @@ GRAILS_VERSION=2.4.4
 
 if [ -f /etc/redhat-release ]; then
     echo "Installing redhat packages"
-    sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget unzip
-else
-   [ -f /etc/debian-release ];
+    sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
+elif [ -f /etc/debian-release ];then
     echo "Installing debian packages"
-    sudo apt-get -y install git openjdk-6-jdk wget unzip
+    sudo apt-get -y install git openjdk-7-jdk wget unzip
+else
+    echo "Assuming AWS AMI, installing packages"
+    sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
 fi
 
 INSTALL_DIR=$(pwd)
@@ -74,7 +76,7 @@ do
   echo -n "-> "
   read -r PROCBUCKET
 done
-sed -rie 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname1/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
+sed -ri 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname1/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
 
 echo Ice is now ready to run as a processor. If you want to run the reader, edit:
 echo ~/ice/src/java/ice.properties
