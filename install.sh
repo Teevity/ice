@@ -86,6 +86,6 @@ done
 sed -ri 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname1/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
 
 echo Ice is now ready to run as a processor. If you want to run the reader, edit:
-echo ~/ice/src/java/ice.properties
+echo "${INSTALL_DIR}/src/java/ice.properties"
 echo and alter the appropriate flags. You can now start Ice by running the following from the Ice root directory:
 echo ./grailsw -Djava.net.preferIPv4Stack=true -Dice.s3AccessKeyId=\<access key ID\> -Dice.s3SecretKey=\<access key\> run-app
