@@ -204,7 +204,7 @@ public class BasicLineItemProcessor implements LineItemProcessor {
         }
 
         double resourceCostValue = costValue;
-        if (items.length > resourceIndex && !StringUtils.isEmpty(items[resourceIndex]) && config.resourceService != null) {
+        if (items.length > resourceIndex && config.resourceService != null) {
 
             if (config.useCostForResourceGroup.equals("modeled") && product == Product.ec2_instance)
                 operation = Operation.getReservedInstances(config.reservationService.getDefaultReservationUtilization(0L));

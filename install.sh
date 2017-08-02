@@ -1,18 +1,27 @@
 #!/bin/bash
 
+# Exit the script if an error occur
+set -e
+
 # Get Ice in a ready-to-run state on a fresh AWI instance.
 
-GRAILS_VERSION=2.2.1
+GRAILS_VERSION=2.4.4
 
 # Install prerequisites
-
 if [ -f /etc/redhat-release ]; then
     echo "Installing redhat packages"
-    sudo yum -y install git java-1.6.0-openjdk-devel.x86_64 wget unzip
-else
-   [ -f /etc/debian-release ];
+    sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
+
+elif [[ -f /etc/debian-release || -f /etc/debian_version ]];then
     echo "Installing debian packages"
-    sudo apt-get -y install git openjdk-6-jdk wget unzip
+    sudo apt-get -y install git openjdk-7-jdk wget unzip
+
+elif [[ -f /etc/issue && $(grep "Amazon Linux AMI" /etc/issue) ]]; then
+    echo "Assuming AWS AMI, installing packages"
+    sudo yum -y install git java-1.7.0-openjdk-devel.x86_64 wget unzip
+
+else 
+    echo "Unknown operating system. You may have to install Java 7 manually."
 fi
 
 INSTALL_DIR=$(pwd)
@@ -53,11 +62,11 @@ fi
 grails ${JAVA_OPTS} wrapper
 
 # (Bug: Ice can't deal with this file existing and being empty.)
-rm grails-app/i18n/messages.properties
+rm -f grails-app/i18n/messages.properties
 
 # Create our local work directories (both for processing and reading)
-mkdir ${HOME_DIR}/ice_processor
-mkdir ${HOME_DIR}/ice_reader
+mkdir -p ${HOME_DIR}/ice_processor
+mkdir -p ${HOME_DIR}/ice_reader
 
 # Set up the config file
 cp src/java/sample.properties src/java/ice.properties
@@ -74,9 +83,9 @@ do
   echo -n "-> "
   read -r PROCBUCKET
 done
-sed -rie 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname1/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
+sed -ri 's/=billing_s3bucketprefix\//=/; s|\/mnt\/|'"${HOME_DIR}"'\/|; s/=work_s3bucketprefix\//=/; s/^ice.account.*//; s/=billing_s3bucketname1/='${BILLBUCKET}'/; s/=work_s3bucketname/='${PROCBUCKET}'/' src/java/ice.properties
 
 echo Ice is now ready to run as a processor. If you want to run the reader, edit:
-echo ~/ice/src/java/ice.properties
+echo "${INSTALL_DIR}/src/java/ice.properties"
 echo and alter the appropriate flags. You can now start Ice by running the following from the Ice root directory:
 echo ./grailsw -Djava.net.preferIPv4Stack=true -Dice.s3AccessKeyId=\<access key ID\> -Dice.s3SecretKey=\<access key\> run-app

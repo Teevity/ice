@@ -20,6 +20,7 @@ package com.netflix.ice.processor;
 import com.google.common.collect.Maps;
 import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.common.TagGroup;
+import com.netflix.ice.tag.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ public class TagGroupWriter {
 
     TagGroupWriter(String name) throws Exception {
 
+        name = Tag.toS3(name);
         dbName = DB_PREFIX + name;
         file = new File(config.localDir, dbName);
         logger.info("creating TagGroupWriter for " + file);
@@ -74,4 +76,3 @@ public class TagGroupWriter {
         logger.info(dbName + " uploading done.");
     }
 }
-

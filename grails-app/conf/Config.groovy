@@ -17,13 +17,11 @@
 // locations to search for config files that get merged into the main config
 // config files can either be Java properties files or ConfigSlurper scripts
 
-grails.config.locations = [
+grails.config.locations = []
 
-]
-
-// if(System.properties["${appName}.config.location"]) {
-//    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
-// }
+if(System.properties["${appName}.config.location"]) {
+    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
+}
 
 grails.project.groupId = appName // change this to alter the default package name and Maven publishing destination
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
