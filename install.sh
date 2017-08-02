@@ -2,7 +2,7 @@
 
 # Get Ice in a ready-to-run state on a fresh AWI instance.
 
-GRAILS_VERSION=2.2.1
+GRAILS_VERSION=2.4.4
 
 # Install prerequisites
 
