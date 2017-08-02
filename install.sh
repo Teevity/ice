@@ -62,7 +62,7 @@ fi
 grails ${JAVA_OPTS} wrapper
 
 # (Bug: Ice can't deal with this file existing and being empty.)
-rm grails-app/i18n/messages.properties
+rm -f grails-app/i18n/messages.properties
 
 # Create our local work directories (both for processing and reading)
 mkdir -p ${HOME_DIR}/ice_processor
