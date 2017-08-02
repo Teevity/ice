@@ -107,7 +107,7 @@ Using basic setup, you don't need any extra code change and you will use the pro
       
           ice.reader.localDir=/mnt/ice_reader
     
-    Make sure the local directory is different if you run processor and reader on the same instance.
+Make sure the local directory is different if you run processor and reader on the same instance.
 
   2.3 Same as 1.3
   
