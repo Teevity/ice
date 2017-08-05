@@ -55,9 +55,10 @@ Using basic setup, you don't need any extra code change and you will use the pro
       
           ice.processor.localDir=/mnt/ice_processor
 
-  1.3 In ice.properties, set up the working s3 bucket and working s3 bucket file prefix to upload the processed output files which will be read by reader. Ice must have read and write access to the s3 bucket. For example:
+  1.3 In ice.properties, set up the working s3 bucket, working s3 region, and working s3 bucket file prefix to upload the processed output files which will be read by reader. Ice must have read and write access to the s3 bucket. For example:
       
           ice.work_s3bucketname=work_s3bucketname
+          ice.work_s3bucketregion=eu-west-1
           ice.work_s3bucketprefix=work_s3bucketprefix/
   
   1.4 If running locally, set the following system properties at runtime. ice.s3AccessToken is optional.

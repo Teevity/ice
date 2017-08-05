@@ -95,6 +95,12 @@ public class IceOptions {
      */
     public static final String WORK_S3_BUCKET_NAME = "ice.work_s3bucketname";
 
+     /**
+     * Region for output files s3 bucket. It should be specified for buckets using v4 validation.
+     * It must be specified in Config.
+     */
+    public static final String WORK_S3_BUCKET_REGION = "ice.work_s3bucketregion";
+
     /**
      * Prefix of output files in output s3 bucket. It must be specified in Config.
      */
