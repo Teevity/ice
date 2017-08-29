@@ -26,6 +26,7 @@ import java.util.Properties;
 public abstract class Config {
 
     public final String workS3BucketName;
+    public final String workS3BucketRegion;
     public final String workS3BucketPrefix;
     public final String localDir;
     public final AccountService accountService;
@@ -56,6 +57,17 @@ public abstract class Config {
 
         DateTime startDate = new DateTime(Long.parseLong(properties.getProperty(IceOptions.START_MILLIS)), DateTimeZone.UTC);
         workS3BucketName = properties.getProperty(IceOptions.WORK_S3_BUCKET_NAME);
+        
+        String defaultRegion = properties.getProperty(IceOptions.BILLING_S3_BUCKET_REGION); 
+        if (defaultRegion == null || defaultRegion.isEmpty()) throw new IllegalArgumentException("IceOptions.BILLING_S3_BUCKET_REGION must be specified");
+        
+        String bucketRegion = properties.getProperty(IceOptions.WORK_S3_BUCKET_REGION, defaultRegion);
+        if (bucketRegion.isEmpty()) bucketRegion = defaultRegion;
+        if (bucketRegion.contains(",")) {
+             bucketRegion = bucketRegion.substring(0, bucketRegion.indexOf(","));
+        }
+        workS3BucketRegion = bucketRegion;
+
         workS3BucketPrefix = properties.getProperty(IceOptions.WORK_S3_BUCKET_PREFIX, "ice/");
         localDir = properties.getProperty(IceOptions.LOCAL_DIR, "/mnt/ice");
 
@@ -67,6 +79,6 @@ public abstract class Config {
         this.productService = productService;
         this.resourceService = resourceService;
 
-        AwsUtils.init(credentialsProvider);
+        AwsUtils.init(credentialsProvider, workS3BucketRegion);
     }
 }
