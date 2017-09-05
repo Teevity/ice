@@ -3,7 +3,7 @@ sudo: false
 language: groovy
 
 jdk:
-- oraclejdk7
+- openjdk7
 
 install:
   - export ICE_HOME=${TRAVIS_BUILD_DIR}
