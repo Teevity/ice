@@ -76,11 +76,15 @@ class BootStrap {
             AWSCredentialsProvider credentialsProvider;
 
             if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey"))) {
-                if (System.getenv().get("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") == null)
+                if (System.getenv().get("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") == null) {
+                    logger.info('Using InstanceProfileCredentialsProvider.');
                     credentialsProvider = new InstanceProfileCredentialsProvider();
-                else
+                } else {
+                    logger.info('Using ContainerCredentialsProvider.');
                     credentialsProvider = new ContainerCredentialsProvider();
+                }
             } else
+                logger.info('Using AWS Access Keys.');
                 credentialsProvider = new AWSCredentialsProvider() {
                         public AWSCredentials getCredentials() {
                             if (StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")))
