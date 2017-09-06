@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import com.netflix.ice.common.IceOptions
 import com.netflix.ice.processor.ReservationCapacityPoller
 import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.ContainerCredentialsProvider
 import com.amazonaws.auth.InstanceProfileCredentialsProvider
 import com.netflix.ice.basic.BasicAccountService
 import com.google.common.collect.Lists
@@ -74,9 +75,16 @@ class BootStrap {
 
             AWSCredentialsProvider credentialsProvider;
 
-            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey")))
-                credentialsProvider = new InstanceProfileCredentialsProvider();
-            else
+            if (StringUtils.isEmpty(System.getProperty("ice.s3AccessKeyId")) || StringUtils.isEmpty(System.getProperty("ice.s3SecretKey"))) {
+                if (System.getenv().get("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") == null) {
+                    logger.info('Using InstanceProfileCredentialsProvider.');
+                    credentialsProvider = new InstanceProfileCredentialsProvider();
+                } else {
+                    logger.info('Using ContainerCredentialsProvider.');
+                    credentialsProvider = new ContainerCredentialsProvider();
+                }
+            } else
+                logger.info('Using AWS Access Keys.');
                 credentialsProvider = new AWSCredentialsProvider() {
                         public AWSCredentials getCredentials() {
                             if (StringUtils.isEmpty(System.getProperty("ice.s3AccessToken")))
