@@ -17,9 +17,12 @@
  */
 package com.netflix.ice.common;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
@@ -27,7 +30,6 @@ import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.amazonaws.ClientConfiguration;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
@@ -57,7 +59,7 @@ public class AwsUtils {
     public static final DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HHa").withZone(DateTimeZone.UTC);
     public static long hourMillis = 3600000L;
 
-    private static AmazonS3Client s3Client;
+    private static AmazonS3 s3Client;
     private static AmazonSimpleEmailServiceClient emailServiceClient;
     private static AmazonSimpleDBClient simpleDBClient;
     private static AWSSecurityTokenServiceClient securityClient;
@@ -89,23 +91,22 @@ public class AwsUtils {
         clientConfig = new ClientConfiguration();
         String proxyHost = System.getProperty("https.proxyHost");
         String proxyPort = System.getProperty("https.proxyPort");
-        if(proxyHost != null && proxyPort != null) {
+        if (proxyHost != null && proxyPort != null) {
             clientConfig.setProxyHost(proxyHost);
             clientConfig.setProxyPort(Integer.parseInt(proxyPort));
         }
-        s3Client = new AmazonS3Client(awsCredentialsProvider, clientConfig);
-        securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider, clientConfig);
-        if (System.getProperty("EC2_REGION") != null && !"us-east-1".equals(System.getProperty("EC2_REGION"))) {
-            if ("global".equals(System.getProperty("EC2_REGION"))) {
-                s3Client.setEndpoint("s3.amazonaws.com");
-            }
-            else {
-                s3Client.setEndpoint("s3-" + System.getProperty("EC2_REGION") + ".amazonaws.com");
-            }
+        AmazonS3ClientBuilder amazonS3ClientBuilder = AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(credentialsProvider)
+                .withClientConfiguration(clientConfig);
+        if (System.getProperty("EC2_REGION") != null) {
+            amazonS3ClientBuilder.withRegion(System.getProperty("EC2_REGION"));
         }
+        s3Client = amazonS3ClientBuilder.build();
+        securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider, clientConfig);
     }
 
-    public static AmazonS3Client getAmazonS3Client() {
+    public static AmazonS3 getAmazonS3Client() {
         return s3Client;
     }
 
@@ -158,7 +159,7 @@ public class AwsUtils {
      */
     public static List<S3ObjectSummary> listAllObjects(String bucket, String prefix, String accountId,
                                                        String assumeRole, String externalId) {
-        AmazonS3Client s3Client = AwsUtils.s3Client;
+        AmazonS3 s3Client = AwsUtils.s3Client;
 
         try {
             ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withPrefix(prefix);
@@ -166,11 +167,13 @@ public class AwsUtils {
 
             if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(assumeRole)) {
                 Credentials assumedCredentials = getAssumedCredentials(accountId, assumeRole, externalId);
-                s3Client = new AmazonS3Client(
-                        new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
-                                assumedCredentials.getSecretAccessKey(),
-                                assumedCredentials.getSessionToken()),
-                                clientConfig);
+
+                BasicAWSCredentials awsCreds = new BasicAWSCredentials(assumedCredentials.getAccessKeyId(), assumedCredentials.getSecretAccessKey());
+                AmazonS3ClientBuilder amazonS3ClientBuilder = AmazonS3ClientBuilder
+                        .standard()
+                        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                        .withClientConfiguration(clientConfig);
+                s3Client = amazonS3ClientBuilder.build();
             }
 
             ObjectListing page = null;
@@ -260,20 +263,20 @@ public class AwsUtils {
 
     public static boolean downloadFileIfChangedSince(String bucketName, String bucketFileRegion, String bucketFilePrefix, File file,
                                                      long milles, String accountId, String assumeRole, String externalId) {
-        AmazonS3Client s3Client = AwsUtils.s3Client;
+        AmazonS3 s3Client = AwsUtils.s3Client;
 
         try {
             if (!StringUtils.isEmpty(accountId) && !StringUtils.isEmpty(assumeRole)) {
                 Credentials assumedCredentials = getAssumedCredentials(accountId, assumeRole, externalId);
-                s3Client = new AmazonS3Client(
-                        new BasicSessionCredentials(assumedCredentials.getAccessKeyId(),
-                                assumedCredentials.getSecretAccessKey(),
-                                assumedCredentials.getSessionToken()),
-                                clientConfig);
-            }
-
-            if(bucketFileRegion != null && !bucketFileRegion.isEmpty()) {
-                s3Client.setEndpoint("s3-" + bucketFileRegion + ".amazonaws.com");
+                BasicAWSCredentials awsCreds = new BasicAWSCredentials(assumedCredentials.getAccessKeyId(), assumedCredentials.getSecretAccessKey());
+                AmazonS3ClientBuilder amazonS3ClientBuilder = AmazonS3ClientBuilder
+                        .standard()
+                        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                        .withClientConfiguration(clientConfig);
+                if (bucketFileRegion != null && !bucketFileRegion.isEmpty()) {
+                    amazonS3ClientBuilder.setRegion(bucketFileRegion);
+                }
+                s3Client = amazonS3ClientBuilder.build();
             }
 
             ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, bucketFilePrefix + file.getName());
@@ -333,7 +336,7 @@ public class AwsUtils {
         return download(s3Client, bucketName, fileKey, file);
     }
 
-    private static boolean download(AmazonS3Client s3Client, String bucketName, String fileKey, File file) {
+    private static boolean download(AmazonS3 s3Client, String bucketName, String fileKey, File file) {
         do {
             S3Object s3Object = s3Client.getObject(bucketName, fileKey);
             InputStream input = s3Object.getObjectContent();
