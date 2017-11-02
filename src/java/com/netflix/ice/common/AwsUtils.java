@@ -24,12 +24,16 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
+import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simpledb.AmazonSimpleDBClientBuilder;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
@@ -60,9 +64,9 @@ public class AwsUtils {
     public static long hourMillis = 3600000L;
 
     private static AmazonS3 s3Client;
-    private static AmazonSimpleEmailServiceClient emailServiceClient;
-    private static AmazonSimpleDBClient simpleDBClient;
-    private static AWSSecurityTokenServiceClient securityClient;
+    private static AmazonSimpleEmailService emailServiceClient;
+    private static AmazonSimpleDB simpleDBClient;
+    private static AWSSecurityTokenService securityClient;
     public static AWSCredentialsProvider awsCredentialsProvider;
     public static ClientConfiguration clientConfig;
 
@@ -103,30 +107,36 @@ public class AwsUtils {
             amazonS3ClientBuilder.withRegion(System.getProperty("EC2_REGION"));
         }
         s3Client = amazonS3ClientBuilder.build();
-        securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider, clientConfig);
+        securityClient = AWSSecurityTokenServiceClientBuilder
+                .standard().withCredentials(awsCredentialsProvider)
+                .withClientConfiguration(clientConfig)
+                .build();
     }
 
     public static AmazonS3 getAmazonS3Client() {
         return s3Client;
     }
 
-    public static AmazonSimpleEmailServiceClient getAmazonSimpleEmailServiceClient() {
+    public static AmazonSimpleEmailService getAmazonSimpleEmailServiceClient() {
         if (emailServiceClient == null)
-            emailServiceClient = new AmazonSimpleEmailServiceClient(awsCredentialsProvider, clientConfig);
+            emailServiceClient = AmazonSimpleEmailServiceClientBuilder.standard()
+                    .withCredentials(awsCredentialsProvider)
+                    .withClientConfiguration(clientConfig)
+                    .build();
         return emailServiceClient;
     }
 
-    public static AmazonSimpleDBClient getAmazonSimpleDBClient() {
+    public static AmazonSimpleDB getAmazonSimpleDBClient() {
         if (simpleDBClient == null) {
-            simpleDBClient = new AmazonSimpleDBClient(awsCredentialsProvider, clientConfig);
-            if (System.getProperty("EC2_REGION") != null && !"us-east-1".equals(System.getProperty("EC2_REGION"))) {
-                if ("global".equals(System.getProperty("EC2_REGION"))) {
-                    simpleDBClient.setEndpoint("sdb.amazonaws.com");
-                }
-                else {
-                    simpleDBClient.setEndpoint("sdb." + System.getProperty("EC2_REGION") + ".amazonaws.com");
-                }
+            AmazonSimpleDBClientBuilder amazonSimpleDBClientBuilder = AmazonSimpleDBClient.builder()
+                    .withCredentials(awsCredentialsProvider)
+                    .withClientConfiguration(clientConfig);
+
+            if (System.getProperty("EC2_REGION") != null) {
+                amazonSimpleDBClientBuilder.setRegion(System.getProperty("EC2_REGION"));
             }
+            simpleDBClient = amazonSimpleDBClientBuilder
+                    .build();
         }
         return simpleDBClient;
     }

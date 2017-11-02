@@ -17,7 +17,7 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.RawMessage;
 import com.amazonaws.services.simpleemail.model.SendRawEmailRequest;
 import com.google.common.collect.Lists;
@@ -67,7 +67,10 @@ import java.nio.ByteBuffer;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 public class BasicWeeklyCostEmailService extends Poller {
 
@@ -176,7 +179,7 @@ public class BasicWeeklyCostEmailService extends Poller {
         try {
             headerNote = getHeaderNote();
             throughputMetrics = getThroughputMetrics();
-            AmazonSimpleEmailServiceClient emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
+            AmazonSimpleEmailService emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
             Map<String, ApplicationGroup> appgroups = applicationGroupService.getApplicationGroups();
             Map<String, List<ApplicationGroup>> appgroupsByEmail = collectEmails(appgroups);
 
@@ -440,7 +443,7 @@ public class BasicWeeklyCostEmailService extends Poller {
         return mimeBodyPart;
     }
 
-    private void sendEmail(boolean test, AmazonSimpleEmailServiceClient emailService, String email, List<ApplicationGroup> appGroups)
+    private void sendEmail(boolean test, AmazonSimpleEmailService emailService, String email, List<ApplicationGroup> appGroups)
         throws IOException, MessagingException {
 
         StringBuilder body = new StringBuilder();

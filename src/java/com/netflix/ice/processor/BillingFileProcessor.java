@@ -20,7 +20,7 @@ package com.netflix.ice.processor;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
 import com.csvreader.CsvReader;
 import com.google.common.collect.Lists;
@@ -729,7 +729,7 @@ public class BillingFileProcessor extends Poller {
             request.withDestination(new Destination(emails));
             request.withMessage(new Message(new Content(subject), new Body().withHtml(new Content(body.toString()))));
 
-            AmazonSimpleEmailServiceClient emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
+            AmazonSimpleEmailService emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
             try {
                 emailService.sendEmail(request);
                 updateLastAlertMillis(endMilli);
