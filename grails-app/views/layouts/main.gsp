@@ -39,8 +39,14 @@
     </div>
   </div>
   <ul class="nav" ng-show="!graphOnly()">
-    <li class="menuButton">
-        <a class="" href="${resource(dir: 'dashboard', file: 'summary')}" ng-click="reload()">AWS Summary</a>
+    <li class="menuButton dropdown">
+      <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'summary')}" ng-click="reload()">AWS Summary</a>
+      <ul>
+        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'summary')}" ng-click="reload()">General Summary</a></li>
+        <g:if test="${ReaderConfig.getInstance().resourceService != null}">
+        <li class="menuButton"><a class="link_with_params" href="${resource(dir: 'dashboard', file: 'summary')}#showResourceGroups=true" ng-click="reload()">Summary With Resource Groups</a></li>
+        </g:if>
+      </ul>
     </li>
     <li class="menuButton dropdown">
       <a class="link_with_params" href="${resource(dir: 'dashboard', file: 'detail')}#{{getTimeParams()}}" ng-click="reload()">AWS Details</a>
