@@ -17,24 +17,25 @@
  */
 package com.netflix.ice.processor;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
 import com.csvreader.CsvReader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.netflix.ice.common.*;
+import com.netflix.ice.common.AwsUtils;
+import com.netflix.ice.common.Poller;
+import com.netflix.ice.common.TagGroup;
 import com.netflix.ice.tag.Account;
 import com.netflix.ice.tag.Operation;
 import com.netflix.ice.tag.Product;
-import com.netflix.ice.tag.Zone;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Months;
@@ -648,12 +649,12 @@ public class BillingFileProcessor extends Poller {
     }
 
     private void updateLastMillis(long millis, String filename) {
-        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+        AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
         s3Client.putObject(config.workS3BucketName, config.workS3BucketPrefix + filename, IOUtils.toInputStream(millis + ""), new ObjectMetadata());
     }
 
     private Long getLastMillis(String filename) {
-        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+        AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
         InputStream in = null;
         try {
             in = s3Client.getObject(config.workS3BucketName, config.workS3BucketPrefix + filename).getObjectContent();
@@ -728,7 +729,7 @@ public class BillingFileProcessor extends Poller {
             request.withDestination(new Destination(emails));
             request.withMessage(new Message(new Content(subject), new Body().withHtml(new Content(body.toString()))));
 
-            AmazonSimpleEmailServiceClient emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
+            AmazonSimpleEmailService emailService = AwsUtils.getAmazonSimpleEmailServiceClient();
             try {
                 emailService.sendEmail(request);
                 updateLastAlertMillis(endMilli);

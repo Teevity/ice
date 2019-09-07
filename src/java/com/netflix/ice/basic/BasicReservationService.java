@@ -17,7 +17,8 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -25,7 +26,8 @@ import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.common.Poller;
 import com.netflix.ice.common.TagGroup;
 import com.netflix.ice.processor.Ec2InstanceReservationPrice;
-import com.netflix.ice.processor.Ec2InstanceReservationPrice.*;
+import com.netflix.ice.processor.Ec2InstanceReservationPrice.ReservationPeriod;
+import com.netflix.ice.processor.Ec2InstanceReservationPrice.ReservationUtilization;
 import com.netflix.ice.processor.ProcessorConfig;
 import com.netflix.ice.processor.ReservationService;
 import com.netflix.ice.tag.*;
@@ -36,7 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class BasicReservationService extends Poller implements ReservationService {
@@ -142,7 +146,10 @@ public class BasicReservationService extends Poller implements ReservationServic
                 .withFilters(new com.amazonaws.services.ec2.model.Filter().withName("marketplace").withValues("false"));
         String token = null;
         boolean hasNewPrice = false;
-        AmazonEC2Client ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider, AwsUtils.clientConfig);
+        AmazonEC2ClientBuilder amazonEC2ClientBuilder = AmazonEC2ClientBuilder
+                .standard()
+                .withCredentials(AwsUtils.awsCredentialsProvider)
+                .withClientConfiguration(AwsUtils.clientConfig);
 
         for (Region region: Region.getAllRegions()) {
             // GovCloud uses different credentials than standard AWS, so you would need two separate
@@ -151,7 +158,8 @@ public class BasicReservationService extends Poller implements ReservationServic
             if (region == Region.US_GOV_WEST_1) {
                 continue;
             }
-            ec2Client.setEndpoint("ec2." + region.name + ".amazonaws.com");
+            amazonEC2ClientBuilder.setRegion(region.name);
+            AmazonEC2 ec2Client = amazonEC2ClientBuilder.build();
             do {
                 if (!StringUtils.isEmpty(token))
                     req.setNextToken(token);
@@ -159,7 +167,7 @@ public class BasicReservationService extends Poller implements ReservationServic
                 token = offers.getNextToken();
 
                 for (ReservedInstancesOffering offer: offers.getReservedInstancesOfferings()) {
-                    if (offer.getProductDescription().indexOf("Amazon VPC") >= 0)
+                    if (offer.getProductDescription().contains("Amazon VPC"))
                         continue;
 
                     // Ignore Region-Wide RIs
@@ -193,9 +201,9 @@ public class BasicReservationService extends Poller implements ReservationServic
                     }
                 }
             } while (!StringUtils.isEmpty(token));
+            ec2Client.shutdown();
         }
 
-        ec2Client.shutdown();
         if (hasNewPrice) {
             for (ReservationUtilization utilization: files.keySet()) {
                 File file = files.get(utilization);

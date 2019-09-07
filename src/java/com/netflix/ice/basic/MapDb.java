@@ -17,7 +17,7 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.netflix.ice.common.AwsUtils;
 import com.netflix.ice.processor.ProcessorConfig;
@@ -47,7 +47,7 @@ public class MapDb {
         this.dbName = "db_" + name;
         File file = new File(config.localDir, dbName);
         if (!file.exists()) {
-            AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+            AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
             for (S3ObjectSummary s3ObjectSummary: s3Client.listObjects(config.workS3BucketName, config.workS3BucketPrefix + this.dbName).getObjectSummaries()) {
                 File dbFile = new File(config.localDir, s3ObjectSummary.getKey().substring(config.workS3BucketPrefix.length()));
                 AwsUtils.downloadFileIfNotExist(config.workS3BucketName, config.workS3BucketPrefix, dbFile);
@@ -103,7 +103,7 @@ public class MapDb {
     }
 
     void upload() {
-        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+        AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
 
         File dir = new File(config.localDir);
         File[] files = dir.listFiles(new FilenameFilter() {

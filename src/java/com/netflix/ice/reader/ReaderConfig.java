@@ -83,7 +83,7 @@ public class ReaderConfig extends Config {
 
         ReaderConfig.instance = this;
 
-//        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+//        AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
 //        logger.info("Deleting all files...");
 //        List<S3ObjectSummary> objectSummariesToDelete = AwsUtils.listAllObjects(instance.workS3BucketName, instance.workS3BucketPrefix);
 //        for (S3ObjectSummary objectSummary : objectSummariesToDelete) {

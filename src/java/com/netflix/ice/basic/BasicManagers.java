@@ -17,13 +17,18 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.netflix.ice.common.*;
+import com.netflix.ice.common.AwsUtils;
+import com.netflix.ice.common.ConsolidateType;
+import com.netflix.ice.common.Poller;
 import com.netflix.ice.processor.TagGroupWriter;
-import com.netflix.ice.reader.*;
+import com.netflix.ice.reader.DataManager;
+import com.netflix.ice.reader.Managers;
+import com.netflix.ice.reader.ReaderConfig;
+import com.netflix.ice.reader.TagGroupManager;
 import com.netflix.ice.tag.Product;
 import com.netflix.ice.tag.Tag;
 
@@ -91,7 +96,7 @@ public class BasicManagers extends Poller implements Managers {
         TreeMap<Key, BasicDataManager> usageManagers = Maps.newTreeMap(this.usageManagers);
 
         Set<Product> newProducts = Sets.newHashSet();
-        AmazonS3Client s3Client = AwsUtils.getAmazonS3Client();
+        AmazonS3 s3Client = AwsUtils.getAmazonS3Client();
         for (S3ObjectSummary s3ObjectSummary: s3Client.listObjects(config.workS3BucketName, config.workS3BucketPrefix + TagGroupWriter.DB_PREFIX).getObjectSummaries()) {
             String key = s3ObjectSummary.getKey();
             Product product;

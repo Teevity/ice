@@ -17,14 +17,12 @@
  */
 package com.netflix.ice.processor;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSSessionCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeReservedInstancesResult;
 import com.amazonaws.services.ec2.model.ReservedInstances;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.google.common.collect.Maps;
 import com.netflix.ice.common.AwsUtils;
@@ -116,12 +114,12 @@ public class ReservationCapacityPoller extends Poller {
 
         for (Account account: config.accountService.getReservationAccounts().keySet()) {
             try {
-                AmazonEC2Client ec2Client;
+                AmazonEC2ClientBuilder amazonEC2ClientBuilder = AmazonEC2ClientBuilder.standard();
                 String assumeRole = config.accountService.getReservationAccessRoles().get(account);
                 if (assumeRole != null) {
                     String externalId = config.accountService.getReservationAccessExternalIds().get(account);
                     final Credentials credentials = AwsUtils.getAssumedCredentials(account.id, assumeRole, externalId);
-                    ec2Client = new AmazonEC2Client(new AWSSessionCredentials() {
+                    AWSSessionCredentials awsCredentials = new AWSSessionCredentials() {
                         public String getAWSAccessKeyId() {
                             return credentials.getAccessKeyId();
                         }
@@ -133,11 +131,14 @@ public class ReservationCapacityPoller extends Poller {
                         public String getSessionToken() {
                             return credentials.getSessionToken();
                         }
-                    });
+                    };
+                    amazonEC2ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCredentials));
                 }
-                else
-                    ec2Client = new AmazonEC2Client(AwsUtils.awsCredentialsProvider.getCredentials(), AwsUtils.clientConfig);
-
+                else {
+                    amazonEC2ClientBuilder
+                            .withClientConfiguration(AwsUtils.clientConfig)
+                            .withCredentials(AwsUtils.awsCredentialsProvider);
+                }
                 for (Region region: Region.getAllRegions()) {
                     // GovCloud uses different credentials than standard AWS, so you would need two separate
                     // sets of credentials if you wanted to poll for RIs in both environments. For now, we
@@ -145,8 +146,8 @@ public class ReservationCapacityPoller extends Poller {
                     if (region == Region.US_GOV_WEST_1) {
                         continue;
                     }
-
-                    ec2Client.setEndpoint("ec2." + region.name + ".amazonaws.com");
+                    amazonEC2ClientBuilder.setRegion(region.name);
+                    AmazonEC2 ec2Client = amazonEC2ClientBuilder.build();
 
                     try {
                         DescribeReservedInstancesResult result = ec2Client.describeReservedInstances();
@@ -164,9 +165,8 @@ public class ReservationCapacityPoller extends Poller {
                     catch (Exception e) {
                         logger.error("error in describeReservedInstances for " + region.name + " " + account.name, e);
                     }
+                    ec2Client.shutdown();
                 }
-
-                ec2Client.shutdown();
             }
             catch (Exception e) {
                 logger.error("Error in describeReservedInstances for " + account.name, e);

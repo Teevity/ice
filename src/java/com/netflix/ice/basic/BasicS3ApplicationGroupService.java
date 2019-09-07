@@ -17,7 +17,7 @@
  */
 package com.netflix.ice.basic;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.common.collect.Maps;
 import com.netflix.ice.common.AwsUtils;
@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class BasicS3ApplicationGroupService implements ApplicationGroupService {
     private final static Logger logger = LoggerFactory.getLogger(BasicS3ApplicationGroupService.class);
-    private AmazonS3Client s3Client;
+    private AmazonS3 s3Client;
     private ReaderConfig config;
 
     public void init() {
