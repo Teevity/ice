@@ -84,7 +84,7 @@ public class AwsUtils {
      * This method must be called before all methods can be used.
      * @param credentialsProvider
      */
-    public static void init(AWSCredentialsProvider credentialsProvider) {
+    public static void init(AWSCredentialsProvider credentialsProvider, String workS3BucketRegion) {
         awsCredentialsProvider = credentialsProvider;
         clientConfig = new ClientConfiguration();
         String proxyHost = System.getProperty("https.proxyHost");
@@ -95,13 +95,11 @@ public class AwsUtils {
         }
         s3Client = new AmazonS3Client(awsCredentialsProvider, clientConfig);
         securityClient = new AWSSecurityTokenServiceClient(awsCredentialsProvider, clientConfig);
-        if (System.getProperty("EC2_REGION") != null && !"us-east-1".equals(System.getProperty("EC2_REGION"))) {
-            if ("global".equals(System.getProperty("EC2_REGION"))) {
-                s3Client.setEndpoint("s3.amazonaws.com");
-            }
-            else {
-                s3Client.setEndpoint("s3-" + System.getProperty("EC2_REGION") + ".amazonaws.com");
-            }
+        if("us-east-1".equals(workS3BucketRegion)) {
+            s3Client.setEndpoint("s3.amazonaws.com");
+        }
+        else {
+            s3Client.setEndpoint("s3-" + workS3BucketRegion + ".amazonaws.com");
         }
     }
 
@@ -273,7 +271,12 @@ public class AwsUtils {
             }
 
             if(bucketFileRegion != null && !bucketFileRegion.isEmpty()) {
-                s3Client.setEndpoint("s3-" + bucketFileRegion + ".amazonaws.com");
+                if("us-east-1".equals(bucketFileRegion)) {
+                    s3Client.setEndpoint("s3.amazonaws.com");
+                }
+                else {
+                    s3Client.setEndpoint("s3-" + bucketFileRegion + ".amazonaws.com");
+                }
             }
 
             ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, bucketFilePrefix + file.getName());
