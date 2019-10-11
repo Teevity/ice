@@ -64,7 +64,7 @@ grails.project.dependency.resolution = {
 
     dependencies {
 
-        compile(
+        build(
                 // Amazon Web Services programmatic interface
                 'com.amazonaws:aws-java-sdk:1.11.136',
                 // Transitive dependencies of aws-java-sdk, but also used directly.
